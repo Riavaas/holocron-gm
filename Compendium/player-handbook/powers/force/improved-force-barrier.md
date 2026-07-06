@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Improved Force Barrier"
 page_start: 253
 page_end: 253
-tags: ["force", "improved-force-barrier", "level-5", "power"]
+tags: ["force", "improved-force-barrier", "level-5", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

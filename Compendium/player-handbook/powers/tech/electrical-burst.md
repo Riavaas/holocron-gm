@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Electrical Burst"
 page_start: 277
 page_end: 277
-tags: ["dexterity-save", "electrical-burst", "level-at-will", "lightning", "power", "tech"]
+tags: ["dexterity-save", "electrical-burst", "level-at-will", "lightning", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self (5-foot sphere)"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["lightning"]
 conditions_inflicted: []
 classes_or_archetypes: []

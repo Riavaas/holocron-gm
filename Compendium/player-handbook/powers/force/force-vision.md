@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Vision"
 page_start: 249
 page_end: 249
-tags: ["force", "force-vision", "level-2", "power"]
+tags: ["force", "force-vision", "level-2", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

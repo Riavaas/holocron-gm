@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Heal"
 page_start: 251
 page_end: 251
-tags: ["force", "heal", "level-1", "power"]
+tags: ["force", "heal", "level-1", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

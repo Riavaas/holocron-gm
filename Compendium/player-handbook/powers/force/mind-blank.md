@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Mind Blank"
 page_start: 258
 page_end: 258
-tags: ["charmed", "force", "level-8", "mind-blank", "power", "sonic"]
+tags: ["charmed", "force", "level-8", "mind-blank", "power", "sonic", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "24 hours"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["sonic"]
 conditions_inflicted: ["charmed"]
 classes_or_archetypes: []

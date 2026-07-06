@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Sending"
 page_start: 296
 page_end: 296
-tags: ["level-3", "power", "sending", "tech"]
+tags: ["level-3", "power", "sending", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Unlimited"
 duration: "1 round"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

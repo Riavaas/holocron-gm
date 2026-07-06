@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Push/Pull"
 page_start: 248
 page_end: 248
-tags: ["dexterity-save", "force", "force-push-pull", "kinetic", "level-at-will", "power", "strength-save"]
+tags: ["dexterity-save", "force", "force-push-pull", "kinetic", "level-at-will", "power", "strength-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity, Strength"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: []
 classes_or_archetypes: []

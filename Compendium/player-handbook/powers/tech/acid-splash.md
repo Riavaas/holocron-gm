@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Acid Splash"
 page_start: 270
 page_end: 270
-tags: ["acid", "acid-splash", "dexterity-save", "level-at-will", "power", "tech"]
+tags: ["acid", "acid-splash", "dexterity-save", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["acid"]
 conditions_inflicted: []
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Haywire"
 page_start: 283
 page_end: 283
-tags: ["haywire", "intelligence-save", "level-at-will", "lightning", "power", "tech"]
+tags: ["haywire", "intelligence-save", "level-at-will", "lightning", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Intelligence"
-attack_roll: false
+attack_roll: true
 damage_types: ["lightning"]
 conditions_inflicted: []
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Lightning"
 page_start: 246
 page_end: 246
-tags: ["dexterity-save", "force", "force-lightning", "level-3", "lightning", "power"]
+tags: ["dexterity-save", "force", "force-lightning", "level-3", "lightning", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self (100-foot line)"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["lightning"]
 conditions_inflicted: []
 classes_or_archetypes: []

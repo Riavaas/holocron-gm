@@ -146,3 +146,17 @@ Workflow:
 ```bash
 pytest
 ```
+
+## Power Cards QA
+
+Run metadata and link QA for Player Handbook Force/Tech power cards:
+
+```bash
+python scripts/qa_power_cards.py
+```
+
+Safe metadata repair pass:
+
+```bash
+python scripts/qa_power_cards.py --fix
+```

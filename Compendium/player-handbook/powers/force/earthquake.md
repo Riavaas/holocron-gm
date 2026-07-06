@@ -18,7 +18,7 @@ range: "500 feet"
 duration: "Concentration, up to 1 minute"
 concentration: true
 save: "Constitution, Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: ["prone"]
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Comprehend Speech"
 page_start: 239
 page_end: 239
-tags: ["comprehend-speech", "force", "level-1", "power"]
+tags: ["comprehend-speech", "force", "level-1", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

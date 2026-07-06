@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Mass Coerce Mind"
 page_start: 256
 page_end: 256
-tags: ["force", "level-6", "mass-coerce-mind", "power", "wisdom-save"]
+tags: ["force", "level-6", "mass-coerce-mind", "power", "wisdom-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "24 hours"
 concentration: false
 save: "Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Read Memory"
 page_start: 292
 page_end: 292
-tags: ["level-3", "power", "read-memory", "tech"]
+tags: ["level-3", "power", "read-memory", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "10 feet"
 duration: "10 minutes"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

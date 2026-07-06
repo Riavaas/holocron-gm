@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Concentration, up to 1 hour"
 concentration: true
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["fire"]
 conditions_inflicted: ["restrained"]
 classes_or_archetypes: []

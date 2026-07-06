@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Sever Force"
 page_start: 263
 page_end: 263
-tags: ["force", "level-3", "power", "sever-force"]
+tags: ["force", "level-3", "power", "sever-force", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

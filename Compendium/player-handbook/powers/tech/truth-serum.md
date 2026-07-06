@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Truth Serum"
 page_start: 301
 page_end: 301
-tags: ["constitution-save", "level-2", "power", "tech", "truth-serum"]
+tags: ["constitution-save", "level-2", "power", "tech", "truth-serum", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "10 minutes"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

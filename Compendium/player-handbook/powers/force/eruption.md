@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Eruption"
 page_start: 243
 page_end: 243
-tags: ["dexterity-save", "eruption", "force", "kinetic", "level-6", "power", "restrained"]
+tags: ["dexterity-save", "eruption", "force", "kinetic", "level-6", "power", "restrained", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: ["restrained"]
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Tremor"
 page_start: 267
 page_end: 267
-tags: ["dexterity-save", "force", "kinetic", "level-1", "power", "prone", "tremor"]
+tags: ["dexterity-save", "force", "kinetic", "level-1", "power", "prone", "tremor", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "10 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: ["prone"]
 classes_or_archetypes: []

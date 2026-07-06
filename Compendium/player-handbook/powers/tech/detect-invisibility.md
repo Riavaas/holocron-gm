@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Detect Invisibility"
 page_start: 276
 page_end: 276
-tags: ["detect-invisibility", "level-2", "power", "tech"]
+tags: ["detect-invisibility", "level-2", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

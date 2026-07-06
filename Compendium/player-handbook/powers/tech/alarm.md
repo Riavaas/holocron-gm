@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Alarm"
 page_start: 270
 page_end: 270
-tags: ["alarm", "level-1", "power", "tech"]
+tags: ["alarm", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "8 hours, or until the end of your next short or"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

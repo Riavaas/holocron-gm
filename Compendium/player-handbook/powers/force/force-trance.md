@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Trance"
 page_start: 249
 page_end: 249
-tags: ["force", "force-trance", "level-3", "power", "unconscious"]
+tags: ["force", "force-trance", "level-3", "power", "unconscious", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "10 minutes"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["unconscious"]
 classes_or_archetypes: []

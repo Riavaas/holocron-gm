@@ -18,7 +18,7 @@ range: "Self (30-foot cone)"
 duration: "Concentration, up to 1 minute"
 concentration: true
 save: "Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["frightened"]
 classes_or_archetypes: []

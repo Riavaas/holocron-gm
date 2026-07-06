@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Stun Dart"
 page_start: 298
 page_end: 298
-tags: ["constitution-save", "level-8", "power", "stun-dart", "stunned", "tech"]
+tags: ["constitution-save", "level-8", "power", "stun-dart", "stunned", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["stunned"]
 classes_or_archetypes: []

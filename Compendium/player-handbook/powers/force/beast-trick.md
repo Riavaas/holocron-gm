@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Beast Trick"
 page_start: 237
 page_end: 237
-tags: ["beast-trick", "force", "level-1", "power", "wisdom-save"]
+tags: ["beast-trick", "force", "level-1", "power", "wisdom-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "24 hours"
 concentration: false
 save: "Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

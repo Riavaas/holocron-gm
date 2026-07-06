@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Minor Defibrillation"
 page_start: 287
 page_end: 287
-tags: ["level-at-will", "lightning", "minor-defibrillation", "power", "tech"]
+tags: ["level-at-will", "lightning", "minor-defibrillation", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

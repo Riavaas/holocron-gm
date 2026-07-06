@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Meld"
 page_start: 247
 page_end: 247
-tags: ["force", "force-meld", "level-5", "power"]
+tags: ["force", "force-meld", "level-5", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

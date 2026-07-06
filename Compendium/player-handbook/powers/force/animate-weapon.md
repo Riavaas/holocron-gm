@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Animate Weapon"
 page_start: 236
 page_end: 236
-tags: ["animate-weapon", "force", "level-2", "power"]
+tags: ["animate-weapon", "force", "level-2", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

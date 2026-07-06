@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Wire Line"
 page_start: 302
 page_end: 302
-tags: ["kinetic", "level-at-will", "power", "tech", "wire-line"]
+tags: ["kinetic", "level-at-will", "power", "tech", "wire-line", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

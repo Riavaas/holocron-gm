@@ -18,7 +18,7 @@ range: "90 feet"
 duration: "Concentration, up to 10 minutes"
 concentration: true
 save: "Strength"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["restrained"]
 classes_or_archetypes: []

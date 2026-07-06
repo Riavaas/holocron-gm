@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Breath Control"
 page_start: 237
 page_end: 237
-tags: ["breath-control", "force", "level-1", "poison", "poisoned", "power"]
+tags: ["breath-control", "force", "level-1", "poison", "poisoned", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "10 minutes"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["poison"]
 conditions_inflicted: ["poisoned"]
 classes_or_archetypes: []

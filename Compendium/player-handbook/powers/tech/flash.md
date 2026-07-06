@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Flash"
 page_start: 280
 page_end: 280
-tags: ["blinded", "flash", "level-1", "power", "tech"]
+tags: ["blinded", "flash", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "90 feet"
 duration: "1 round"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["blinded"]
 classes_or_archetypes: []

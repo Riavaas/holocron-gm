@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Master Revitalize"
 page_start: 258
 page_end: 258
-tags: ["force", "level-9", "master-revitalize", "power"]
+tags: ["force", "level-9", "master-revitalize", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

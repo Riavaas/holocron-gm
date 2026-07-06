@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Necrotic Charge"
 page_start: 259
 page_end: 259
-tags: ["force", "level-at-will", "necrotic", "necrotic-charge", "power"]
+tags: ["force", "level-at-will", "necrotic", "necrotic-charge", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

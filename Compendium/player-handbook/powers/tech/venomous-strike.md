@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Venomous Strike"
 page_start: 301
 page_end: 301
-tags: ["level-at-will", "poison", "power", "tech", "venomous-strike"]
+tags: ["level-at-will", "poison", "power", "tech", "venomous-strike", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

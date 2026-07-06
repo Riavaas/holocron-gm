@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Flame Sweep"
 page_start: 280
 page_end: 280
-tags: ["dexterity-save", "fire", "flame-sweep", "level-1", "power", "tech"]
+tags: ["dexterity-save", "fire", "flame-sweep", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self (15-foot cone)"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["fire"]
 conditions_inflicted: []
 classes_or_archetypes: []

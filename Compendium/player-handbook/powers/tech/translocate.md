@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Translocate"
 page_start: 301
 page_end: 301
-tags: ["level-2", "power", "tech", "translocate"]
+tags: ["level-2", "power", "tech", "translocate", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

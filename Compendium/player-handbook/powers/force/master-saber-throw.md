@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Master Saber Throw"
 page_start: 258
 page_end: 258
-tags: ["dexterity-save", "force", "level-7", "master-saber-throw", "power"]
+tags: ["dexterity-save", "force", "level-7", "master-saber-throw", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self (90-foot line)"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["force"]
 conditions_inflicted: []
 classes_or_archetypes: []

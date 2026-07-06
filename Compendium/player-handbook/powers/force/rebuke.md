@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Rebuke"
 page_start: 261
 page_end: 261
-tags: ["force", "level-at-will", "power", "rebuke"]
+tags: ["force", "level-at-will", "power", "rebuke", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

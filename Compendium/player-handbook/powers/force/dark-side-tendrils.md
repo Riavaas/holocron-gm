@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Dark Side Tendrils"
 page_start: 240
 page_end: 240
-tags: ["dark-side-tendrils", "force", "level-1", "necrotic", "power", "strength-save"]
+tags: ["dark-side-tendrils", "force", "level-1", "necrotic", "power", "strength-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self (10-foot radius)"
 duration: "Instantaneous"
 concentration: false
 save: "Strength"
-attack_roll: false
+attack_roll: true
 damage_types: ["necrotic"]
 conditions_inflicted: []
 classes_or_archetypes: []

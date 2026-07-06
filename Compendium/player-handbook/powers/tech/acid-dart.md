@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Acid Dart"
 page_start: 270
 page_end: 270
-tags: ["acid", "acid-dart", "level-2", "power", "tech"]
+tags: ["acid", "acid-dart", "level-2", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

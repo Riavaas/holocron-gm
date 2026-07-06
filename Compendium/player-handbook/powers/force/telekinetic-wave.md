@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Telekinetic Wave"
 page_start: 267
 page_end: 267
-tags: ["constitution-save", "force", "level-8", "power", "prone", "telekinetic-wave"]
+tags: ["constitution-save", "force", "level-8", "power", "prone", "telekinetic-wave", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "150 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["force"]
 conditions_inflicted: ["prone"]
 classes_or_archetypes: []

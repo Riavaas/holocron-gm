@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Master Feedback"
 page_start: 257
 page_end: 257
-tags: ["force", "intelligence-save", "level-9", "master-feedback", "power", "psychic", "stunned", "wisdom-save"]
+tags: ["force", "intelligence-save", "level-9", "master-feedback", "power", "psychic", "stunned", "wisdom-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "90 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Intelligence, Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: ["psychic"]
 conditions_inflicted: ["stunned"]
 classes_or_archetypes: []

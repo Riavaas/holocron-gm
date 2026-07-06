@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Master Heal"
 page_start: 257
 page_end: 257
-tags: ["charmed", "force", "level-9", "master-heal", "power", "prone"]
+tags: ["charmed", "force", "level-9", "master-heal", "power", "prone", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["charmed", "prone"]
 classes_or_archetypes: []

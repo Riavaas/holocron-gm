@@ -18,7 +18,7 @@ range: "Touch"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

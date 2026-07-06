@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Sonic Strike"
 page_start: 297
 page_end: 297
-tags: ["level-at-will", "power", "sonic", "sonic-strike", "tech"]
+tags: ["level-at-will", "power", "sonic", "sonic-strike", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

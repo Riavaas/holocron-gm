@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Storming Shot"
 page_start: 298
 page_end: 298
-tags: ["level-at-will", "lightning", "power", "shocked", "storming-shot", "tech"]
+tags: ["level-at-will", "lightning", "power", "shocked", "storming-shot", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

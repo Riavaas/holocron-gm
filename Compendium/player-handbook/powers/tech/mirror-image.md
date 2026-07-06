@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Mirror Image"
 page_start: 288
 page_end: 288
-tags: ["level-2", "mirror-image", "power", "tech"]
+tags: ["level-2", "mirror-image", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

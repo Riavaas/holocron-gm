@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Improved Heal"
 page_start: 253
 page_end: 253
-tags: ["force", "improved-heal", "level-5", "power"]
+tags: ["force", "improved-heal", "level-5", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

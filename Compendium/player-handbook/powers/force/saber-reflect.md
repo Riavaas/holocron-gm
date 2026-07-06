@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Saber Reflect"
 page_start: 262
 page_end: 262
-tags: ["force", "level-at-will", "power", "saber-reflect"]
+tags: ["force", "level-at-will", "power", "saber-reflect", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

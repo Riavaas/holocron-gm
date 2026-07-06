@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Predictive AI"
 page_start: 291
 page_end: 291
-tags: ["level-9", "power", "predictive-ai", "tech"]
+tags: ["level-9", "power", "predictive-ai", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

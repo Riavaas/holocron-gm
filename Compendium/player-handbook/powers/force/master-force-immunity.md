@@ -18,7 +18,7 @@ range: "Self (10-foot-radius sphere)"
 duration: "Concentration, up to 1 hour"
 concentration: true
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

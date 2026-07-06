@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Tonal Translocate"
 page_start: 300
 page_end: 300
-tags: ["constitution-save", "level-3", "power", "sonic", "tech", "tonal-translocate"]
+tags: ["constitution-save", "level-3", "power", "sonic", "tech", "tonal-translocate", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "90 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["sonic"]
 conditions_inflicted: []
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Convulsion"
 page_start: 239
 page_end: 239
-tags: ["convulsion", "dexterity-save", "force", "kinetic", "level-3", "power"]
+tags: ["convulsion", "dexterity-save", "force", "kinetic", "level-3", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: []
 classes_or_archetypes: []

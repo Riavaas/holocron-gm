@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Spectrum Ray"
 page_start: 298
 page_end: 298
-tags: ["level-at-will", "power", "spectrum-ray", "tech"]
+tags: ["level-at-will", "power", "spectrum-ray", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

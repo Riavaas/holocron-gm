@@ -16,6 +16,8 @@ Conditions, Force/Tech Casting, and Equipment overview pages are also available 
 
 Force power cards and Tech power cards are available under `Compendium/player-handbook/powers/`. Each card includes power metadata for future UI filters: level, casting time, range, duration, concentration, save, attack roll, damage types, and conditions.
 
+Power metadata QA exists at `scripts/qa_power_cards.py`. It writes `reports/power_cards_qa.md`. Some cards can carry `needs_review`; use the cited source page and `/api/rules/search` before answering.
+
 ## API
 
 - `GET /health`

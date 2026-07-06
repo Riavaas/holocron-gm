@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Light"
 page_start: 287
 page_end: 287
-tags: ["dexterity-save", "level-at-will", "light", "power", "tech"]
+tags: ["dexterity-save", "level-at-will", "light", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "1 hour"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

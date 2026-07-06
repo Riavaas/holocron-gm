@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Sonic Fists"
 page_start: 297
 page_end: 297
-tags: ["level-1", "power", "sonic", "sonic-fists", "tech"]
+tags: ["level-1", "power", "sonic", "sonic-fists", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

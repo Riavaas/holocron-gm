@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Preparedness"
 page_start: 291
 page_end: 291
-tags: ["level-1", "power", "preparedness", "tech"]
+tags: ["level-1", "power", "preparedness", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "8 hours, or until the end of your next short or"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

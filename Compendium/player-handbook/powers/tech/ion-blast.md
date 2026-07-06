@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Ion Blast"
 page_start: 285
 page_end: 285
-tags: ["dexterity-save", "ion", "ion-blast", "level-at-will", "power", "tech"]
+tags: ["dexterity-save", "ion", "ion-blast", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["ion"]
 conditions_inflicted: []
 classes_or_archetypes: []

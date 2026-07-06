@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Electroshock"
 page_start: 277
 page_end: 277
-tags: ["electroshock", "level-at-will", "lightning", "power", "shocked", "tech"]
+tags: ["electroshock", "level-at-will", "lightning", "power", "shocked", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

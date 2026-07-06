@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Holographic Disguise"
 page_start: 283
 page_end: 283
-tags: ["holographic-disguise", "level-1", "power", "tech"]
+tags: ["holographic-disguise", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

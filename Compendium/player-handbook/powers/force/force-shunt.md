@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Shunt"
 page_start: 248
 page_end: 248
-tags: ["force", "force-shunt", "kinetic", "level-at-will", "power", "prone", "strength-save"]
+tags: ["force", "force-shunt", "kinetic", "level-at-will", "power", "prone", "strength-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Strength"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: ["prone"]
 classes_or_archetypes: []

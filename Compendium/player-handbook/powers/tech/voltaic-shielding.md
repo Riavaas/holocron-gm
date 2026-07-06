@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Voltaic Shielding"
 page_start: 302
 page_end: 302
-tags: ["level-1", "lightning", "power", "tech", "voltaic-shielding"]
+tags: ["level-1", "lightning", "power", "tech", "voltaic-shielding", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

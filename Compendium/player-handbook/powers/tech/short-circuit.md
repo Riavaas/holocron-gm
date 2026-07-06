@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Short Circuit"
 page_start: 296
 page_end: 296
-tags: ["level-at-will", "lightning", "power", "short-circuit", "tech"]
+tags: ["level-at-will", "lightning", "power", "short-circuit", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

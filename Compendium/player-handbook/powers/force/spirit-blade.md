@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Spirit Blade"
 page_start: 265
 page_end: 265
-tags: ["force", "level-at-will", "necrotic", "power", "spirit-blade"]
+tags: ["force", "level-at-will", "necrotic", "power", "spirit-blade", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

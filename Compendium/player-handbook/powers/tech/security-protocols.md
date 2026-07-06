@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Security Protocols"
 page_start: 295
 page_end: 295
-tags: ["level-6", "power", "security-protocols", "tech"]
+tags: ["level-6", "power", "security-protocols", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "24 hours"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

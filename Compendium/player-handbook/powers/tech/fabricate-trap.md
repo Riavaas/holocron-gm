@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Fabricate Trap"
 page_start: 279
 page_end: 280
-tags: ["dexterity-save", "fabricate-trap", "level-3", "power", "sonic", "tech"]
+tags: ["dexterity-save", "fabricate-trap", "level-3", "power", "sonic", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Until dispelled or triggered"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["sonic"]
 conditions_inflicted: []
 classes_or_archetypes: []

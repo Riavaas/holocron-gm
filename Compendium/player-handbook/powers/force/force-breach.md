@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Breach"
 page_start: 244
 page_end: 244
-tags: ["force", "force-breach", "level-5", "power"]
+tags: ["force", "force-breach", "level-5", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "120 feet (20-foot cube)"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

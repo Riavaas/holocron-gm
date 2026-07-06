@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Lightning Charge"
 page_start: 255
 page_end: 255
-tags: ["force", "level-at-will", "lightning", "lightning-charge", "power"]
+tags: ["force", "level-at-will", "lightning", "lightning-charge", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

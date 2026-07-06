@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Kolto Waves"
 page_start: 286
 page_end: 286
-tags: ["kolto-waves", "level-9", "power", "tech"]
+tags: ["kolto-waves", "level-9", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

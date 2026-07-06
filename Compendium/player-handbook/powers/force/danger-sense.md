@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Danger Sense"
 page_start: 240
 page_end: 240
-tags: ["danger-sense", "force", "level-2", "power"]
+tags: ["danger-sense", "force", "level-2", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

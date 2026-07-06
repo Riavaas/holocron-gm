@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Disintegrate"
 page_start: 277
 page_end: 277
-tags: ["acid", "dexterity-save", "disintegrate", "level-6", "power", "tech"]
+tags: ["acid", "dexterity-save", "disintegrate", "level-6", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["acid"]
 conditions_inflicted: []
 classes_or_archetypes: []

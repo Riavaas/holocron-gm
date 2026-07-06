@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Cryogenic Spray"
 page_start: 275
 page_end: 275
-tags: ["cold", "constitution-save", "cryogenic-spray", "level-5", "power", "tech"]
+tags: ["cold", "constitution-save", "cryogenic-spray", "level-5", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["cold"]
 conditions_inflicted: []
 classes_or_archetypes: []

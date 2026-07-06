@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Turbulence"
 page_start: 267
 page_end: 267
-tags: ["dexterity-save", "force", "level-at-will", "power", "turbulence"]
+tags: ["dexterity-save", "force", "level-at-will", "power", "turbulence", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["force"]
 conditions_inflicted: []
 classes_or_archetypes: []

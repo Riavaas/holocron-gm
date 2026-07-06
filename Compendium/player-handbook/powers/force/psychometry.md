@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Psychometry"
 page_start: 260
 page_end: 260
-tags: ["force", "level-3", "power", "psychometry"]
+tags: ["force", "level-3", "power", "psychometry", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "10 minutes"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

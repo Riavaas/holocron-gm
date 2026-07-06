@@ -18,7 +18,7 @@ range: "150 feet"
 duration: "Concentration, up to 1 minute"
 concentration: true
 save: "Strength"
-attack_roll: false
+attack_roll: true
 damage_types: ["necrotic", "poison"]
 conditions_inflicted: ["blinded"]
 classes_or_archetypes: []

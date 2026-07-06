@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Glide"
 page_start: 281
 page_end: 281
-tags: ["glide", "level-2", "power", "tech"]
+tags: ["glide", "level-2", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "1 minute"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

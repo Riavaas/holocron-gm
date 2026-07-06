@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Destroy Tech"
 page_start: 276
 page_end: 276
-tags: ["destroy-tech", "intelligence-save", "ion", "level-3", "power", "tech"]
+tags: ["destroy-tech", "intelligence-save", "ion", "level-3", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

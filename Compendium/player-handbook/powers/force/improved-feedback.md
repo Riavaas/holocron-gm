@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Improved Feedback"
 page_start: 252
 page_end: 252
-tags: ["force", "improved-feedback", "intelligence-save", "level-1", "power", "psychic"]
+tags: ["force", "improved-feedback", "intelligence-save", "level-1", "power", "psychic", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Intelligence"
-attack_roll: false
+attack_roll: true
 damage_types: ["psychic"]
 conditions_inflicted: []
 classes_or_archetypes: []

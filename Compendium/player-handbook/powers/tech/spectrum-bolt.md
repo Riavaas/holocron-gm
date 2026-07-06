@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Spectrum Bolt"
 page_start: 298
 page_end: 298
-tags: ["level-1", "power", "spectrum-bolt", "tech"]
+tags: ["level-1", "power", "spectrum-bolt", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

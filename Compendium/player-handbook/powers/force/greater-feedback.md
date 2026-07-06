@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Greater Feedback"
 page_start: 250
 page_end: 250
-tags: ["constitution-save", "force", "greater-feedback", "intelligence-save", "level-5", "power", "psychic"]
+tags: ["constitution-save", "force", "greater-feedback", "intelligence-save", "level-5", "power", "psychic", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

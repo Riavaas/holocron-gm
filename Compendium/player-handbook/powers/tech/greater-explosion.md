@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Greater Explosion"
 page_start: 282
 page_end: 282
-tags: ["dexterity-save", "fire", "greater-explosion", "level-9", "power", "prone", "tech"]
+tags: ["dexterity-save", "fire", "greater-explosion", "level-9", "power", "prone", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "150 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["fire"]
 conditions_inflicted: ["prone"]
 classes_or_archetypes: []

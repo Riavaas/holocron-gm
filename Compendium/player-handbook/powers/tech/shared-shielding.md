@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Shared Shielding"
 page_start: 296
 page_end: 296
-tags: ["level-2", "power", "shared-shielding", "tech"]
+tags: ["level-2", "power", "shared-shielding", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Bacta Pack"
 page_start: 272
 page_end: 272
-tags: ["bacta-pack", "level-1", "power", "tech"]
+tags: ["bacta-pack", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "1 minute"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

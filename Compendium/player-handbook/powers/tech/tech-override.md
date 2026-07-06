@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Tech Override"
 page_start: 300
 page_end: 300
-tags: ["level-3", "power", "tech", "tech-override"]
+tags: ["level-3", "power", "tech", "tech-override", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

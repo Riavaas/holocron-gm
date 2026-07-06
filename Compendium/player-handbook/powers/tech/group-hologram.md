@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Group Hologram"
 page_start: 283
 page_end: 283
-tags: ["charisma-save", "group-hologram", "level-5", "power", "tech"]
+tags: ["charisma-save", "group-hologram", "level-5", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "8 hours, or until the end of your next short or"
 concentration: false
 save: "Charisma"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

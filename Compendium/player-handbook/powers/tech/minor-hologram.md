@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Minor Hologram"
 page_start: 288
 page_end: 288
-tags: ["level-at-will", "minor-hologram", "power", "tech"]
+tags: ["level-at-will", "minor-hologram", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "10 feet"
 duration: "Up to 1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

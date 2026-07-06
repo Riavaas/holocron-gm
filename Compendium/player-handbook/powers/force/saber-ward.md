@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Saber Ward"
 page_start: 262
 page_end: 262
-tags: ["force", "ion", "level-at-will", "power", "saber-ward"]
+tags: ["force", "ion", "level-at-will", "power", "saber-ward", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "1 round"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["ion"]
 conditions_inflicted: []
 classes_or_archetypes: []

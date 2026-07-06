@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Sonic Shot"
 page_start: 297
 page_end: 297
-tags: ["deafened", "level-at-will", "power", "sonic", "sonic-shot", "tech"]
+tags: ["deafened", "level-at-will", "power", "sonic", "sonic-shot", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

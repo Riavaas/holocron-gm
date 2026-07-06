@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Chain Lightning"
 page_start: 245
 page_end: 245
-tags: ["dexterity-save", "force", "force-chain-lightning", "level-6", "lightning", "power"]
+tags: ["dexterity-save", "force", "force-chain-lightning", "level-6", "lightning", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "150 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["lightning"]
 conditions_inflicted: []
 classes_or_archetypes: []

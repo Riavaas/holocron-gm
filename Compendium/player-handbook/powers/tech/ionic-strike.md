@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Ionic Strike"
 page_start: 285
 page_end: 285
-tags: ["ion", "ionic-strike", "level-at-will", "power", "tech"]
+tags: ["ion", "ionic-strike", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

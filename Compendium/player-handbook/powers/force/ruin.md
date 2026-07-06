@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Ruin"
 page_start: 261
 page_end: 262
-tags: ["constitution-save", "force", "level-7", "power", "ruin"]
+tags: ["constitution-save", "force", "level-7", "power", "ruin", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

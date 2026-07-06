@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Cryogenic Burst"
 page_start: 274
 page_end: 274
-tags: ["cold", "cryogenic-burst", "level-at-will", "power", "tech"]
+tags: ["cold", "cryogenic-burst", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

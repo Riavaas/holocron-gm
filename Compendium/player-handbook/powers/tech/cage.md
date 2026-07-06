@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Cage"
 page_start: 272
 page_end: 272
-tags: ["cage", "charisma-save", "level-7", "power", "tech"]
+tags: ["cage", "charisma-save", "level-7", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "100 feet"
 duration: "1 hour"
 concentration: false
 save: "Charisma"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

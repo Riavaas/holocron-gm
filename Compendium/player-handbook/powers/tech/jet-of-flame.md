@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Jet Of Flame"
 page_start: 286
 page_end: 286
-tags: ["fire", "jet-of-flame", "level-at-will", "power", "tech"]
+tags: ["fire", "jet-of-flame", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Illusory Strike"
 page_start: 284
 page_end: 284
-tags: ["illusory-strike", "level-at-will", "power", "tech"]
+tags: ["illusory-strike", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

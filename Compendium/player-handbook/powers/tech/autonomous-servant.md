@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Autonomous Servant"
 page_start: 271
 page_end: 272
-tags: ["autonomous-servant", "ion", "kinetic", "level-3", "lightning", "power", "tech"]
+tags: ["autonomous-servant", "ion", "kinetic", "level-3", "lightning", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

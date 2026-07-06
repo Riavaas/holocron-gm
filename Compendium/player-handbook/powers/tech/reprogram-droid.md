@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Reprogram Droid"
 page_start: 293
 page_end: 293
-tags: ["charmed", "level-5", "lightning", "power", "reprogram-droid", "tech", "wisdom-save"]
+tags: ["charmed", "level-5", "lightning", "power", "reprogram-droid", "tech", "wisdom-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "30 days"
 concentration: false
 save: "Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: ["lightning"]
 conditions_inflicted: ["charmed"]
 classes_or_archetypes: []

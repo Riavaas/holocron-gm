@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Enfeeble"
 page_start: 243
 page_end: 243
-tags: ["enfeeble", "force", "level-at-will", "necrotic", "power", "wisdom-save"]
+tags: ["enfeeble", "force", "level-at-will", "necrotic", "power", "wisdom-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: ["necrotic"]
 conditions_inflicted: []
 classes_or_archetypes: []

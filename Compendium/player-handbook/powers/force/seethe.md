@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Seethe"
 page_start: 263
 page_end: 263
-tags: ["force", "level-at-will", "power", "seethe"]
+tags: ["force", "level-at-will", "power", "seethe", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

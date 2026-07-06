@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Absorb Energy"
 page_start: 270
 page_end: 270
-tags: ["absorb-energy", "level-1", "power", "sonic", "tech"]
+tags: ["absorb-energy", "level-1", "power", "sonic", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

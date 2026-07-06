@@ -33,7 +33,7 @@ Apply this as a visible status marker. On each affected creature turn, check whe
 
 ## Related Rules
 
-* [Conditions](../../../../../rules-cards/conditions.md)
+* [Conditions](../../../rules-cards/conditions.md)
 * [Actions in Combat](../../../rules-cards/actions-in-combat.md)
 * [Attack Rolls](../../../rules-cards/attack-rolls.md)
 * [Saving Throws](../../../rules-cards/saving-throws.md)

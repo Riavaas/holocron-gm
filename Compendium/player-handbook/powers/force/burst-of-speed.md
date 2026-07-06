@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Burst Of Speed"
 page_start: 238
 page_end: 238
-tags: ["burst-of-speed", "force", "level-1", "power"]
+tags: ["burst-of-speed", "force", "level-1", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

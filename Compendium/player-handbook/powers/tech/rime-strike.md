@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Rime Strike"
 page_start: 293
 page_end: 293
-tags: ["cold", "level-at-will", "power", "rime-strike", "tech"]
+tags: ["cold", "level-at-will", "power", "rime-strike", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

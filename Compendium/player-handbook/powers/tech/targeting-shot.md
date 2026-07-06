@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Targeting Shot"
 page_start: 299
 page_end: 299
-tags: ["level-at-will", "power", "targeting-shot", "tech"]
+tags: ["level-at-will", "power", "targeting-shot", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

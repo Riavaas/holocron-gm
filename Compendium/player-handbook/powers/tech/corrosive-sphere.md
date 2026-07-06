@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Corrosive Sphere"
 page_start: 274
 page_end: 274
-tags: ["acid", "corrosive-sphere", "dexterity-save", "level-4", "power", "tech"]
+tags: ["acid", "corrosive-sphere", "dexterity-save", "level-4", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "150 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["acid"]
 conditions_inflicted: []
 classes_or_archetypes: []

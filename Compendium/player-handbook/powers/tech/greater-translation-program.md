@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Greater Translation Program"
 page_start: 282
 page_end: 282
-tags: ["greater-translation-program", "level-3", "power", "tech"]
+tags: ["greater-translation-program", "level-3", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

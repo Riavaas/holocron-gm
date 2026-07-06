@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Lock"
 page_start: 287
 page_end: 287
-tags: ["level-2", "lock", "power", "tech"]
+tags: ["level-2", "lock", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Until dispelled"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

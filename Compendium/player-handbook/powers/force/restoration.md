@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Restoration"
 page_start: 261
 page_end: 261
-tags: ["force", "level-2", "power", "restoration"]
+tags: ["force", "level-2", "power", "restoration", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

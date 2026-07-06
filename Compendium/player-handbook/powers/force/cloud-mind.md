@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Cloud Mind"
 page_start: 238
 page_end: 238
-tags: ["cloud-mind", "force", "level-1", "power", "unconscious"]
+tags: ["cloud-mind", "force", "level-1", "power", "unconscious", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "90 feet"
 duration: "1 minute"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["unconscious"]
 classes_or_archetypes: []

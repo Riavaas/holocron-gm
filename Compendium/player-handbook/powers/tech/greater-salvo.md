@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Greater Salvo"
 page_start: 282
 page_end: 282
-tags: ["dexterity-save", "fire", "greater-salvo", "kinetic", "level-9", "power", "tech"]
+tags: ["dexterity-save", "fire", "greater-salvo", "kinetic", "level-9", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["fire", "kinetic"]
 conditions_inflicted: []
 classes_or_archetypes: []

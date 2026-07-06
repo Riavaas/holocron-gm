@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Copy"
 page_start: 274
 page_end: 274
-tags: ["copy", "level-1", "power", "tech"]
+tags: ["copy", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

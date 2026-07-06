@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Wrack"
 page_start: 268
 page_end: 268
-tags: ["constitution-save", "force", "level-6", "necrotic", "power", "wrack"]
+tags: ["constitution-save", "force", "level-6", "necrotic", "power", "wrack", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["necrotic"]
 conditions_inflicted: []
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Spare The Dying"
 page_start: 265
 page_end: 265
-tags: ["force", "level-at-will", "power", "spare-the-dying"]
+tags: ["force", "level-at-will", "power", "spare-the-dying", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

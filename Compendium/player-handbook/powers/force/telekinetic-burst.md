@@ -18,7 +18,7 @@ range: "Self (60-foot line)"
 duration: "Concentration, up to 1 minute"
 concentration: true
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["force"]
 conditions_inflicted: ["prone"]
 classes_or_archetypes: []

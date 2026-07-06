@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Energetic Burst"
 page_start: 278
 page_end: 278
-tags: ["energetic-burst", "level-2", "power", "tech"]
+tags: ["energetic-burst", "level-2", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "10 minutes"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

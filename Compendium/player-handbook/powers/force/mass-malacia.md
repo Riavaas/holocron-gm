@@ -18,7 +18,7 @@ range: "120 feet (30-foot cube)"
 duration: "Concentration, up to 1 minute"
 concentration: true
 save: "Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["charmed", "incapacitated"]
 classes_or_archetypes: []

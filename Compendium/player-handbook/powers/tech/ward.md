@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Ward"
 page_start: 302
 page_end: 302
-tags: ["ion", "level-at-will", "power", "tech", "ward"]
+tags: ["ion", "level-at-will", "power", "tech", "ward", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "1 round"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["ion"]
 conditions_inflicted: []
 classes_or_archetypes: []

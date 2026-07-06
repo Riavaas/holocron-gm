@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Whisper"
 page_start: 250
 page_end: 250
-tags: ["force", "force-whisper", "level-at-will", "power"]
+tags: ["force", "force-whisper", "level-at-will", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "1 round"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

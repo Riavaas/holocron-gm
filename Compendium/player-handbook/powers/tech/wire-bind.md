@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Wire Bind"
 page_start: 302
 page_end: 302
-tags: ["dexterity-save", "level-4", "power", "prone", "restrained", "tech", "wire-bind"]
+tags: ["dexterity-save", "level-4", "power", "prone", "restrained", "tech", "wire-bind", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "1 minute"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["prone", "restrained"]
 classes_or_archetypes: []

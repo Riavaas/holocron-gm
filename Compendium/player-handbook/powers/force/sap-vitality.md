@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Sap Vitality"
 page_start: 262
 page_end: 262
-tags: ["force", "level-1", "necrotic", "power", "sap-vitality"]
+tags: ["force", "level-1", "necrotic", "power", "sap-vitality", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

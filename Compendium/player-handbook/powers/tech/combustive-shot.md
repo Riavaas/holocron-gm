@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Combustive Shot"
 page_start: 273
 page_end: 273
-tags: ["combustive-shot", "fire", "ignited", "level-at-will", "power", "tech"]
+tags: ["combustive-shot", "fire", "ignited", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Improved Phasestrike"
 page_start: 253
 page_end: 253
-tags: ["force", "improved-phasestrike", "level-5", "power"]
+tags: ["force", "improved-phasestrike", "level-5", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

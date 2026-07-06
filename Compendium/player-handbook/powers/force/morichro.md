@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Morichro"
 page_start: 259
 page_end: 259
-tags: ["blinded", "diseased", "force", "level-3", "morichro", "power", "psychic"]
+tags: ["blinded", "diseased", "force", "level-3", "morichro", "power", "psychic", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["psychic"]
 conditions_inflicted: ["blinded", "diseased"]
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Acidic Strike"
 page_start: 270
 page_end: 270
-tags: ["acid", "acidic-strike", "grappled", "level-at-will", "power", "tech"]
+tags: ["acid", "acidic-strike", "grappled", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

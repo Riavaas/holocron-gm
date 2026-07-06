@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Contingency"
 page_start: 274
 page_end: 274
-tags: ["contingency", "level-6", "power", "tech"]
+tags: ["contingency", "level-6", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "10 days"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

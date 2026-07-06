@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Barrier"
 page_start: 244
 page_end: 244
-tags: ["force", "force-barrier", "level-2", "power"]
+tags: ["force", "force-barrier", "level-2", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "8 hours"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

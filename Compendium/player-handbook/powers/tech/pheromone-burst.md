@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Pheromone Burst"
 page_start: 290
 page_end: 290
-tags: ["charisma-save", "frightened", "level-at-will", "pheromone-burst", "poison", "poisoned", "power", "tech"]
+tags: ["charisma-save", "frightened", "level-at-will", "pheromone-burst", "poison", "poisoned", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self (5-foot sphere)"
 duration: "Instantaneous"
 concentration: false
 save: "Charisma"
-attack_roll: false
+attack_roll: true
 damage_types: ["poison"]
 conditions_inflicted: ["frightened", "poisoned"]
 classes_or_archetypes: []

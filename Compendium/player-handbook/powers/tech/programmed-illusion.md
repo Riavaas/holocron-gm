@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Programmed Illusion"
 page_start: 291
 page_end: 291
-tags: ["level-6", "power", "programmed-illusion", "tech"]
+tags: ["level-6", "power", "programmed-illusion", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "Until dispelled"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

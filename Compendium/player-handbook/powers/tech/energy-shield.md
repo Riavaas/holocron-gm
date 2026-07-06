@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Energy Shield"
 page_start: 278
 page_end: 278
-tags: ["energy-shield", "level-1", "power", "tech"]
+tags: ["energy-shield", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

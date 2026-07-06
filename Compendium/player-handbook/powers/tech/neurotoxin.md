@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Neurotoxin"
 page_start: 289
 page_end: 289
-tags: ["constitution-save", "level-7", "neurotoxin", "power", "tech"]
+tags: ["constitution-save", "level-7", "neurotoxin", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

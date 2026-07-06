@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Pyrotechnics"
 page_start: 292
 page_end: 292
-tags: ["blinded", "constitution-save", "level-2", "power", "pyrotechnics", "tech"]
+tags: ["blinded", "constitution-save", "level-2", "power", "pyrotechnics", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["blinded"]
 classes_or_archetypes: []

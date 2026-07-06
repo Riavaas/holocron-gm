@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Warding Shot"
 page_start: 302
 page_end: 302
-tags: ["level-at-will", "power", "tech", "warding-shot"]
+tags: ["level-at-will", "power", "tech", "warding-shot", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Sonic Charge"
 page_start: 264
 page_end: 264
-tags: ["force", "level-at-will", "power", "sonic", "sonic-charge"]
+tags: ["force", "level-at-will", "power", "sonic", "sonic-charge", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

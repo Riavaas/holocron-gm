@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Blinding"
 page_start: 244
 page_end: 244
-tags: ["blinded", "force", "force-blinding", "level-1", "power"]
+tags: ["blinded", "force", "force-blinding", "level-1", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self (15-foot cone)"
 duration: "1 round"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["blinded"]
 classes_or_archetypes: []

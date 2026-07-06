@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Holocron GM Power Card",
+  "type": "object",
+  "required": [
+    "title",
+    "slug",
+    "power_type",
+    "level",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "save",
+    "attack_roll",
+    "damage_types",
+    "conditions_inflicted",
+    "source",
+    "page_start",
+    "page_end",
+    "tags"
+  ],
+  "properties": {
+    "title": { "type": "string" },
+    "slug": { "type": "string" },
+    "power_type": { "type": "string", "enum": ["force", "tech"] },
+    "level": { "type": ["string", "integer"] },
+    "casting_time": { "type": "string" },
+    "range": { "type": "string" },
+    "duration": { "type": "string" },
+    "concentration": { "type": "boolean" },
+    "save": { "type": "string" },
+    "attack_roll": { "type": "boolean" },
+    "damage_types": { "type": "array", "items": { "type": "string" } },
+    "conditions_inflicted": { "type": "array", "items": { "type": "string" } },
+    "source": { "type": "string" },
+    "page_start": { "type": "integer" },
+    "page_end": { "type": "integer" },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

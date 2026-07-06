@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Armor Of Abeloth"
 page_start: 236
 page_end: 236
-tags: ["armor-of-abeloth", "force", "level-1", "power", "psychic"]
+tags: ["armor-of-abeloth", "force", "level-1", "power", "psychic", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

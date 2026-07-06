@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "Concentration, up to 10 minutes"
 concentration: true
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["poison"]
 conditions_inflicted: []
 classes_or_archetypes: []

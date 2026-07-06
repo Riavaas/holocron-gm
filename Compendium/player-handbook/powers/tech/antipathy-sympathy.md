@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Antipathy/sympathy"
 page_start: 271
 page_end: 271
-tags: ["antipathy-sympathy", "frightened", "level-8", "power", "tech", "wisdom-save"]
+tags: ["antipathy-sympathy", "frightened", "level-8", "power", "tech", "wisdom-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "10 days"
 concentration: false
 save: "Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["frightened"]
 classes_or_archetypes: []

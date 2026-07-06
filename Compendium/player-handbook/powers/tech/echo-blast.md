@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Echo Blast"
 page_start: 277
 page_end: 277
-tags: ["echo-blast", "level-at-will", "power", "sonic", "tech", "wisdom-save"]
+tags: ["echo-blast", "level-at-will", "power", "sonic", "tech", "wisdom-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Wisdom"
-attack_roll: false
+attack_roll: true
 damage_types: ["sonic"]
 conditions_inflicted: []
 classes_or_archetypes: []

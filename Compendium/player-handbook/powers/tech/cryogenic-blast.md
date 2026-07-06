@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Cryogenic Blast"
 page_start: 274
 page_end: 274
-tags: ["cold", "cryogenic-blast", "dexterity-save", "kinetic", "level-1", "power", "tech"]
+tags: ["cold", "cryogenic-blast", "dexterity-save", "kinetic", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

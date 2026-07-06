@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Cryogenic Volley"
 page_start: 275
 page_end: 275
-tags: ["cold", "cryogenic-volley", "dexterity-save", "level-2", "power", "tech"]
+tags: ["cold", "cryogenic-volley", "dexterity-save", "level-2", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "90 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["cold"]
 conditions_inflicted: []
 classes_or_archetypes: []

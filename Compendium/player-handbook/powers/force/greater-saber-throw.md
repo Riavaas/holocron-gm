@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Greater Saber Throw"
 page_start: 251
 page_end: 251
-tags: ["constitution-save", "force", "greater-saber-throw", "level-5", "necrotic", "power"]
+tags: ["constitution-save", "force", "greater-saber-throw", "level-5", "necrotic", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

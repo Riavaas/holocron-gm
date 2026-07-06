@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Shock"
 page_start: 263
 page_end: 263
-tags: ["force", "level-at-will", "lightning", "power", "shock"]
+tags: ["force", "level-at-will", "lightning", "power", "shock", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

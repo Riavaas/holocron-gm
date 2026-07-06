@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Improved Saber Throw"
 page_start: 254
 page_end: 254
-tags: ["constitution-save", "force", "improved-saber-throw", "level-2", "power"]
+tags: ["constitution-save", "force", "improved-saber-throw", "level-2", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

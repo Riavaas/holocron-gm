@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Battle Precognition"
 page_start: 237
 page_end: 237
-tags: ["battle-precognition", "force", "level-1", "power"]
+tags: ["battle-precognition", "force", "level-1", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "8 hours"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

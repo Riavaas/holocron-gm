@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Telemetry"
 page_start: 267
 page_end: 267
-tags: ["force", "level-1", "power", "telemetry"]
+tags: ["force", "level-1", "power", "telemetry", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

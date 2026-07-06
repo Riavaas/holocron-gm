@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Tracker Droid Interface"
 page_start: 301
 page_end: 301
-tags: ["level-1", "power", "tech", "tracker-droid-interface"]
+tags: ["level-1", "power", "tech", "tracker-droid-interface", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

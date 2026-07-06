@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Encrypted Message"
 page_start: 278
 page_end: 278
-tags: ["encrypted-message", "level-at-will", "power", "tech"]
+tags: ["encrypted-message", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "1 round"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Precognition"
 page_start: 260
 page_end: 260
-tags: ["force", "level-9", "power", "precognition"]
+tags: ["force", "level-9", "power", "precognition", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

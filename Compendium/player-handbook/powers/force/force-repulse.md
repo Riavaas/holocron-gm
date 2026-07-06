@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Repulse"
 page_start: 248
 page_end: 248
-tags: ["dexterity-save", "force", "force-repulse", "level-3", "power"]
+tags: ["dexterity-save", "force", "force-repulse", "level-3", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self (20-foot radius)"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["force"]
 conditions_inflicted: []
 classes_or_archetypes: []

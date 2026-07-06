@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Concentration, up to 1 minute"
 concentration: true
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["invisible"]
 classes_or_archetypes: []

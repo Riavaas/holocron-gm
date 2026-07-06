@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Carbonite Explosion"
 page_start: 273
 page_end: 273
-tags: ["carbonite-explosion", "cold", "constitution-save", "level-9", "power", "restrained", "tech"]
+tags: ["carbonite-explosion", "cold", "constitution-save", "level-9", "power", "restrained", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "250 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["cold"]
 conditions_inflicted: ["restrained"]
 classes_or_archetypes: []

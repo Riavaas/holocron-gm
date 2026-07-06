@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Will Of The Force"
 page_start: 268
 page_end: 268
-tags: ["force", "level-9", "necrotic", "power", "will-of-the-force"]
+tags: ["force", "level-9", "necrotic", "power", "will-of-the-force", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["necrotic"]
 conditions_inflicted: []
 classes_or_archetypes: []

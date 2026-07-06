@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Toxin Purge"
 page_start: 300
 page_end: 300
-tags: ["level-2", "poison", "poisoned", "power", "tech", "toxin-purge"]
+tags: ["level-2", "poison", "poisoned", "power", "tech", "toxin-purge", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["poison"]
 conditions_inflicted: ["poisoned"]
 classes_or_archetypes: []

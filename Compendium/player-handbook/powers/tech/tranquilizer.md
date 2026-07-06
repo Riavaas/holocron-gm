@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Tranquilizer"
 page_start: 301
 page_end: 301
-tags: ["level-1", "power", "tech", "tranquilizer", "unconscious"]
+tags: ["level-1", "power", "tech", "tranquilizer", "unconscious", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "90 feet"
 duration: "1 minute"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["unconscious"]
 classes_or_archetypes: []

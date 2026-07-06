@@ -18,7 +18,7 @@ range: "Self"
 duration: "Concentration, up to 1 day"
 concentration: true
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["blinded"]
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Illusory Terrain"
 page_start: 284
 page_end: 284
-tags: ["illusory-terrain", "level-4", "power", "tech"]
+tags: ["illusory-terrain", "level-4", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "300 feet"
 duration: "24 hours"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

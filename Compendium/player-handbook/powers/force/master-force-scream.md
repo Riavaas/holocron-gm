@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Master Force Scream"
 page_start: 257
 page_end: 257
-tags: ["constitution-save", "deafened", "force", "level-8", "master-force-scream", "power", "prone", "psychic", "sonic"]
+tags: ["constitution-save", "deafened", "force", "level-8", "master-force-scream", "power", "prone", "psychic", "sonic", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self (60-foot radius)"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["psychic", "sonic"]
 conditions_inflicted: ["deafened", "prone"]
 classes_or_archetypes: []

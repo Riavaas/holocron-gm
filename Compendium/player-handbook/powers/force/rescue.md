@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Rescue"
 page_start: 261
 page_end: 261
-tags: ["force", "level-2", "power", "rescue"]
+tags: ["force", "level-2", "power", "rescue", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

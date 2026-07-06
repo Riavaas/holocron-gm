@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Feedback"
 page_start: 243
 page_end: 243
-tags: ["feedback", "force", "intelligence-save", "level-at-will", "power", "psychic"]
+tags: ["feedback", "force", "intelligence-save", "level-at-will", "power", "psychic", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

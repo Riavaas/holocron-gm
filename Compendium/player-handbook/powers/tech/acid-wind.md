@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Acid Wind"
 page_start: 270
 page_end: 270
-tags: ["acid", "acid-wind", "blinded", "constitution-save", "level-1", "power", "tech"]
+tags: ["acid", "acid-wind", "blinded", "constitution-save", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self (15-foot cube)"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["acid"]
 conditions_inflicted: ["blinded"]
 classes_or_archetypes: []

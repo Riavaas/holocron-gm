@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Leap"
 page_start: 246
 page_end: 246
-tags: ["force", "force-leap", "level-at-will", "power"]
+tags: ["force", "force-leap", "level-at-will", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "1 round"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

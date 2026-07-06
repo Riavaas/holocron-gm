@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Reflect"
 page_start: 248
 page_end: 248
-tags: ["force", "force-reflect", "level-1", "power"]
+tags: ["force", "force-reflect", "level-1", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

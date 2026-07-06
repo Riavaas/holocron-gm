@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Propel"
 page_start: 247
 page_end: 247
-tags: ["dexterity-save", "force", "force-propel", "kinetic", "level-1", "power"]
+tags: ["dexterity-save", "force", "force-propel", "kinetic", "level-1", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: []
 classes_or_archetypes: []

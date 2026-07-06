@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Psychic Charge"
 page_start: 260
 page_end: 260
-tags: ["force", "level-at-will", "power", "psychic", "psychic-charge"]
+tags: ["force", "level-at-will", "power", "psychic", "psychic-charge", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

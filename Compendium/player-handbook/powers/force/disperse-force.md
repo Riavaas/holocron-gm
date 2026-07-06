@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Disperse Force"
 page_start: 241
 page_end: 241
-tags: ["disperse-force", "force", "level-1", "power", "sonic"]
+tags: ["disperse-force", "force", "level-1", "power", "sonic", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

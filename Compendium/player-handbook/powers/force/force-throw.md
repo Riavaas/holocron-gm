@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Throw"
 page_start: 249
 page_end: 249
-tags: ["force", "force-throw", "level-2", "power", "strength-save"]
+tags: ["force", "force-throw", "level-2", "power", "strength-save", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "90 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Strength"
-attack_roll: false
+attack_roll: true
 damage_types: ["force"]
 conditions_inflicted: []
 classes_or_archetypes: []

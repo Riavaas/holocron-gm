@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Salvo"
 page_start: 294
 page_end: 294
-tags: ["dexterity-save", "kinetic", "level-4", "power", "salvo", "tech"]
+tags: ["dexterity-save", "kinetic", "level-4", "power", "salvo", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: []
 classes_or_archetypes: []

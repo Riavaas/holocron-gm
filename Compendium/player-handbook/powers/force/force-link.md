@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Link"
 page_start: 246
 page_end: 246
-tags: ["force", "force-link", "level-8", "power"]
+tags: ["force", "force-link", "level-8", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Unlimited"
 duration: "24 hours"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

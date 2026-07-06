@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Tracer Bolt"
 page_start: 300
 page_end: 300
-tags: ["energy", "level-1", "power", "tech", "tracer-bolt"]
+tags: ["energy", "level-1", "power", "tech", "tracer-bolt", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

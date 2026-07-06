@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Project"
 page_start: 260
 page_end: 260
-tags: ["force", "level-1", "power", "project"]
+tags: ["force", "level-1", "power", "project", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["force"]
 conditions_inflicted: []
 classes_or_archetypes: []

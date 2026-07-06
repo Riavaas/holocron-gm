@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Sound Trick"
 page_start: 265
 page_end: 265
-tags: ["force", "level-at-will", "power", "sound-trick"]
+tags: ["force", "level-at-will", "power", "sound-trick", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "30 feet"
 duration: "1 minute"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

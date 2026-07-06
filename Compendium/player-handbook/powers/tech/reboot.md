@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Reboot"
 page_start: 292
 page_end: 292
-tags: ["charisma-save", "incapacitated", "level-at-will", "power", "reboot", "tech"]
+tags: ["charisma-save", "incapacitated", "level-at-will", "power", "reboot", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "1 round"
 concentration: false
 save: "Charisma"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["incapacitated"]
 classes_or_archetypes: []

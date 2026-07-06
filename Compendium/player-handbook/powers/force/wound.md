@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Wound"
 page_start: 268
 page_end: 268
-tags: ["constitution-save", "force", "level-1", "necrotic", "power", "wound"]
+tags: ["constitution-save", "force", "level-1", "necrotic", "power", "wound", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

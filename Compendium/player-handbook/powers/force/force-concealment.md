@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Concealment"
 page_start: 245
 page_end: 245
-tags: ["force", "force-concealment", "level-2", "power"]
+tags: ["force", "force-concealment", "level-2", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "24 hours"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

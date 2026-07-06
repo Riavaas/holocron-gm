@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Rime Shot"
 page_start: 293
 page_end: 293
-tags: ["cold", "level-at-will", "power", "rime-shot", "tech"]
+tags: ["cold", "level-at-will", "power", "rime-shot", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

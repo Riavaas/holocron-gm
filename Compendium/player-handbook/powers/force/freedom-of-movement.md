@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Freedom Of Movement"
 page_start: 250
 page_end: 250
-tags: ["force", "freedom-of-movement", "level-4", "power"]
+tags: ["force", "freedom-of-movement", "level-4", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

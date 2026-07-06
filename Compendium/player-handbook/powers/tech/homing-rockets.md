@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Homing Rockets"
 page_start: 284
 page_end: 284
-tags: ["fire", "homing-rockets", "level-1", "power", "tech"]
+tags: ["fire", "homing-rockets", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "120 feet"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["fire"]
 conditions_inflicted: []
 classes_or_archetypes: []

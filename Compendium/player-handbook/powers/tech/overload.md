@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Overload"
 page_start: 289
 page_end: 289
-tags: ["dexterity-save", "ion", "level-1", "overload", "power", "tech"]
+tags: ["dexterity-save", "ion", "level-1", "overload", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self (15-foot cube)"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["ion"]
 conditions_inflicted: []
 classes_or_archetypes: []

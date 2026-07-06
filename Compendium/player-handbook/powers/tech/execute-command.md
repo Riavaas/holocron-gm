@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Execute Command"
 page_start: 279
 page_end: 279
-tags: ["execute-command", "intelligence-save", "level-1", "power", "prone", "tech"]
+tags: ["execute-command", "intelligence-save", "level-1", "power", "prone", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "1 round"
 concentration: false
 save: "Intelligence"
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: ["prone"]
 classes_or_archetypes: []

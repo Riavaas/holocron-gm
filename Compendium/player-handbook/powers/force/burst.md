@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Burst"
 page_start: 238
 page_end: 238
-tags: ["burst", "dexterity-save", "force", "kinetic", "level-at-will", "power"]
+tags: ["burst", "dexterity-save", "force", "kinetic", "level-at-will", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "Self (5-foot sphere)"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: []
 classes_or_archetypes: []

@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Greater Analyze"
 page_start: 282
 page_end: 282
-tags: ["greater-analyze", "level-5", "power", "tech"]
+tags: ["greater-analyze", "level-5", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Self"
 duration: "Instantaneous"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

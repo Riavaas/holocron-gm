@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Vortex Shot"
 page_start: 302
 page_end: 302
-tags: ["level-at-will", "power", "strength-save", "tech", "vortex-shot"]
+tags: ["level-at-will", "power", "strength-save", "tech", "vortex-shot", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

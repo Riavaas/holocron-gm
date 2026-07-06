@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Extinguish"
 page_start: 279
 page_end: 279
-tags: ["cold", "constitution-save", "extinguish", "level-at-will", "power", "tech"]
+tags: ["cold", "constitution-save", "extinguish", "level-at-will", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "30 feet (5-foot cube)"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["cold"]
 conditions_inflicted: []
 classes_or_archetypes: []

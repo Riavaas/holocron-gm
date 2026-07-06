@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Shocking Shield"
 page_start: 263
 page_end: 263
-tags: ["force", "level-4", "lightning", "power", "shocking-shield"]
+tags: ["force", "level-4", "lightning", "power", "shocking-shield", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

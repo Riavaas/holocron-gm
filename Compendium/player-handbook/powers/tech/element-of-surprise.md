@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Element Of Surprise"
 page_start: 277
 page_end: 277
-tags: ["dexterity-save", "element-of-surprise", "fire", "level-1", "power", "tech"]
+tags: ["dexterity-save", "element-of-surprise", "fire", "level-1", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["fire"]
 conditions_inflicted: []
 classes_or_archetypes: []

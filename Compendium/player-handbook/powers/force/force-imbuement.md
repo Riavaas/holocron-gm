@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Force Imbuement"
 page_start: 246
 page_end: 246
-tags: ["force", "force-imbuement", "level-at-will", "power"]
+tags: ["force", "force-imbuement", "level-at-will", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

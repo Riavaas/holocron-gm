@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Pressure Crush"
 page_start: 291
 page_end: 291
-tags: ["grappled", "kinetic", "level-at-will", "power", "pressure-crush", "strength-save", "tech"]
+tags: ["grappled", "kinetic", "level-at-will", "power", "pressure-crush", "strength-save", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "Instantaneous"
 concentration: false
 save: "Strength"
-attack_roll: false
+attack_roll: true
 damage_types: ["kinetic"]
 conditions_inflicted: ["grappled"]
 classes_or_archetypes: []

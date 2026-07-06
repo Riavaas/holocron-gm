@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Improved Revitalize"
 page_start: 254
 page_end: 254
-tags: ["force", "improved-revitalize", "level-7", "power"]
+tags: ["force", "improved-revitalize", "level-7", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"

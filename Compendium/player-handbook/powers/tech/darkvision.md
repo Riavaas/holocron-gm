@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Darkvision"
 page_start: 275
 page_end: 275
-tags: ["darkvision", "level-2", "power", "tech"]
+tags: ["darkvision", "level-2", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "8 hours, or until the end of your next short or"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

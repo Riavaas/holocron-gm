@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Poison Dart"
 page_start: 290
 page_end: 290
-tags: ["level-1", "poison", "poison-dart", "power", "tech"]
+tags: ["level-1", "poison", "poison-dart", "power", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"

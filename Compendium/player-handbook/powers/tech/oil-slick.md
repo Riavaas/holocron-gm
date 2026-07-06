@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Oil Slick"
 page_start: 289
 page_end: 289
-tags: ["dexterity-save", "fire", "level-1", "oil-slick", "power", "prone", "tech"]
+tags: ["dexterity-save", "fire", "level-1", "oil-slick", "power", "prone", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "1 minute"
 concentration: false
 save: "Dexterity"
-attack_roll: false
+attack_roll: true
 damage_types: ["fire"]
 conditions_inflicted: ["prone"]
 classes_or_archetypes: []

@@ -18,7 +18,7 @@ range: "Self (30-foot radius)"
 duration: "Concentration, up to 10 minutes"
 concentration: true
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: ["poison"]
 conditions_inflicted: ["diseased"]
 classes_or_archetypes: []

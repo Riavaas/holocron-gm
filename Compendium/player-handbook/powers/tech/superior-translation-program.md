@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Superior Translation Program"
 page_start: 299
 page_end: 299
-tags: ["level-6", "power", "superior-translation-program", "tech"]
+tags: ["level-6", "power", "superior-translation-program", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "Touch"
 duration: "7 days"
 concentration: false
 save: ""
-attack_roll: false
+attack_roll: true
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []

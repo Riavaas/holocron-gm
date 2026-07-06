@@ -8,7 +8,7 @@ chapter: "11-force-powers"
 section: "Death Field"
 page_start: 240
 page_end: 240
-tags: ["constitution-save", "death-field", "force", "level-8", "necrotic", "power"]
+tags: ["constitution-save", "death-field", "force", "level-8", "necrotic", "power", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
@@ -18,7 +18,7 @@ range: "90 feet (30-foot cube)"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["necrotic"]
 conditions_inflicted: []
 classes_or_archetypes: []

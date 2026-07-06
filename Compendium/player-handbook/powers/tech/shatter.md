@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Shatter"
 page_start: 296
 page_end: 296
-tags: ["constitution-save", "level-2", "power", "shatter", "sonic", "tech"]
+tags: ["constitution-save", "level-2", "power", "shatter", "sonic", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
@@ -18,7 +18,7 @@ range: "60 feet"
 duration: "Instantaneous"
 concentration: false
 save: "Constitution"
-attack_roll: false
+attack_roll: true
 damage_types: ["sonic"]
 conditions_inflicted: []
 classes_or_archetypes: []

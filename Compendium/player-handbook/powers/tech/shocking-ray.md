@@ -8,7 +8,7 @@ chapter: "12-tech-powers"
 section: "Shocking Ray"
 page_start: 296
 page_end: 296
-tags: ["ion", "level-2", "power", "shocking-ray", "tech"]
+tags: ["ion", "level-2", "power", "shocking-ray", "tech", "needs_review"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "tech"
