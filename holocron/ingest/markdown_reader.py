@@ -44,10 +44,21 @@ def read_markdown(path) -> MarkdownDocument:
     metadata, body = parse_frontmatter(raw)
     title = str(metadata.get("title") or path.stem)
     knowledge_type = str(metadata.get("knowledge_type") or "campaign_lore")
+    page_start = _optional_int(metadata.get("page_start"))
+    page_end = _optional_int(metadata.get("page_end"))
+    section_title = str(metadata.get("section") or title)
     return MarkdownDocument(
         title=title,
         knowledge_type=knowledge_type,
-        units=[TextUnit(text=clean_text(body), section_title=title)],
+        units=[TextUnit(text=clean_text(body), page_start=page_start, page_end=page_end, section_title=section_title)],
         metadata=metadata,
     )
 
+
+def _optional_int(value: object) -> int | None:
+    if value in (None, "", 0, "0"):
+        return None
+    try:
+        return int(str(value))
+    except ValueError:
+        return None

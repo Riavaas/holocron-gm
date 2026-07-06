@@ -4,6 +4,8 @@ Holocron GM is a local-first Game Master rules encyclopedia for a Star Wars 5e /
 
 It reads local files from `Books/`, extracts searchable chunks, stores them in SQLite, and exposes a FastAPI API with source citations.
 
+`Compendium/` contains structured markdown summaries and rule cards derived from local books. It is safe to commit because it is concise, cited, and not a verbatim copy.
+
 ## Why PDFs Are Not Committed
 
 SW5e books and campaign source material stay on your machine. Git ignores PDFs under `Books/` and local databases under `data/`.
@@ -43,11 +45,34 @@ Default knowledge types:
 - PDF: `sw5e_rules`
 - Markdown: `campaign_lore`
 
+## Build Compendium
+
+Build the Player Handbook table of contents and starter compendium pages:
+
+```bash
+python3 scripts/build_compendium.py --book player-handbook
+```
+
+Useful options:
+
+```bash
+python3 scripts/build_compendium.py --book player-handbook --toc-only
+python3 scripts/build_compendium.py --book player-handbook --chapter 7
+python3 scripts/build_compendium.py --book player-handbook --dry-run
+```
+
+Difference:
+
+- `Books/`: local source PDFs and notes. PDFs are ignored and not committed.
+- `Compendium/`: concise markdown summaries, rule cards, indexes, citations, and navigation.
+
 ## Index Books
 
 ```bash
 python scripts/ingest_books.py
 ```
+
+This indexes both `Books/` and `Compendium/`.
 
 SQLite database:
 
@@ -101,6 +126,12 @@ python scripts/ingest_books.py
 
 Claude or another LLM should call `/api/rules/search` first, then answer only from returned chunks. Rules answers must include citations. If no source is found, say the rule is absent and keep GM suggestions clearly separate.
 
+Workflow:
+
+1. Codex builds or updates concise compendium markdown.
+2. Run ingestion to index PDFs, notes, and compendium pages.
+3. Claude uses `/api/rules/search` and cited chunks instead of reading whole PDFs.
+
 ## Known Limits
 
 - No OCR yet for scanned PDFs.
@@ -113,4 +144,3 @@ Claude or another LLM should call `/api/rules/search` first, then answer only fr
 ```bash
 pytest
 ```
-

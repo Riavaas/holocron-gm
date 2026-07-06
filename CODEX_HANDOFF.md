@@ -15,6 +15,9 @@ Initial Holocron GM rules encyclopedia is implemented.
 - Chunking with source/page/section metadata.
 - FastAPI endpoints for health, ingestion, sources, search, chunks, and extractive ask.
 - Tests for chunking, markdown ingestion, search, API, no-result behavior, citations, and gitignore.
+- Player Handbook compendium builder added.
+- Starter `Compendium/player-handbook` generated with TOC, chapter stubs, intro summaries, rule cards, and indexes.
+- Ingestion now indexes both `Books/` and `Compendium/`.
 
 ## Run
 
@@ -26,6 +29,12 @@ python scripts/ingest_books.py
 uvicorn holocron.api.main:app --reload
 ```
 
+Build compendium:
+
+```bash
+python3 scripts/build_compendium.py --book player-handbook
+```
+
 ## Tests
 
 ```bash
@@ -35,9 +44,9 @@ pytest
 ## Next Work
 
 - Improve PDF section detection.
+- Expand Player Handbook compendium section by section without copying full text.
 - Add OCR option for scanned pages.
 - Add campaign note CRUD.
 - Add UI GM dashboard.
 - Add map upload and token layers.
 - Add combat tracker, NPCs, loot, and player view.
-

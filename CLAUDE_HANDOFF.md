@@ -8,6 +8,8 @@ Source files live in `Books/`. Ingestion extracts text, chunks it, and stores me
 
 Search uses SQLite FTS5 over chunk content, source title, and section title.
 
+`Compendium/` contains concise markdown summaries, rule cards, indexes, and page citations. It is for navigation and UI support, not a replacement for the source PDFs.
+
 ## API
 
 - `GET /health`
@@ -28,6 +30,8 @@ For rules Q&A:
 5. Always display citations for rules.
 6. If no result exists, say the source is absent and keep GM suggestions separate.
 
+Claude should not read or summarize whole PDFs directly. Use indexed API results first. Compendium markdown can help navigation and frontend display, but rules answers still need source/page citations.
+
 ## Future Features
 
 - Campaign dashboard
@@ -37,4 +41,3 @@ For rules Q&A:
 - Loot
 - NPCs
 - Player view
-

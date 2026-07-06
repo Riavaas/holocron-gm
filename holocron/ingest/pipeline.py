@@ -2,7 +2,7 @@ from pathlib import Path
 import hashlib
 
 from holocron.core.config import settings
-from holocron.core.paths import BOOKS_DIR
+from holocron.core.paths import BOOKS_DIR, COMPENDIUM_DIR
 from holocron.db.database import get_connection
 from holocron.ingest.chunker import chunk_units
 from holocron.ingest.markdown_reader import read_markdown
@@ -21,13 +21,19 @@ def document_id_for(path: Path, digest: str) -> str:
     return hashlib.sha256(f"{path.name}:{digest}".encode("utf-8")).hexdigest()
 
 
-def discover_books(books_dir: Path = BOOKS_DIR) -> list[Path]:
-    if not books_dir.exists():
-        return []
+def discover_books(books_dir: Path | None = None) -> list[Path]:
+    source_dirs = [books_dir] if books_dir is not None else [BOOKS_DIR, COMPENDIUM_DIR]
+    paths: list[Path] = []
+    for source_dir in source_dirs:
+        if source_dir is None or not source_dir.exists():
+            continue
+        paths.extend(
+            path
+            for path in source_dir.rglob("*")
+            if path.is_file() and path.suffix.lower() in {".pdf", ".md", ".markdown"}
+        )
     return sorted(
-        path
-        for path in books_dir.rglob("*")
-        if path.is_file() and path.suffix.lower() in {".pdf", ".md", ".markdown"}
+        paths
     )
 
 
@@ -84,8 +90,12 @@ def _replace_chunks(conn, *, doc_id: str, title: str, filename: str, chunks, kno
         )
 
 
-def ingest_books(books_dir: Path = BOOKS_DIR) -> dict[str, object]:
-    books_dir.mkdir(parents=True, exist_ok=True)
+def ingest_books(books_dir: Path | None = None) -> dict[str, object]:
+    if books_dir is not None:
+        books_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        BOOKS_DIR.mkdir(parents=True, exist_ok=True)
+        COMPENDIUM_DIR.mkdir(parents=True, exist_ok=True)
     seen = skipped = ingested = 0
     weak_pages: dict[str, list[int]] = {}
 
@@ -127,4 +137,3 @@ def ingest_books(books_dir: Path = BOOKS_DIR) -> dict[str, object]:
             ingested += 1
 
     return {"seen": seen, "ingested": ingested, "skipped": skipped, "weak_pages": weak_pages}
-
