@@ -59,3 +59,11 @@ verbatim_risk: "low"
 | Weapon Properties | Special weapon handling rules. | [Weapon Properties](../rules-cards/weapon-properties.md) | 171-172 | `properties,weapons` |
 | Explosives | Grenades, mines, and detonators. | [Explosives](../rules-cards/explosives.md) | 177 | `explosives` |
 | Tools | Tool proficiency and kits. | [Tools](../rules-cards/tools.md) | 182 | `tools` |
+
+## Power Lookup
+
+| Rule | Short Description | File | Pages | Tags |
+|---|---|---|---:|---|
+| Force Powers | Individual Force power cards. | [Force Powers](../powers/force/index.md) | 235-268 | `force`, `powers` |
+| Tech Powers | Individual Tech power cards. | [Tech Powers](../powers/tech/index.md) | 269-302 | `tech`, `powers` |
+| Power Cards | Combined power lookup. | [Power Cards](../powers/index.md) | 236-302 | `powers`, `metadata` |

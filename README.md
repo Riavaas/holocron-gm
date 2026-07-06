@@ -6,7 +6,7 @@ It reads local files from `Books/`, extracts searchable chunks, stores them in S
 
 `Compendium/` contains structured markdown summaries and rule cards derived from local books. It is safe to commit because it is concise, cited, and not a verbatim copy.
 
-Current Player Handbook coverage includes starter Introduction material, core session rules from chapters 7-9, conditions, Force/Tech casting, and equipment overview pages.
+Current Player Handbook coverage includes starter Introduction material, core session rules from chapters 7-9, conditions, Force/Tech casting, equipment overview pages, and individual Force/Tech power cards.
 
 ## Why PDFs Are Not Committed
 

@@ -58,3 +58,10 @@ verbatim_risk: "low"
 | 232 | Concentration | [Concentration](../rules-cards/concentration.md) | `concentration` |
 | 233 | Targets and Areas | [Targets and Areas](../casting/targets-and-areas.md) | `targets` |
 | 311-312 | Conditions | [Conditions](../conditions/index.md) | `conditions` |
+
+## Power Pages
+
+| Pages | Section | File | Tags |
+|---:|---|---|---|
+| 235-268 | Force Powers | [Force Powers](../powers/force/index.md) | `force`, `powers` |
+| 269-302 | Tech Powers | [Tech Powers](../powers/tech/index.md) | `tech`, `powers` |

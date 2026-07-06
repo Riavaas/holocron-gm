@@ -93,3 +93,18 @@ Use [Conditions](../rules-cards/conditions.md) as combat tracker status flags. T
 * Weapons: check proficiency, range, ammunition, and [Weapon Properties](../rules-cards/weapon-properties.md).
 * Explosives: confirm trigger, placement, area, save or attack, and ally exposure.
 * Medical/repair gear: ask what supply or tool is used, then decide if it enables the attempt, lowers DC, or grants proficiency.
+
+## Power Lookup Quick Flow
+
+1. Search the power name first.
+2. Open the power card and confirm level, casting time, range, duration, concentration, save, attack roll, damage, and conditions.
+3. Use the cited source page for exact effect text.
+4. Add concentration, duration, conditions, save DC, attack roll, damage, target, and area to the combat tracker.
+
+## When a Player Casts a Power
+
+* Confirm known power and resource spend.
+* Confirm [Casting Time](../rules-cards/casting-time.md), [Power Targets](../rules-cards/power-targets.md), and [Power Duration](../rules-cards/power-duration.md).
+* Use [Power Save DC](../rules-cards/power-save-dc.md) or [Power Attack Rolls](../rules-cards/power-attack-rolls.md).
+* Track [Concentration](../rules-cards/concentration.md) and durations immediately.
+* For area powers, place the origin and shape before rolling saves.

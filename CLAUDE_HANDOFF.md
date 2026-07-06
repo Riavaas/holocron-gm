@@ -14,6 +14,8 @@ Player Handbook chapters 7-9 are available as compendium markdown for UI and Cla
 
 Conditions, Force/Tech Casting, and Equipment overview pages are also available as compendium markdown with rule cards and page citations.
 
+Force power cards and Tech power cards are available under `Compendium/player-handbook/powers/`. Each card includes power metadata for future UI filters: level, casting time, range, duration, concentration, save, attack roll, damage types, and conditions.
+
 ## API
 
 - `GET /health`

@@ -69,3 +69,10 @@ verbatim_risk: "low"
 * **Explosive**: see rules index and page index for linked references.
 * **Medical Supplies**: see rules index and page index for linked references.
 * **Tool**: see rules index and page index for linked references.
+
+## Power Terms
+
+* **Force Power**: a Forcecasting power card under `powers/force`.
+* **Tech Power**: a Techcasting power card under `powers/tech`.
+* **Power Level**: at-will or leveled power metadata used by UI filters.
+* **Power Metadata**: casting time, range, duration, concentration, save, attack roll, damage, and conditions.
