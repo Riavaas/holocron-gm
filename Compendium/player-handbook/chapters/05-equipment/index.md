@@ -8,7 +8,7 @@ chapter: "Equipment"
 section: "Equipment"
 page_start: 167
 page_end: 184
-tags: ["equipment", "player-handbook"]
+tags: ["equipment", "gear", "wealth"]
 status: "draft"
 verbatim_risk: "low"
 ---
@@ -23,21 +23,30 @@ verbatim_risk: "low"
 
 ## Summary
 
-Draft navigation stub. This chapter is identified from the PDF table of contents and is ready for section-level compendium work.
+Equipment covers wealth, armor, weapons, adventuring gear, tools, expenses, services, and item categories used by characters.
 
 ## Key Rules
 
-* To be summarized from source pages during review.
+* Equipment proficiency determines effective use.
+* Armor and shields affect AC and mobility.
+* Weapons use categories and properties.
+* Gear enables exploration, survival, communication, medicine, repair, and utility.
 
 ## GM Use
 
-Use this page as the chapter landing point for future rule cards, tables, and section summaries.
+Use equipment pages to answer quick item questions without opening the full PDF table.
+
+## Common Rulings
+
+* If an item table is large, use the source pages for exact cost and weight.
+* If a player improvises gear use, resolve with tools, checks, or item limits.
 
 ## Related
 
-* [Book Index](../../index.md)
-* [Table of Contents](../../toc.md)
+* [Equipment Index](../../equipment/index.md)
+* [Ability Checks](../../rules-cards/ability-checks.md)
+* [Attack Rolls](../../rules-cards/attack-rolls.md)
 
 ## Search Tags
 
-`equipment`, `player-handbook`
+`equipment`, `gear`, `wealth`

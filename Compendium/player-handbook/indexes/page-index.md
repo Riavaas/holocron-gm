@@ -45,3 +45,16 @@ verbatim_risk: "low"
 | 228-229 | Dropping to 0 HP and Death | [Dropping to 0 HP and Death](../chapters/09-combat/zero-hp-and-death.md) | `0-hp`, `death-saves` |
 | 229 | Mounted and Underwater Combat | [Mounted and Underwater Combat](../chapters/09-combat/mounted-and-underwater-combat.md) | `mounted`, `underwater` |
 
+## Conditions, Casting, and Equipment Pages
+
+| Pages | Section | File | Tags |
+|---:|---|---|---|
+| 167-184 | Equipment | [Equipment](../chapters/05-equipment/index.md) | `equipment` |
+| 168-170 | Armor and Shields | [Armor and Shields](../equipment/armor-and-shields.md) | `armor` |
+| 171-174 | Weapons | [Weapons](../equipment/weapons.md) | `weapons` |
+| 177 | Explosives | [Explosives](../equipment/explosives.md) | `explosives` |
+| 182 | Tools | [Tools](../equipment/tools.md) | `tools` |
+| 231-234 | Force and Tech Casting | [Force and Tech Casting](../chapters/10-force-and-tech-casting/index.md) | `casting` |
+| 232 | Concentration | [Concentration](../rules-cards/concentration.md) | `concentration` |
+| 233 | Targets and Areas | [Targets and Areas](../casting/targets-and-areas.md) | `targets` |
+| 311-312 | Conditions | [Conditions](../conditions/index.md) | `conditions` |

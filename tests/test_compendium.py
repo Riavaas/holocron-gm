@@ -38,6 +38,13 @@ def test_compendium_markdown_exists_and_has_frontmatter():
         Path("Compendium/player-handbook/rules-cards/short-rest.md"),
         Path("Compendium/player-handbook/rules-cards/cover.md"),
         Path("Compendium/player-handbook/rules-cards/death-saving-throws.md"),
+        Path("Compendium/player-handbook/conditions/stunned.md"),
+        Path("Compendium/player-handbook/conditions/restrained.md"),
+        Path("Compendium/player-handbook/rules-cards/concentration.md"),
+        Path("Compendium/player-handbook/rules-cards/forcecasting.md"),
+        Path("Compendium/player-handbook/rules-cards/techcasting.md"),
+        Path("Compendium/player-handbook/equipment/explosives.md"),
+        Path("Compendium/player-handbook/rules-cards/weapon-properties.md"),
     ]
 
     for path in required_files:
@@ -58,6 +65,13 @@ def test_compendium_ingestion_and_search(tmp_path, monkeypatch):
         "saving-throws.md": ("Saving Throws", "Using Ability Scores", "Saving Throws", 214, "Saving throws resist danger and harmful effects."),
         "short-rest.md": ("Short Rest", "Adventuring", "Short Rest", 219, "A short rest is a limited recovery break."),
         "cover.md": ("Cover", "Combat", "Cover", 226, "Cover protects targets when obstacles block attacks."),
+        "concentration.md": ("Concentration", "Force and Tech Casting", "Concentration", 232, "Concentration maintains a power over time."),
+        "forcecasting.md": ("Forcecasting", "Force and Tech Casting", "Forcecasting", 231, "Forcecasting uses Force powers."),
+        "techcasting.md": ("Techcasting", "Force and Tech Casting", "Techcasting", 231, "Techcasting uses tech powers."),
+        "explosives.md": ("Explosives", "Equipment", "Explosives", 177, "Explosives include grenades and mines."),
+        "weapon-properties.md": ("Weapon Properties", "Equipment", "Weapon Properties", 171, "Weapon properties change weapon handling."),
+        "restrained.md": ("Restrained", "Appendix A: Conditions", "Restrained", 312, "Restrained restricts movement and defenses."),
+        "stunned.md": ("Stunned", "Appendix A: Conditions", "Stunned", 312, "Stunned prevents normal actions and reactions."),
     }
     for filename, (title, chapter, section, page, body) in cards.items():
         (compendium / "player-handbook" / "rules-cards" / filename).write_text(
@@ -112,7 +126,7 @@ Advantage uses the higher d20. Disadvantage uses the lower d20.
     results = search_chunks("advantage disadvantage", 5)
     answer = answer_question("cover", 3)
 
-    assert result["seen"] == 5
+    assert result["seen"] == 12
     assert results
     assert results[0]["knowledge_type"] == "sw5e_compendium"
     assert results[0]["source_title"] == "Advantage and Disadvantage"
@@ -122,6 +136,13 @@ Advantage uses the higher d20. Disadvantage uses the lower d20.
     assert search_chunks('"saving throws"', 5)
     assert search_chunks('"short rest"', 5)
     assert search_chunks("cover", 5)
+    assert search_chunks("stunned", 5)
+    assert search_chunks("restrained", 5)
+    assert search_chunks("concentration", 5)
+    assert search_chunks("forcecasting", 5)
+    assert search_chunks("techcasting", 5)
+    assert search_chunks("explosives", 5)
+    assert search_chunks('"weapon properties"', 5)
     assert answer.found is True
     assert answer.citations
     assert answer.citations[0].source_filename.endswith(".md")

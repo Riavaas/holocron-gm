@@ -75,3 +75,21 @@ verbatim_risk: "low"
 5. Tell the player the visible stakes.
 6. Roll once and move the scene forward.
 
+## Conditions Quick Table
+
+Use [Conditions](../rules-cards/conditions.md) as combat tracker status flags. Track source, duration, save timing, and removal trigger.
+
+## Casting Quick Flow
+
+1. Confirm Force or tech power.
+2. Confirm known power, points, level, prerequisites, and casting focus if relevant.
+3. Check [Casting Time](../rules-cards/casting-time.md), [Range/Targets](../rules-cards/power-targets.md), and [Duration](../rules-cards/power-duration.md).
+4. Resolve [Power Save DC](../rules-cards/power-save-dc.md) or [Power Attack Rolls](../rules-cards/power-attack-rolls.md).
+5. Track [Concentration](../rules-cards/concentration.md) and ongoing effects.
+
+## Equipment Quick Rulings
+
+* Armor: confirm proficiency, armor category, shield state, and don/doff timing.
+* Weapons: check proficiency, range, ammunition, and [Weapon Properties](../rules-cards/weapon-properties.md).
+* Explosives: confirm trigger, placement, area, save or attack, and ally exposure.
+* Medical/repair gear: ask what supply or tool is used, then decide if it enables the attempt, lowers DC, or grants proficiency.

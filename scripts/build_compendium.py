@@ -292,6 +292,8 @@ def create_structure(root: Path, dry_run: bool) -> None:
         root / BOOK_KEY / "tables",
         root / BOOK_KEY / "powers",
         root / BOOK_KEY / "equipment",
+        root / BOOK_KEY / "casting",
+        root / BOOK_KEY / "conditions",
         root / BOOK_KEY / "species",
         root / BOOK_KEY / "classes",
         root / BOOK_KEY / "indexes",
@@ -544,7 +546,17 @@ def build(args: argparse.Namespace) -> None:
         if args.chapter in (None, 0):
             build_starter_docs(book_root, args.dry_run)
         build_indexes(book_root, args.dry_run)
-    print({"book": args.book, "toc_entries": len(toc), "pdf": str(pdf_path), "dry_run": args.dry_run, "force": args.force})
+    print(
+        {
+            "book": args.book,
+            "toc_entries": len(toc),
+            "pdf": str(pdf_path),
+            "dry_run": args.dry_run,
+            "force": args.force,
+            "appendix": args.appendix,
+            "section": args.section,
+        }
+    )
 
 
 def main() -> None:
@@ -552,6 +564,8 @@ def main() -> None:
     parser.add_argument("--book", default=BOOK_KEY)
     parser.add_argument("--toc-only", action="store_true")
     parser.add_argument("--chapter", type=int, default=None)
+    parser.add_argument("--appendix", default=None)
+    parser.add_argument("--section", default=None)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
     build(parser.parse_args())

@@ -8,7 +8,7 @@ chapter: "Force and Tech Casting"
 section: "Force and Tech Casting"
 page_start: 231
 page_end: 234
-tags: ["force-and-tech-casting", "player-handbook"]
+tags: ["forcecasting", "techcasting", "powers"]
 status: "draft"
 verbatim_risk: "low"
 ---
@@ -19,25 +19,35 @@ verbatim_risk: "low"
 
 * Book: SW5e Player's Handbook
 * Pages: 231-234
-* Original section: Force and Tech Casting
+* Original section: Chapter 10: Force- and Tech-casting
 
 ## Summary
 
-Draft navigation stub. This chapter is identified from the PDF table of contents and is ready for section-level compendium work.
+This chapter explains the shared framework for Force and tech powers: known powers, points, casting time, range, duration, concentration, targets, areas, saving throws, attack rolls, and combining effects.
 
 ## Key Rules
 
-* To be summarized from source pages during review.
+* Confirm whether the power is Force or tech.
+* Check known powers, resource points, level, and prerequisites.
+* Resolve action timing, range, duration, targets, and area.
+* Use the power save DC or power attack modifier when required.
+* Track concentration and ongoing effects.
 
 ## GM Use
 
-Use this page as the chapter landing point for future rule cards, tables, and section summaries.
+Use this chapter as the casting checklist during live play.
+
+## Common Rulings
+
+* If a power use is unclear, apply the written limits first: timing, range, target, duration, and components/prerequisites.
+* If the fiction supports a creative use, give it a check or limited effect rather than rewriting the power.
 
 ## Related
 
-* [Book Index](../../index.md)
-* [Table of Contents](../../toc.md)
+* [Concentration](../../rules-cards/concentration.md)
+* [Power Save DC](../../rules-cards/power-save-dc.md)
+* [Power Attack Rolls](../../rules-cards/power-attack-rolls.md)
 
 ## Search Tags
 
-`force-and-tech-casting`, `player-handbook`
+`casting`, `forcecasting`, `techcasting`, `powers`

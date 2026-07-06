@@ -18,6 +18,7 @@ Initial Holocron GM rules encyclopedia is implemented.
 - Player Handbook compendium builder added.
 - Starter `Compendium/player-handbook` generated with TOC, chapter stubs, intro summaries, rule cards, and indexes.
 - Player Handbook chapters 7-9 expanded with summarized section pages, GM rulings, rule cards, and indexes.
+- Player Handbook conditions, Force/Tech casting, and equipment overview added with rule cards and lookup indexes.
 - Ingestion now indexes both `Books/` and `Compendium/`.
 
 ## Run
@@ -45,7 +46,7 @@ pytest
 ## Next Work
 
 - Improve PDF section detection.
-- Expand Player Handbook compendium into Equipment, Conditions, Force/Tech Casting, then powers without copying full text.
+- Expand Player Handbook compendium into individual Force Powers, Tech Powers, maneuvers, and selected equipment tables without copying full text.
 - Add OCR option for scanned pages.
 - Add campaign note CRUD.
 - Add UI GM dashboard.

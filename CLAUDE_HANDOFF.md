@@ -12,6 +12,8 @@ Search uses SQLite FTS5 over chunk content, source title, and section title.
 
 Player Handbook chapters 7-9 are available as compendium markdown for UI and Claude navigation: Using Ability Scores, Adventuring, and Combat.
 
+Conditions, Force/Tech Casting, and Equipment overview pages are also available as compendium markdown with rule cards and page citations.
+
 ## API
 
 - `GET /health`
@@ -32,7 +34,7 @@ For rules Q&A:
 5. Always display citations for rules.
 6. If no result exists, say the source is absent and keep GM suggestions separate.
 
-Claude should not read or summarize whole PDFs directly. Use indexed API results first. Compendium markdown can help navigation and frontend display, but rules answers still need source/page citations.
+Claude should not read or summarize whole PDFs directly. Use `/api/rules/search` and cite source/page. Compendium markdown can help navigation and frontend display, but rules answers still need source/page citations.
 
 ## Future Features
 

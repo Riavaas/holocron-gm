@@ -44,3 +44,18 @@ verbatim_risk: "low"
 | Death Saving Throws | Dying character saves. | [Death Saving Throws](../rules-cards/death-saving-throws.md) | 228-229 | `death-save`, `dying` |
 | Conditions in Combat | Status effects in combat. | [Conditions in Combat](../rules-cards/conditions-in-combat.md) | 221-230 | `conditions`, `combat` |
 
+## Conditions, Casting, and Equipment
+
+| Rule | Short Description | File | Pages | Tags |
+|---|---|---|---:|---|
+| Conditions | Named status effects for combat and hazards. | [Conditions](../rules-cards/conditions.md) | 311-312 | `conditions,status` |
+| Concentration | Maintain ongoing powers. | [Concentration](../rules-cards/concentration.md) | 232 | `casting,duration` |
+| Forcecasting | Force power casting framework. | [Forcecasting](../rules-cards/forcecasting.md) | 231-233 | `force,powers` |
+| Techcasting | Tech power casting framework. | [Techcasting](../rules-cards/techcasting.md) | 231-233 | `tech,powers` |
+| Power Save DC | Save target for powers. | [Power Save DC](../rules-cards/power-save-dc.md) | 233 | `dc,saves` |
+| Power Attack Rolls | Attack rolls made by powers. | [Power Attack Rolls](../rules-cards/power-attack-rolls.md) | 233 | `attacks,powers` |
+| Armor and Shields | Equipment-based defense. | [Armor and Shields](../equipment/armor-and-shields.md) | 168-170 | `armor,shields` |
+| Weapons | Weapon categories and use. | [Weapons](../equipment/weapons.md) | 171-174 | `weapons` |
+| Weapon Properties | Special weapon handling rules. | [Weapon Properties](../rules-cards/weapon-properties.md) | 171-172 | `properties,weapons` |
+| Explosives | Grenades, mines, and detonators. | [Explosives](../rules-cards/explosives.md) | 177 | `explosives` |
+| Tools | Tool proficiency and kits. | [Tools](../rules-cards/tools.md) | 182 | `tools` |

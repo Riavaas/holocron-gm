@@ -38,3 +38,34 @@ verbatim_risk: "low"
 | Advantage | Roll two d20s and use the higher. | [Advantage and Disadvantage](../rules-cards/advantage-and-disadvantage.md) |
 | Disadvantage | Roll two d20s and use the lower. | [Advantage and Disadvantage](../rules-cards/advantage-and-disadvantage.md) |
 
+## Conditions, Casting, and Equipment Terms
+
+* **Forcecasting**: see rules index and page index for linked references.
+* **Techcasting**: see rules index and page index for linked references.
+* **Force Point**: see rules index and page index for linked references.
+* **Tech Point**: see rules index and page index for linked references.
+* **Concentration**: see rules index and page index for linked references.
+* **Casting Time**: see rules index and page index for linked references.
+* **Duration**: see rules index and page index for linked references.
+* **Target**: see rules index and page index for linked references.
+* **Area Of Effect**: see rules index and page index for linked references.
+* **Condition**: see rules index and page index for linked references.
+* **Blinded**: see rules index and page index for linked references.
+* **Charmed**: see rules index and page index for linked references.
+* **Frightened**: see rules index and page index for linked references.
+* **Grappled**: see rules index and page index for linked references.
+* **Incapacitated**: see rules index and page index for linked references.
+* **Invisible**: see rules index and page index for linked references.
+* **Paralyzed**: see rules index and page index for linked references.
+* **Poisoned**: see rules index and page index for linked references.
+* **Prone**: see rules index and page index for linked references.
+* **Restrained**: see rules index and page index for linked references.
+* **Stunned**: see rules index and page index for linked references.
+* **Unconscious**: see rules index and page index for linked references.
+* **Armor**: see rules index and page index for linked references.
+* **Shield**: see rules index and page index for linked references.
+* **Weapon Property**: see rules index and page index for linked references.
+* **Ammunition**: see rules index and page index for linked references.
+* **Explosive**: see rules index and page index for linked references.
+* **Medical Supplies**: see rules index and page index for linked references.
+* **Tool**: see rules index and page index for linked references.
