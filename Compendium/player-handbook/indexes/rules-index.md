@@ -67,3 +67,10 @@ verbatim_risk: "low"
 | Force Powers | Individual Force power cards. | [Force Powers](../powers/force/index.md) | 235-268 | `force`, `powers` |
 | Tech Powers | Individual Tech power cards. | [Tech Powers](../powers/tech/index.md) | 269-302 | `tech`, `powers` |
 | Power Cards | Combined power lookup. | [Power Cards](../powers/index.md) | 236-302 | `powers`, `metadata` |
+
+## Maneuver Lookup
+
+| Rule | Short Description | File | Pages | Tags |
+|---|---|---|---:|---|
+| Maneuvers | Chapter 13 maneuver navigation. | [Maneuvers](../chapters/13-maneuvers/index.md) | 303-310 | `maneuver`, `superiority-die` |
+| Maneuver Cards | Individual maneuver lookup cards. | [Maneuver Cards](../maneuvers/index.md) | 303-310 | `maneuver`, `metadata` |

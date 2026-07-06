@@ -76,3 +76,10 @@ verbatim_risk: "low"
 * **Tech Power**: a Techcasting power card under `powers/tech`.
 * **Power Level**: at-will or leveled power metadata used by UI filters.
 * **Power Metadata**: casting time, range, duration, concentration, save, attack roll, damage, and conditions.
+
+## Maneuver Terms
+
+* **Maneuver**: a Chapter 13 superiority die option under `maneuvers/`.
+* **Superiority Die**: the resource spent or rolled by most maneuver cards.
+* **Maneuver Type**: General, Mental, or Physical.
+* **Maneuver Metadata**: activation, range, duration, save, attack roll, damage, conditions, resource cost, and prerequisites.

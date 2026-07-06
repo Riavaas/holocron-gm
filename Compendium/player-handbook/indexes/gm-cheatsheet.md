@@ -108,3 +108,19 @@ Use [Conditions](../rules-cards/conditions.md) as combat tracker status flags. T
 * Use [Power Save DC](../rules-cards/power-save-dc.md) or [Power Attack Rolls](../rules-cards/power-attack-rolls.md).
 * Track [Concentration](../rules-cards/concentration.md) and durations immediately.
 * For area powers, place the origin and shape before rolling saves.
+
+## Maneuver Lookup Quick Flow
+
+1. Search the maneuver name first.
+2. Open the maneuver card and confirm type, prerequisite, activation, resource cost, range, duration, save, attack roll, damage, and conditions.
+3. Use the cited source page for exact effect text and edge cases.
+4. Add the superiority die spend, trigger, save DC, attack interaction, damage, condition, and duration to the combat tracker.
+
+## When a Player Uses a Maneuver
+
+* Confirm the character has the maneuver, a superiority die, and any listed prerequisite.
+* Resolve activation timing before applying the die: action, bonus action, reaction, no-action trigger, attack hit, attack roll, saving throw, or skill check.
+* If the card lists a save, use the maneuver user's save DC and apply success/failure effects from the cited page.
+* If the card modifies an attack, decide whether the die is added before or after the roll according to the card/source.
+* Track spent superiority dice, temporary hit points, forced movement, extra movement, conditions, and end-of-turn/start-of-turn expiry.
+* For common rulings, separate the triggering roll from the maneuver rider; the trigger must be legal before the rider resolves.

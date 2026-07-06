@@ -65,3 +65,10 @@ verbatim_risk: "low"
 |---:|---|---|---|
 | 235-268 | Force Powers | [Force Powers](../powers/force/index.md) | `force`, `powers` |
 | 269-302 | Tech Powers | [Tech Powers](../powers/tech/index.md) | `tech`, `powers` |
+
+## Maneuver Pages
+
+| Pages | Section | File | Tags |
+|---:|---|---|---|
+| 303-310 | Maneuvers | [Maneuvers](../chapters/13-maneuvers/index.md) | `maneuver`, `superiority-die` |
+| 303-310 | Maneuver Cards | [Maneuver Cards](../maneuvers/index.md) | `maneuver`, `metadata` |

@@ -89,6 +89,7 @@ def test_compendium_ingestion_and_search(tmp_path, monkeypatch):
     compendium = tmp_path / "Compendium"
     books.mkdir()
     (compendium / "player-handbook" / "rules-cards").mkdir(parents=True)
+    (compendium / "player-handbook" / "maneuvers").mkdir(parents=True)
     cards = {
         "initiative.md": ("Initiative", "Combat", "The Order of Combat", 221, "Initiative determines combat turn order."),
         "saving-throws.md": ("Saving Throws", "Using Ability Scores", "Saving Throws", 214, "Saving throws resist danger and harmful effects."),
@@ -151,6 +152,28 @@ Advantage uses the higher d20. Disadvantage uses the lower d20.
 """,
         encoding="utf-8",
     )
+    (compendium / "player-handbook" / "maneuvers" / "charging-attack.md").write_text(
+        """---
+title: "Charging Attack"
+source: "SW5e Player's Handbook"
+source_file: "SW5e - Player's Handbook-avec compression.pdf"
+knowledge_type: "sw5e_compendium"
+category: "maneuver"
+chapter: "13-maneuvers"
+section: "Charging Attack"
+page_start: 304
+page_end: 304
+tags: ["maneuver", "physical", "prone"]
+status: "draft"
+verbatim_risk: "low"
+---
+
+# Charging Attack
+
+A physical maneuver that spends a superiority die after a charge and can knock a target prone on a Strength save.
+""",
+        encoding="utf-8",
+    )
     monkeypatch.setattr("holocron.db.database.DB_PATH", db_path)
     monkeypatch.setattr("holocron.ingest.pipeline.BOOKS_DIR", books)
     monkeypatch.setattr("holocron.ingest.pipeline.COMPENDIUM_DIR", compendium)
@@ -159,7 +182,7 @@ Advantage uses the higher d20. Disadvantage uses the lower d20.
     results = search_chunks("advantage disadvantage", 5)
     answer = answer_question("cover", 3)
 
-    assert result["seen"] == 16
+    assert result["seen"] == 17
     assert results
     assert results[0]["knowledge_type"] == "sw5e_compendium"
     assert results[0]["source_title"] == "Advantage and Disadvantage"
@@ -180,6 +203,8 @@ Advantage uses the higher d20. Disadvantage uses the lower d20.
     assert search_chunks('"saber reflect"', 5)
     assert search_chunks('"target lock"', 5)
     assert search_chunks('"repair droid"', 5)
+    assert search_chunks('"charging attack"', 5)
+    assert search_chunks("maneuver prone", 5)
     assert search_chunks("concentration force power", 5)
     assert answer.found is True
     assert answer.citations

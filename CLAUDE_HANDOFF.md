@@ -16,7 +16,14 @@ Conditions, Force/Tech Casting, and Equipment overview pages are also available 
 
 Force power cards and Tech power cards are available under `Compendium/player-handbook/powers/`. Each card includes power metadata for future UI filters: level, casting time, range, duration, concentration, save, attack roll, damage types, and conditions.
 
-Power metadata QA exists at `scripts/qa_power_cards.py`. It writes `reports/power_cards_qa.md`. Some cards can carry `needs_review`; use the cited source page and `/api/rules/search` before answering.
+Maneuver cards are available under `Compendium/player-handbook/maneuvers/`. Each card includes maneuver metadata for future UI and combat tracker filters: maneuver type, activation, range, duration, save, attack roll, damage types, conditions, resource cost, and prerequisites.
+
+Metadata QA exists at:
+
+- `scripts/qa_power_cards.py`, which writes `reports/power_cards_qa.md`.
+- `scripts/qa_maneuver_cards.py`, which writes `reports/maneuver_cards_qa.md`.
+
+Some cards can carry `needs_review`; use the cited source page and `/api/rules/search` before answering.
 
 ## API
 
@@ -38,7 +45,7 @@ For rules Q&A:
 5. Always display citations for rules.
 6. If no result exists, say the source is absent and keep GM suggestions separate.
 
-Claude should not read or summarize whole PDFs directly. Use `/api/rules/search` and cite source/page. Compendium markdown can help navigation and frontend display, but rules answers still need source/page citations.
+Claude should not read or summarize whole PDFs directly. Use `/api/rules/search` and cite source/page/chunk. Compendium markdown can help navigation and frontend display, but rules answers still need source/page citations.
 
 ## Future Features
 

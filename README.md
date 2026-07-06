@@ -6,7 +6,7 @@ It reads local files from `Books/`, extracts searchable chunks, stores them in S
 
 `Compendium/` contains structured markdown summaries and rule cards derived from local books. It is safe to commit because it is concise, cited, and not a verbatim copy.
 
-Current Player Handbook coverage includes starter Introduction material, core session rules from chapters 7-9, conditions, Force/Tech casting, equipment overview pages, and individual Force/Tech power cards.
+Current Player Handbook coverage includes starter Introduction material, core session rules from chapters 7-9, conditions, Force/Tech casting, equipment overview pages, individual Force/Tech power cards, and Chapter 13 maneuver cards.
 
 ## Why PDFs Are Not Committed
 
@@ -60,6 +60,7 @@ Useful options:
 ```bash
 python3 scripts/build_compendium.py --book player-handbook --toc-only
 python3 scripts/build_compendium.py --book player-handbook --chapter 7
+python3 scripts/build_compendium.py --book player-handbook --chapter 13 --section maneuvers --maneuvers
 python3 scripts/build_compendium.py --book player-handbook --dry-run
 ```
 
@@ -159,4 +160,12 @@ Safe metadata repair pass:
 
 ```bash
 python scripts/qa_power_cards.py --fix
+```
+
+## Maneuver Cards QA
+
+Run metadata and link QA for Player Handbook maneuver cards:
+
+```bash
+python scripts/qa_maneuver_cards.py
 ```

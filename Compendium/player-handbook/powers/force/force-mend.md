@@ -8,17 +8,17 @@ chapter: "11-force-powers"
 section: "Force Mend"
 page_start: 247
 page_end: 247
-tags: ["force", "force-mend", "level-7", "needs_review", "power"]
+tags: ["force", "force-mend", "level-7", "power"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
 level: "7"
-casting_time: ""
+casting_time: "1 minute"
 range: "Touch"
 duration: "1 hour"
 concentration: false
 save: ""
-attack_roll: true
+attack_roll: false
 damage_types: []
 conditions_inflicted: []
 classes_or_archetypes: []
@@ -39,7 +39,7 @@ A 7 force power for utility or narrative effect. Use the source page for exact e
 ## Mechanics
 
 * Level: 7
-* Casting Time: 
+* Casting Time: 1 minute
 * Range: Touch
 * Duration: 1 hour
 * Concentration: false
@@ -74,4 +74,4 @@ A 7 force power for utility or narrative effect. Use the source page for exact e
 
 ## Search Tags
 
-`force`, `force-mend`, `level-7`, `needs_review`, `power`
+`force`, `force-mend`, `level-7`, `power`

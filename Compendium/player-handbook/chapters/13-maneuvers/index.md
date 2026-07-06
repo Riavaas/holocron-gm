@@ -4,11 +4,11 @@ source: "SW5e Player's Handbook"
 source_file: "SW5e - Player's Handbook-avec compression.pdf"
 knowledge_type: "sw5e_compendium"
 category: "chapter"
-chapter: "Maneuvers"
+chapter: "13-maneuvers"
 section: "Maneuvers"
 page_start: 303
 page_end: 310
-tags: ["maneuvers", "player-handbook"]
+tags: ["maneuver", "maneuvers", "player-handbook"]
 status: "draft"
 verbatim_risk: "low"
 ---
@@ -19,25 +19,34 @@ verbatim_risk: "low"
 
 * Book: SW5e Player's Handbook
 * Pages: 303-310
-* Original section: Maneuvers
+* Original section: Chapter 13: Maneuvers
 
 ## Summary
 
-Draft navigation stub. This chapter is identified from the PDF table of contents and is ready for section-level compendium work.
+Chapter 13 lists General, Mental, and Physical maneuvers. Maneuver cards in this compendium are compact lookup aids for superiority die use, activation timing, saves, attack interactions, damage types, conditions, and prerequisites.
 
-## Key Rules
+## Maneuver Cards
 
-* To be summarized from source pages during review.
+* [Maneuvers Index](../../maneuvers/index.md)
+* [By activation](../../maneuvers/index.md#by-activation)
+* [By save](../../maneuvers/index.md#by-save)
+* [By condition](../../maneuvers/index.md#by-condition)
+* [By damage type](../../maneuvers/index.md#by-damage-type)
+* [Needs review](../../maneuvers/index.md#needs-review)
 
 ## GM Use
 
-Use this page as the chapter landing point for future rule cards, tables, and section summaries.
+1. Search the maneuver name first.
+2. Confirm prerequisite, activation, resource cost, range, save, attack interaction, and duration.
+3. Apply the superiority die result only at the timing named by the card.
+4. Use the cited page for exact edge cases before final table rulings.
 
 ## Related
 
-* [Book Index](../../index.md)
-* [Table of Contents](../../toc.md)
+* [Combat](../09-combat/index.md)
+* [Actions in Combat](../../rules-cards/actions-in-combat.md)
+* [Maneuvers Index](../../maneuvers/index.md)
 
 ## Search Tags
 
-`maneuvers`, `player-handbook`
+`maneuver`, `superiority-die`, `chapter-13`, `combat-tracker`

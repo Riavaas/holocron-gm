@@ -291,6 +291,7 @@ def create_structure(root: Path, dry_run: bool) -> None:
         root / BOOK_KEY / "rules-cards",
         root / BOOK_KEY / "tables",
         root / BOOK_KEY / "powers",
+        root / BOOK_KEY / "maneuvers",
         root / BOOK_KEY / "equipment",
         root / BOOK_KEY / "casting",
         root / BOOK_KEY / "conditions",
@@ -556,6 +557,7 @@ def build(args: argparse.Namespace) -> None:
             "appendix": args.appendix,
             "section": args.section,
             "powers": args.powers,
+            "maneuvers": args.maneuvers,
         }
     )
 
@@ -568,6 +570,7 @@ def main() -> None:
     parser.add_argument("--appendix", default=None)
     parser.add_argument("--section", default=None)
     parser.add_argument("--powers", choices=["force", "tech"], default=None)
+    parser.add_argument("--maneuvers", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
     build(parser.parse_args())

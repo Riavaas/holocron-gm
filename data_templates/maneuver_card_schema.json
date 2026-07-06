@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SW5e Maneuver Card",
+  "type": "object",
+  "required": [
+    "title",
+    "slug",
+    "activation",
+    "range",
+    "duration",
+    "save",
+    "attack_roll",
+    "damage_types",
+    "conditions_inflicted",
+    "resource_cost",
+    "prerequisites",
+    "source",
+    "page_start",
+    "page_end",
+    "tags"
+  ],
+  "properties": {
+    "title": { "type": "string" },
+    "slug": { "type": "string" },
+    "activation": { "type": "string" },
+    "range": { "type": "string" },
+    "duration": { "type": "string" },
+    "save": { "type": "string" },
+    "attack_roll": { "type": "boolean" },
+    "damage_types": { "type": "array", "items": { "type": "string" } },
+    "conditions_inflicted": { "type": "array", "items": { "type": "string" } },
+    "resource_cost": { "type": "string" },
+    "prerequisites": { "type": "string" },
+    "source": { "type": "string" },
+    "page_start": { "type": "integer" },
+    "page_end": { "type": "integer" },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

@@ -134,6 +134,15 @@ def detect_attack_roll(text: str) -> bool:
     return bool(re.search(r"\bpower attack\b|\bmake (?:a|an) (?:ranged|melee) .*attack\b|\battack roll\b", text, re.I))
 
 
+def scrub_metadata_lines(text: str) -> str:
+    ignored_prefixes = (
+        "* Attack Roll:",
+        "* Attack roll:",
+        "* Attack interaction:",
+    )
+    return "\n".join(line for line in text.splitlines() if not line.strip().startswith(ignored_prefixes))
+
+
 def find_links(path: Path, text: str) -> list[Path]:
     links = []
     for target in re.findall(r"\[[^\]]+\]\(([^)#]+)(?:#[^)]+)?\)", text):
@@ -183,10 +192,10 @@ def analyze(fix: bool = False) -> tuple[str, int]:
         if not meta.get("duration"):
             warnings["without_duration"].append(str(path))
 
-        text = body
+        text = scrub_metadata_lines(body)
         duration = str(meta.get("duration", ""))
         concentration = bool(meta.get("concentration"))
-        detected_concentration = "concentration" in duration.lower() or bool(re.search(r"\bconcentration\b", text, re.I))
+        detected_concentration = "concentration" in duration.lower()
         if concentration != duration.lower().startswith("concentration"):
             warnings["concentration_incoherent"].append(str(path))
             if fix:

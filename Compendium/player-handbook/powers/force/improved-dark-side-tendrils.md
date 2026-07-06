@@ -8,17 +8,17 @@ chapter: "11-force-powers"
 section: "Improved Dark Side Tendrils"
 page_start: 252
 page_end: 252
-tags: ["blinded", "concentration", "force", "improved-dark-side-tendrils", "level-3", "necrotic", "needs_review", "poison", "power", "strength-save"]
+tags: ["blinded", "concentration", "force", "improved-dark-side-tendrils", "level-3", "necrotic", "poison", "power", "strength-save"]
 status: "draft"
 verbatim_risk: "low"
 power_type: "force"
 level: "3"
-casting_time: ""
+casting_time: "1 action"
 range: "150 feet"
 duration: "Concentration, up to 1 minute"
 concentration: true
 save: "Strength"
-attack_roll: true
+attack_roll: false
 damage_types: ["necrotic", "poison"]
 conditions_inflicted: ["blinded"]
 classes_or_archetypes: []
@@ -39,7 +39,7 @@ A 3 force power for damage, condition control, Strength save pressure, ongoing c
 ## Mechanics
 
 * Level: 3
-* Casting Time: 
+* Casting Time: 1 action
 * Range: 150 feet
 * Duration: Concentration, up to 1 minute
 * Concentration: true
@@ -75,4 +75,4 @@ A 3 force power for damage, condition control, Strength save pressure, ongoing c
 
 ## Search Tags
 
-`blinded`, `concentration`, `force`, `improved-dark-side-tendrils`, `level-3`, `necrotic`, `needs_review`, `poison`, `power`, `strength-save`
+`blinded`, `concentration`, `force`, `improved-dark-side-tendrils`, `level-3`, `necrotic`, `poison`, `power`, `strength-save`

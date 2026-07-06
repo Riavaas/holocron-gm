@@ -20,7 +20,7 @@
 
 ## Cards With `needs_review`
 
-Count: 238
+Count: 236
 
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/animate-weapon.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/armor-of-abeloth.md`
@@ -58,7 +58,6 @@ Count: 238
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/force-link.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/force-mask.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/force-meld.md`
-* `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/force-mend.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/force-propel.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/force-push-pull.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/force-reflect.md`
@@ -77,12 +76,13 @@ Count: 238
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/greater-heal.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/greater-saber-throw.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/heal.md`
-* `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/improved-dark-side-tendrils.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/improved-feedback.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/improved-force-barrier.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/improved-force-scream.md`
 * `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/improved-heal.md`
-* ... 178 more
+* `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/improved-phasestrike.md`
+* `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/improved-restoration.md`
+* ... 176 more
 
 ## Cards Without Level
 
@@ -92,10 +92,9 @@ Count: 0
 
 ## Cards Without Casting Time
 
-Count: 2
+Count: 0
 
-* `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/force-mend.md`
-* `/Users/amn.mdk/Documents/holocron-gm/Compendium/player-handbook/powers/force/improved-dark-side-tendrils.md`
+* None
 
 ## Cards Without Range
 
