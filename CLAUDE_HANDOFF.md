@@ -4,7 +4,9 @@
 
 Holocron GM is a local-first Python/FastAPI app.
 
-Source files live in `Books/`. Ingestion extracts text, chunks it, and stores metadata in SQLite at `data/holocron.sqlite`.
+Source files live in `Books/`. Books PDFs and `Assets/` images are expected to be portable through Git LFS. After clone, run `git lfs pull`.
+
+Ingestion extracts text, chunks it, and stores metadata in SQLite at `data/holocron.sqlite`. The DB is not committed; rebuild locally with `python3 scripts/ingest_books.py`.
 
 Search uses SQLite FTS5 over chunk content, source title, and section title.
 

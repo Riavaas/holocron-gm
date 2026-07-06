@@ -7,7 +7,17 @@ Put local source material here:
 - house rules
 - GM notes
 
-PDF files and other heavy source files must stay local. They are ignored by git.
+PDF files in this folder are expected to be versioned through Git LFS.
+
+After cloning on a new machine:
+
+```bash
+git lfs install
+git lfs pull
+python3 scripts/ingest_books.py
+```
+
+The SQLite database is still local and ignored; rebuild it with ingestion after pulling LFS files.
 
 Markdown files can use optional frontmatter:
 
@@ -19,4 +29,3 @@ tags: ["planet", "jedi", "kotor"]
 visibility: "gm_only"
 ---
 ```
-

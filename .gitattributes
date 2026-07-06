@@ -1,0 +1,9 @@
+Books/**/*.pdf filter=lfs diff=lfs merge=lfs -text
+Books/**/*.PDF filter=lfs diff=lfs merge=lfs -text
+
+Assets/**/*.png filter=lfs diff=lfs merge=lfs -text
+Assets/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+Assets/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+Assets/**/*.webp filter=lfs diff=lfs merge=lfs -text
+Assets/**/*.gif filter=lfs diff=lfs merge=lfs -text
+Assets/**/*.svg filter=lfs diff=lfs merge=lfs -text

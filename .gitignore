@@ -9,12 +9,9 @@ __pycache__/
 .ruff_cache/
 node_modules/
 
-Books/*.pdf
-Books/*.PDF
-Books/**/*.pdf
-Books/**/*.PDF
-
 data/*.sqlite
 data/*.db
 data/extracted/
 
+*.tmp
+*.cache

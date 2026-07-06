@@ -8,11 +8,36 @@ It reads local files from `Books/`, extracts searchable chunks, stores them in S
 
 Current coverage includes Player Handbook starter Introduction material, core session rules from chapters 7-9, conditions, Force/Tech casting, equipment overview pages, individual Force/Tech power cards, Chapter 13 maneuver cards, and a starter Scum and Villainy creature/statblock compendium.
 
-## Why PDFs Are Not Committed
+## Portable Books And Assets
 
-SW5e books and campaign source material stay on your machine. Git ignores PDFs under `Books/` and local databases under `data/`.
+This private repo is set up for Git LFS so source PDFs and visual assets can move between machines.
 
-Commit only project code, docs, and safe markdown notes.
+Git LFS tracks:
+
+- `Books/**/*.pdf`
+- common image formats under `Assets/`
+
+The SQLite database is still local and ignored. Rebuild it with ingestion after cloning or pulling new books.
+
+## Fresh Clone Setup
+
+```bash
+git clone https://github.com/Riavaas/holocron-gm.git
+cd holocron-gm
+git lfs install
+git lfs pull
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python3 scripts/bootstrap_local.py
+python3 scripts/dev_server.py
+```
+
+Check local readiness:
+
+```bash
+python3 scripts/check_assets_ready.py
+```
 
 ## Setup
 
@@ -68,7 +93,8 @@ python3 scripts/build_compendium.py --book player-handbook --dry-run
 
 Difference:
 
-- `Books/`: local source PDFs and notes. PDFs are ignored and not committed.
+- `Books/`: source PDFs and notes. PDFs are portable through Git LFS.
+- `Assets/`: images, portraits, maps, and tokens. Images are portable through Git LFS.
 - `Compendium/`: concise markdown summaries, rule cards, indexes, citations, and navigation.
 
 ## Index Books

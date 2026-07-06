@@ -7,8 +7,9 @@ Initial Holocron GM rules encyclopedia is implemented.
 ## Done
 
 - Project structure created.
-- `Books/` and `data/` placeholders added.
-- `.gitignore` protects PDFs, local DBs, env files, caches, and build folders.
+- `Books/`, `Assets/`, and `data/` placeholders added.
+- Git LFS expected for Books PDFs and Assets images.
+- `.gitignore` protects local DBs, env files, caches, and build folders.
 - SQLite schema with `documents`, `chunks`, `chunks_fts`, and `search_logs`.
 - Markdown ingestion with optional frontmatter.
 - PDF ingestion with PyMuPDF and weak-page reporting.
@@ -32,9 +33,13 @@ Initial Holocron GM rules encyclopedia is implemented.
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+git lfs pull
+python3 scripts/check_assets_ready.py
 python3 scripts/ingest_books.py
 uvicorn holocron.api.main:app --reload
 ```
+
+Fresh clone note: run `git lfs install` and `git lfs pull` before ingestion. The SQLite DB is not committed and must be rebuilt locally.
 
 Build compendium:
 
