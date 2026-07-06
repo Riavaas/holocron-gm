@@ -1,0 +1,10 @@
+[project]
+name = "holocron-gm"
+version = "0.1.0"
+description = "Local-first Game Master rules encyclopedia for SW5e."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
