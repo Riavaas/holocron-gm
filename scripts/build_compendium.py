@@ -19,6 +19,7 @@ COMPENDIUM_DIR = PROJECT_ROOT / "Compendium"
 SOURCE = "SW5e Player's Handbook"
 SOURCE_FILE = "SW5e - Player's Handbook-avec compression.pdf"
 BOOK_KEY = "player-handbook"
+FORCE_WRITE = False
 
 
 CHAPTERS = [
@@ -264,6 +265,9 @@ def write_md(path: Path, meta: dict, body: str, dry_run: bool) -> None:
     content = frontmatter(**meta) + body.rstrip() + "\n"
     if dry_run:
         print(f"DRY-RUN write {path}")
+        return
+    if path.exists() and not FORCE_WRITE:
+        print(f"SKIP existing {path}")
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
@@ -524,6 +528,8 @@ def build_starter_docs(book_root: Path, dry_run: bool) -> None:
 
 
 def build(args: argparse.Namespace) -> None:
+    global FORCE_WRITE
+    FORCE_WRITE = args.force
     if args.book != BOOK_KEY:
         raise ValueError("Only --book player-handbook is supported.")
     pdf_path = find_pdf()
@@ -538,7 +544,7 @@ def build(args: argparse.Namespace) -> None:
         if args.chapter in (None, 0):
             build_starter_docs(book_root, args.dry_run)
         build_indexes(book_root, args.dry_run)
-    print({"book": args.book, "toc_entries": len(toc), "pdf": str(pdf_path), "dry_run": args.dry_run})
+    print({"book": args.book, "toc_entries": len(toc), "pdf": str(pdf_path), "dry_run": args.dry_run, "force": args.force})
 
 
 def main() -> None:
@@ -547,6 +553,7 @@ def main() -> None:
     parser.add_argument("--toc-only", action="store_true")
     parser.add_argument("--chapter", type=int, default=None)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--force", action="store_true")
     build(parser.parse_args())
 
 

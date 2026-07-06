@@ -6,6 +6,8 @@ It reads local files from `Books/`, extracts searchable chunks, stores them in S
 
 `Compendium/` contains structured markdown summaries and rule cards derived from local books. It is safe to commit because it is concise, cited, and not a verbatim copy.
 
+Current Player Handbook coverage includes starter Introduction material plus core session rules from chapters 7-9: ability scores, adventuring, and combat.
+
 ## Why PDFs Are Not Committed
 
 SW5e books and campaign source material stay on your machine. Git ignores PDFs under `Books/` and local databases under `data/`.

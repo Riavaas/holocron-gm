@@ -17,6 +17,7 @@ Initial Holocron GM rules encyclopedia is implemented.
 - Tests for chunking, markdown ingestion, search, API, no-result behavior, citations, and gitignore.
 - Player Handbook compendium builder added.
 - Starter `Compendium/player-handbook` generated with TOC, chapter stubs, intro summaries, rule cards, and indexes.
+- Player Handbook chapters 7-9 expanded with summarized section pages, GM rulings, rule cards, and indexes.
 - Ingestion now indexes both `Books/` and `Compendium/`.
 
 ## Run
@@ -44,7 +45,7 @@ pytest
 ## Next Work
 
 - Improve PDF section detection.
-- Expand Player Handbook compendium section by section without copying full text.
+- Expand Player Handbook compendium into Equipment, Conditions, Force/Tech Casting, then powers without copying full text.
 - Add OCR option for scanned pages.
 - Add campaign note CRUD.
 - Add UI GM dashboard.

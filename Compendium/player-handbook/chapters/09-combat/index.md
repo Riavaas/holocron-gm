@@ -8,7 +8,7 @@ chapter: "Combat"
 section: "Combat"
 page_start: 221
 page_end: 230
-tags: ["combat", "player-handbook"]
+tags: ["combat", "initiative", "actions", "attacks", "damage"]
 status: "draft"
 verbatim_risk: "low"
 ---
@@ -19,25 +19,39 @@ verbatim_risk: "low"
 
 * Book: SW5e Player's Handbook
 * Pages: 221-230
-* Original section: Combat
+* Original section: Chapter 9: Combat
 
 ## Summary
 
-Draft navigation stub. This chapter is identified from the PDF table of contents and is ready for section-level compendium work.
+Combat structures dangerous scenes into rounds and turns. It covers initiative, surprise, movement, actions, attacks, cover, damage, healing, dropping to 0 hit points, temporary points, mounted combat, and underwater combat.
 
 ## Key Rules
 
-* To be summarized from source pages during review.
+* Initiative orders turns when combat begins.
+* A turn can include movement, an action, possible bonus action, possible reaction, and object interaction.
+* Actions include Attack, Cast a Power, Dash, Disengage, Dodge, Guard, Help, Hide, Ready, Search, and Use an Object.
+* Attacks compare attack rolls to Armor Class.
+* Damage, healing, critical hits, resistance, vulnerability, and 0 HP rules determine combat consequences.
 
 ## GM Use
 
-Use this page as the chapter landing point for future rule cards, tables, and section summaries.
+Use this chapter as the live combat operating manual. Keep turn flow visible and route edge cases to the relevant rule card.
+
+## Common Rulings
+
+* If players hesitate, list their common actions.
+* If positioning matters, clarify movement, cover, visibility, and reach before rolling.
+* If a creature hits 0 HP, pause and apply the correct 0 HP flow before moving on.
 
 ## Related
 
-* [Book Index](../../index.md)
-* [Table of Contents](../../toc.md)
+* [Order of Combat](order-of-combat.md)
+* [Actions in Combat](actions-in-combat.md)
+* [Making an Attack](making-an-attack.md)
+* [Damage and Healing](damage-and-healing.md)
+* [Dropping to 0 HP and Death](zero-hp-and-death.md)
 
 ## Search Tags
 
-`combat`, `player-handbook`
+`combat`, `initiative`, `actions`, `attack-rolls`, `damage`, `healing`
+

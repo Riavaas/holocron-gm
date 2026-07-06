@@ -10,6 +10,8 @@ Search uses SQLite FTS5 over chunk content, source title, and section title.
 
 `Compendium/` contains concise markdown summaries, rule cards, indexes, and page citations. It is for navigation and UI support, not a replacement for the source PDFs.
 
+Player Handbook chapters 7-9 are available as compendium markdown for UI and Claude navigation: Using Ability Scores, Adventuring, and Combat.
+
 ## API
 
 - `GET /health`

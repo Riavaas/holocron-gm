@@ -8,7 +8,7 @@ chapter: "Using Ability Scores"
 section: "Using Ability Scores"
 page_start: 207
 page_end: 214
-tags: ["using-ability-scores", "player-handbook"]
+tags: ["ability-scores", "checks", "skills", "saves", "dc"]
 status: "draft"
 verbatim_risk: "low"
 ---
@@ -19,25 +19,40 @@ verbatim_risk: "low"
 
 * Book: SW5e Player's Handbook
 * Pages: 207-214
-* Original section: Using Ability Scores
+* Original section: Chapter 7: Using Ability Scores
 
 ## Summary
 
-Draft navigation stub. This chapter is identified from the PDF table of contents and is ready for section-level compendium work.
+This chapter explains how ability scores drive most d20 resolution: checks, contests, passive checks, saving throws, skills, proficiency, and ability-specific applications.
 
 ## Key Rules
 
-* To be summarized from source pages during review.
+* Roll a d20 when an outcome is uncertain and meaningful.
+* Ability checks resolve active attempts; saving throws resist danger.
+* Proficiency applies only when a character has relevant training or a feature says it applies.
+* Passive checks model repeated or hidden activity without a rolled check.
+* Contests compare two opposing checks.
+* The GM sets DCs and chooses the relevant ability.
 
 ## GM Use
 
-Use this page as the chapter landing point for future rule cards, tables, and section summaries.
+Use this chapter whenever a player asks, "Can I try?" Pick the ability first, then decide whether a skill, tool, or proficiency applies.
+
+## Common Rulings
+
+* If there is no pressure and failure has no cost, skip the roll.
+* If multiple characters help, use help or a group check instead of repeated rolls.
+* If a player suggests a creative skill/ability pairing, allow it when the fiction supports it.
 
 ## Related
 
-* [Book Index](../../index.md)
-* [Table of Contents](../../toc.md)
+* [Ability Checks](ability-checks.md)
+* [Skills and Proficiency](skills-and-proficiency.md)
+* [Passive Checks and Contests](passive-checks-and-contests.md)
+* [Saving Throws](saving-throws.md)
+* [Difficulty Classes](../../rules-cards/difficulty-classes.md)
 
 ## Search Tags
 
-`using-ability-scores`, `player-handbook`
+`ability-scores`, `ability-checks`, `saving-throws`, `skills`, `dc`
+
