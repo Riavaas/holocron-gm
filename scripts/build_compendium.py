@@ -533,8 +533,19 @@ def build_starter_docs(book_root: Path, dry_run: bool) -> None:
 def build(args: argparse.Namespace) -> None:
     global FORCE_WRITE
     FORCE_WRITE = args.force
+    if args.book == "scum-and-villainy":
+        from scripts.build_scum_creatures import build as build_scum
+
+        build_scum(
+            limit=args.limit,
+            creatures=args.creatures,
+            toc_only=args.toc_only,
+            force=args.force,
+            dry_run=args.dry_run,
+        )
+        return
     if args.book != BOOK_KEY:
-        raise ValueError("Only --book player-handbook is supported.")
+        raise ValueError("Only --book player-handbook or --book scum-and-villainy is supported.")
     pdf_path = find_pdf()
     toc = read_toc(pdf_path)
     book_root = COMPENDIUM_DIR / BOOK_KEY
@@ -571,6 +582,8 @@ def main() -> None:
     parser.add_argument("--section", default=None)
     parser.add_argument("--powers", choices=["force", "tech"], default=None)
     parser.add_argument("--maneuvers", action="store_true")
+    parser.add_argument("--creatures", action="store_true")
+    parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
     build(parser.parse_args())

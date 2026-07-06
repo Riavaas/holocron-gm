@@ -6,7 +6,7 @@ It reads local files from `Books/`, extracts searchable chunks, stores them in S
 
 `Compendium/` contains structured markdown summaries and rule cards derived from local books. It is safe to commit because it is concise, cited, and not a verbatim copy.
 
-Current Player Handbook coverage includes starter Introduction material, core session rules from chapters 7-9, conditions, Force/Tech casting, equipment overview pages, individual Force/Tech power cards, and Chapter 13 maneuver cards.
+Current coverage includes Player Handbook starter Introduction material, core session rules from chapters 7-9, conditions, Force/Tech casting, equipment overview pages, individual Force/Tech power cards, Chapter 13 maneuver cards, and a starter Scum and Villainy creature/statblock compendium.
 
 ## Why PDFs Are Not Committed
 
@@ -17,7 +17,7 @@ Commit only project code, docs, and safe markdown notes.
 ## Setup
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -61,6 +61,8 @@ Useful options:
 python3 scripts/build_compendium.py --book player-handbook --toc-only
 python3 scripts/build_compendium.py --book player-handbook --chapter 7
 python3 scripts/build_compendium.py --book player-handbook --chapter 13 --section maneuvers --maneuvers
+python3 scripts/build_compendium.py --book scum-and-villainy --toc-only
+python3 scripts/build_compendium.py --book scum-and-villainy --creatures --limit 20
 python3 scripts/build_compendium.py --book player-handbook --dry-run
 ```
 
@@ -72,7 +74,7 @@ Difference:
 ## Index Books
 
 ```bash
-python scripts/ingest_books.py
+python3 scripts/ingest_books.py
 ```
 
 This indexes both `Books/` and `Compendium/`.
@@ -92,7 +94,7 @@ uvicorn holocron.api.main:app --reload
 Or:
 
 ```bash
-python scripts/dev_server.py
+python3 scripts/dev_server.py
 ```
 
 ## Search
@@ -122,7 +124,7 @@ curl -X POST "http://127.0.0.1:8000/api/rules/ask" \
 
 ```bash
 rm -f data/holocron.sqlite
-python scripts/ingest_books.py
+python3 scripts/ingest_books.py
 ```
 
 ## Continue With Claude
@@ -153,13 +155,13 @@ pytest
 Run metadata and link QA for Player Handbook Force/Tech power cards:
 
 ```bash
-python scripts/qa_power_cards.py
+python3 scripts/qa_power_cards.py
 ```
 
 Safe metadata repair pass:
 
 ```bash
-python scripts/qa_power_cards.py --fix
+python3 scripts/qa_power_cards.py --fix
 ```
 
 ## Maneuver Cards QA
@@ -167,5 +169,13 @@ python scripts/qa_power_cards.py --fix
 Run metadata and link QA for Player Handbook maneuver cards:
 
 ```bash
-python scripts/qa_maneuver_cards.py
+python3 scripts/qa_maneuver_cards.py
+```
+
+## Creature Cards QA
+
+Run metadata and link QA for Scum and Villainy creature cards:
+
+```bash
+python3 scripts/qa_creature_cards.py
 ```

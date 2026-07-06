@@ -90,6 +90,8 @@ def test_compendium_ingestion_and_search(tmp_path, monkeypatch):
     books.mkdir()
     (compendium / "player-handbook" / "rules-cards").mkdir(parents=True)
     (compendium / "player-handbook" / "maneuvers").mkdir(parents=True)
+    (compendium / "scum-and-villainy" / "creatures" / "droids").mkdir(parents=True)
+    (compendium / "scum-and-villainy" / "creatures" / "beasts").mkdir(parents=True)
     cards = {
         "initiative.md": ("Initiative", "Combat", "The Order of Combat", 221, "Initiative determines combat turn order."),
         "saving-throws.md": ("Saving Throws", "Using Ability Scores", "Saving Throws", 214, "Saving throws resist danger and harmful effects."),
@@ -174,6 +176,35 @@ A physical maneuver that spends a superiority die after a charge and can knock a
 """,
         encoding="utf-8",
     )
+    scum_cards = {
+        "droids/hk-47-assassin-droid.md": ("HK-47 Assassin Droid", 14, "HK-47 is a droid creature statblock for an assassin droid encounter."),
+        "droids/ig-88-assassin-droid.md": ("IG-88 Assassin Droid", 15, "IG-88 is a droid creature statblock for a legendary assassin droid encounter."),
+        "beasts/acklay-adult.md": ("Acklay, Adult", 10, "Acklay is a beast creature statblock for an arena brute encounter."),
+        "droids/r2-series-astromech-droid.md": ("R2 Series Astromech Droid", 17, "Astromech droid creature card for support and starship scenes."),
+    }
+    for relative, (title, page, body) in scum_cards.items():
+        (compendium / "scum-and-villainy" / "creatures" / relative).write_text(
+            f"""---
+title: "{title}"
+source: "SW5e Scum and Villainy"
+source_file: "SW5e - Scum and Villainy - 20191105.pdf"
+knowledge_type: "sw5e_compendium"
+category: "creature_statblock"
+book: "scum-and-villainy"
+section: "{title}"
+page_start: {page}
+page_end: {page}
+tags: ["creature", "statblock"]
+status: "draft"
+verbatim_risk: "low"
+---
+
+# {title}
+
+{body}
+""",
+            encoding="utf-8",
+        )
     monkeypatch.setattr("holocron.db.database.DB_PATH", db_path)
     monkeypatch.setattr("holocron.ingest.pipeline.BOOKS_DIR", books)
     monkeypatch.setattr("holocron.ingest.pipeline.COMPENDIUM_DIR", compendium)
@@ -182,7 +213,7 @@ A physical maneuver that spends a superiority die after a charge and can knock a
     results = search_chunks("advantage disadvantage", 5)
     answer = answer_question("cover", 3)
 
-    assert result["seen"] == 17
+    assert result["seen"] == 21
     assert results
     assert results[0]["knowledge_type"] == "sw5e_compendium"
     assert results[0]["source_title"] == "Advantage and Disadvantage"
@@ -205,6 +236,10 @@ A physical maneuver that spends a superiority die after a charge and can knock a
     assert search_chunks('"repair droid"', 5)
     assert search_chunks('"charging attack"', 5)
     assert search_chunks("maneuver prone", 5)
+    assert search_chunks("HK-47", 5)
+    assert search_chunks("IG-88", 5)
+    assert search_chunks("Acklay", 5)
+    assert search_chunks("Astromech", 5)
     assert search_chunks("concentration force power", 5)
     assert answer.found is True
     assert answer.citations

@@ -18,10 +18,13 @@ Force power cards and Tech power cards are available under `Compendium/player-ha
 
 Maneuver cards are available under `Compendium/player-handbook/maneuvers/`. Each card includes maneuver metadata for future UI and combat tracker filters: maneuver type, activation, range, duration, save, attack roll, damage types, conditions, resource cost, and prerequisites.
 
+Scum and Villainy creature/statblock compendium has started under `Compendium/scum-and-villainy/`. Creature cards include metadata for future encounter builder and combat tracker features: type, size, CR, XP, AC, HP, speed, abilities, saves, skills, defenses, senses, languages, traits, actions, reactions, legendary actions, environment, faction, and role.
+
 Metadata QA exists at:
 
 - `scripts/qa_power_cards.py`, which writes `reports/power_cards_qa.md`.
 - `scripts/qa_maneuver_cards.py`, which writes `reports/maneuver_cards_qa.md`.
+- `scripts/qa_creature_cards.py`, which writes `reports/creature_cards_qa.md`.
 
 Some cards can carry `needs_review`; use the cited source page and `/api/rules/search` before answering.
 
@@ -46,6 +49,8 @@ For rules Q&A:
 6. If no result exists, say the source is absent and keep GM suggestions separate.
 
 Claude should not read or summarize whole PDFs directly. Use `/api/rules/search` and cite source/page/chunk. Compendium markdown can help navigation and frontend display, but rules answers still need source/page citations.
+
+For creature answers, separate official statblock metadata from GM suggestions such as tactics, loot, and encounter hooks.
 
 ## Future Features
 
