@@ -19,7 +19,8 @@ COMPENDIUM_ROOT = PROJECT_ROOT / "Compendium" / "scum-and-villainy"
 SOURCE = "SW5e Scum and Villainy"
 SOURCE_FILE = "SW5e - Scum and Villainy - 20191105.pdf"
 BOOK_KEY = "scum-and-villainy"
-SIZE_PATTERN = r"Tiny|Small|Medium|Large|Huge|Gargantuan"
+SIZE_PATTERN = r"Tiny|Small|Medium|Large|Huge|Gargantuan|Garagantuan"
+DEFAULT_CREATURE_LIMIT = 225
 
 REQUIRED_DIRS = [
     "creatures",
@@ -96,8 +97,24 @@ def title_case(value: str) -> str:
             fixed.append(word)
         else:
             fixed.append("-".join(part.capitalize() for part in word.split("-")))
-    title = " ".join(fixed).replace("Droid", "Droid").replace("At-At", "AT-AT")
-    acronyms = ["HK", "IG", "BT", "BB", "C1", "R2", "B1", "B2", "BX", "DSD1"]
+    title = " ".join(fixed).replace("Droid", "Droid")
+    vehicle_acronyms = {
+        "3po": "3PO",
+        "At-At": "AT-AT",
+        "At-Rt": "AT-RT",
+        "At-St": "AT-ST",
+        "At-Te": "AT-TE",
+        "Aat": "AAT",
+        "Drk-1": "DRK-1",
+        "Gh-7": "GH-7",
+        "Id9": "ID9",
+        "Jk-13": "JK-13",
+        "Lom": "LOM",
+    }
+    for rendered, acronym in vehicle_acronyms.items():
+        title = re.sub(rf"\b{re.escape(rendered)}\b", acronym, title, flags=re.I)
+    title = re.sub(r"\(aat\)", "(AAT)", title, flags=re.I)
+    acronyms = ["HK", "IG", "BT", "BB", "C1", "R2", "B1", "B2", "BX", "DSD1", "TX"]
     for acronym in acronyms:
         title = re.sub(rf"\b{acronym.title()}\b", acronym, title)
     return title
@@ -134,9 +151,22 @@ def is_upper_heading(line: str) -> bool:
 def statblock_starts(lines: list[tuple[int, str]]) -> list[int]:
     starts = []
     for index, (_, line) in enumerate(lines):
-        if is_size_line(line):
+        if is_statblock_start(lines, index):
             starts.append(index)
     return starts
+
+
+def is_statblock_start(lines: list[tuple[int, str]], index: int) -> bool:
+    if not is_size_line(lines[index][1]):
+        return False
+    if not name_before(lines, index):
+        return False
+    lookahead = [line for _, line in lines[index + 1:index + 10]]
+    return (
+        any(line.startswith("Armor Class") for line in lookahead)
+        and any(line.startswith("Hit Points") for line in lookahead)
+        and any(line.startswith("Speed") for line in lookahead)
+    )
 
 
 def name_before(lines: list[tuple[int, str]], index: int) -> str:
@@ -156,24 +186,32 @@ def name_before(lines: list[tuple[int, str]], index: int) -> str:
 
 def join_continued_fields(block: list[str]) -> list[str]:
     result: list[str] = []
-    prefixes = (
+    continuable_prefixes = (
         "Armor Class",
         "Hit Points",
         "Speed",
         "Saving Throws",
+        "Saves",
         "Skills",
         "Skill",
         "Damage Vulnerabilities",
+        "Damage Vulnerability",
         "Damage vulnerabilities",
         "Damage Resistances",
+        "Damage Resistance",
         "Damage Immunities",
         "Condition Immunities",
         "Senses",
         "Languages",
-        "Challenge",
     )
+    field_prefixes = continuable_prefixes + ("Challenge",)
     for line in block:
-        if result and not line.startswith(prefixes) and result[-1].startswith(prefixes) and not re.match(r"^(STR|DEX|CON|INT|WIS|CHA|ACTIONS|REACTIONS|LEGENDARY ACTIONS)$", line):
+        if (
+            result
+            and not line.startswith(field_prefixes)
+            and result[-1].startswith(continuable_prefixes)
+            and not re.match(r"^(STR|DEX|CON|INT|WIS|CHA|ACTIONS|REACTIONS|LEGENDARY ACTIONS)$", line)
+        ):
             result[-1] += " " + line
         else:
             result.append(line)
@@ -185,6 +223,32 @@ def field_value(block: list[str], label: str) -> str:
         if line.lower().startswith(label.lower()):
             return line[len(label):].strip()
     return ""
+
+
+def field_value_any(block: list[str], labels: tuple[str, ...]) -> str:
+    for label in labels:
+        value = field_value(block, label)
+        if value:
+            return value.lstrip("* ")
+    return ""
+
+
+def named_entry(line: str) -> str:
+    # A real feature heading is followed by its rules text. Wrapped prose often
+    # ends with a period and must not become a synthetic feature name.
+    match = re.match(r"^([A-Z][A-Za-z0-9 '\-()/]+?)\.\s+\S", line)
+    if not match:
+        match = re.match(
+            r"^([A-Z][A-Za-z0-9 '\-()/]+?)\s+"
+            r"(?=(?:Melee|Ranged) (?:Weapon|Force|Tech) Attack\b|As an? (?:action|bonus action|reaction)\b|The \w+ makes\b)",
+            line,
+        )
+    if not match:
+        return ""
+    candidate = match.group(1).strip()
+    if re.search(r"^(?:DC \d+|The )|\bsaving throw\b|\buntil\b|\bor be\b", candidate, flags=re.I):
+        return ""
+    return candidate
 
 
 def parse_names_between(block: list[str], start_label: str, end_labels: set[str]) -> list[str]:
@@ -200,11 +264,9 @@ def parse_names_between(block: list[str], start_label: str, end_labels: set[str]
             break
         if not active:
             continue
-        match = re.match(r"^([A-Z][A-Za-z0-9 '\-()/]+?)\.", line)
-        if match:
-            name = match.group(1).strip()
-            if name not in names:
-                names.append(name)
+        name = named_entry(line)
+        if name and name not in names:
+            names.append(name)
     return names
 
 
@@ -221,11 +283,9 @@ def parse_traits(block: list[str]) -> list[str]:
             break
         if not in_traits:
             continue
-        match = re.match(r"^([A-Z][A-Za-z0-9 '\-()/]+?)\.", line)
-        if match:
-            name = match.group(1).strip()
-            if name not in traits:
-                traits.append(name)
+        name = named_entry(line)
+        if name and name not in traits:
+            traits.append(name)
     return traits
 
 
@@ -234,6 +294,8 @@ def parse_creature(lines: list[tuple[int, str]], start: int, end: int) -> Creatu
     name = name_before(lines, start)
     match = re.match(rf"^({SIZE_PATTERN})\s+([A-Za-z -]+),\s*(.+)$", size_line)
     size = match.group(1) if match else ""
+    if size == "Garagantuan":
+        size = "Gargantuan"
     creature_type = (match.group(2) if match else "").lower()
     alignment = match.group(3) if match else ""
     block = join_continued_fields([line for _, line in lines[start + 1:end]])
@@ -260,10 +322,12 @@ def parse_creature(lines: list[tuple[int, str]], start: int, end: int) -> Creatu
         hit_points=field_value(block, "Hit Points"),
         speed=field_value(block, "Speed"),
         abilities=abilities,
-        saving_throws=list_from_field(field_value(block, "Saving Throws")),
+        saving_throws=list_from_field(field_value_any(block, ("Saving Throws", "Saves"))),
         skills=list_from_field(field_value(block, "Skills") or field_value(block, "Skill")),
-        damage_vulnerabilities=list_from_field(field_value(block, "Damage Vulnerabilities") or field_value(block, "Damage vulnerabilities")),
-        damage_resistances=list_from_field(field_value(block, "Damage Resistances")),
+        damage_vulnerabilities=list_from_field(
+            field_value_any(block, ("Damage Vulnerabilities", "Damage vulnerabilities", "Damage Vulnerability"))
+        ),
+        damage_resistances=list_from_field(field_value_any(block, ("Damage Resistances", "Damage Resistance"))),
         damage_immunities=list_from_field(field_value(block, "Damage Immunities")),
         condition_immunities=list_from_field(field_value(block, "Condition Immunities")),
         senses=list_from_field(field_value(block, "Senses")),
@@ -431,6 +495,7 @@ def card_content(creature: Creature) -> str:
     action_text = ", ".join(creature.actions or []) or "None detected."
     reaction_text = ", ".join(creature.reactions or []) or "None detected."
     legendary_text = ", ".join(creature.legendary_actions or []) or "None detected."
+    xp_text = creature.xp or "not listed"
     body = f"""# {creature.name}
 
 ## Source
@@ -449,7 +514,7 @@ def card_content(creature: Creature) -> str:
 ## Stat Summary
 
 * Size / Type / Alignment: {creature.size} {creature.creature_type}, {creature.alignment}
-* CR / XP: {creature.challenge_rating} / {creature.xp}
+* CR / XP: {creature.challenge_rating} / {xp_text}
 * AC: {creature.armor_class}
 * HP: {creature.hit_points}
 * Speed: {creature.speed}
@@ -772,13 +837,14 @@ def build_creatures(limit: int | None = None, force: bool = False, dry_run: bool
 
 def build(limit: int | None = None, creatures: bool = False, toc_only: bool = False, force: bool = False, dry_run: bool = False) -> None:
     build_structure(dry_run=dry_run)
-    selected = extract_creatures(limit=limit or 30)
+    selected_limit = limit or DEFAULT_CREATURE_LIMIT
+    selected = extract_creatures(limit=selected_limit)
     build_toc(force=force, dry_run=dry_run)
     if toc_only:
         print({"book": BOOK_KEY, "toc": True, "creatures": 0, "force": force, "dry_run": dry_run})
         return
     if creatures:
-        selected = build_creatures(limit=limit or 30, force=force, dry_run=dry_run)
+        selected = build_creatures(limit=selected_limit, force=force, dry_run=dry_run)
     build_base_pages(selected, force=force, dry_run=dry_run)
     print({"book": BOOK_KEY, "creatures": len(selected), "force": force, "dry_run": dry_run})
 

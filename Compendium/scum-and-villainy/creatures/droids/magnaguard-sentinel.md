@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poisoned", "disease"]
 senses: ["darkvision 60 ft", "passive Perception 13"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
+traits: ["Circuitry", "Droid Synergy", "Leap", "Mag-lock Limbs"]
 actions: ["Multiattack", "Electrostaff", "Blaster Pistol"]
 reactions: ["Parry"]
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["ranged"]
 
 ## Traits
 
-None detected.
+Circuitry, Droid Synergy, Leap, Mag-lock Limbs
 
 ## Actions
 

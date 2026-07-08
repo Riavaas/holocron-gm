@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["darkvision 60 ft", "passive Perception 10"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
+traits: ["Battle Droid Swarm", "Circuitry"]
 actions: ["Blaster Rifle", "Stock Strike"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["ranged"]
 
 ## Traits
 
-None detected.
+Battle Droid Swarm, Circuitry
 
 ## Actions
 

@@ -22,14 +22,14 @@ hit_points: "126 (11d12 + 55)"
 speed: "30 ft., fly 60 ft."
 abilities: {"str": "20 (+5)", "dex": "12 (+1)", "con": "20 (+5)", "int": "2 (-4)", "wis": "12 (+1)", "cha": "7 (-2)"}
 saving_throws: []
-skills: ["Perception +7 Damage Resistance energy; ion", "kinetic from unenhanced weapons"]
+skills: ["Perception +7"]
 damage_vulnerabilities: []
-damage_resistances: []
+damage_resistances: ["energy; ion", "kinetic from unenhanced weapons"]
 damage_immunities: []
 condition_immunities: []
 senses: ["darkvision 60 ft", "passive Perception 17"]
 languages: []
-traits: []
+traits: ["Reactive Heads", "Two Heads", "Wakeful"]
 actions: ["Multiattack", "Bite", "Claws", "Stinger"]
 reactions: []
 legendary_actions: []
@@ -64,20 +64,20 @@ role: ["brute"]
 * Speed: 30 ft., fly 60 ft.
 * Key abilities: STR 20 (+5), DEX 12 (+1), CON 20 (+5), INT 2 (-4), WIS 12 (+1), CHA 7 (-2)
 * Saves: none detected
-* Skills: Perception +7 Damage Resistance energy; ion, kinetic from unenhanced weapons
+* Skills: Perception +7
 * Senses: darkvision 60 ft, passive Perception 17
 * Languages: none detected
 
 ## Defenses
 
 * Vulnerabilities: none detected
-* Resistances: none detected
+* Resistances: energy; ion, kinetic from unenhanced weapons
 * Immunities: none detected
 * Condition Immunities: none detected
 
 ## Traits
 
-None detected.
+Reactive Heads, Two Heads, Wakeful
 
 ## Actions
 

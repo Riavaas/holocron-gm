@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: []
 senses: ["passive Perception 10"]
 languages: []
-traits: []
+traits: ["Trampling Charge"]
 actions: ["Ram", "Stomp"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["brute"]
 
 ## Traits
 
-None detected.
+Trampling Charge
 
 ## Actions
 

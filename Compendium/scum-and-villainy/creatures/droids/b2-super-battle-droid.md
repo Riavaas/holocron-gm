@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["darkvision 60 ft", "passive Perception 11"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
+traits: ["Circuitry"]
 actions: ["Multiattack", "Strike", "Wrist Blaster", "Wrist Blaster Volley (Recharge 6)"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["ranged"]
 
 ## Traits
 
-None detected.
+Circuitry
 
 ## Actions
 

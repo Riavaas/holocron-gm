@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["darkvision 60 ft", "passive Perception 12"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
+traits: ["Circuitry", "Droid Synergy"]
 actions: ["Multiattack", "Blaster Carbine", "Techblade", "Stealth Field Generator"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["skirmisher", "ranged"]
 
 ## Traits
 
-None detected.
+Circuitry, Droid Synergy
 
 ## Actions
 

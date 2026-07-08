@@ -61,6 +61,13 @@ def parse_scalar(value: str):
         return value
 
 
+def relative_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def dump_scalar(value) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
@@ -170,57 +177,57 @@ def analyze(fix: bool = False) -> tuple[str, int]:
     for path in paths:
         meta, body, errors = parse_card(path)
         if errors:
-            severe.extend(f"{path}: {error}" for error in errors)
+            severe.extend(f"{relative_path(path)}: {error}" for error in errors)
         for key in ("title", "source", "page_start", "page_end"):
             if meta.get(key) in (None, "", 0):
-                severe.append(f"{path}: missing {key}")
+                severe.append(f"{relative_path(path)}: missing {key}")
         for field in REQUIRED_FIELDS:
             if field not in meta:
-                warnings["missing_required_fields"].append(f"{path}: {field}")
+                warnings["missing_required_fields"].append(f"{relative_path(path)}: {field}")
         expected_type = path.parent.name
         if meta.get("power_type") != expected_type:
-            warnings["invalid_power_type"].append(str(path))
+            warnings["invalid_power_type"].append(relative_path(path))
         expected_category = f"{expected_type}_power"
         if meta.get("category") != expected_category:
-            warnings["invalid_category"].append(str(path))
+            warnings["invalid_category"].append(relative_path(path))
         if not meta.get("level"):
-            warnings["without_level"].append(str(path))
+            warnings["without_level"].append(relative_path(path))
         if not meta.get("casting_time"):
-            warnings["without_casting_time"].append(str(path))
+            warnings["without_casting_time"].append(relative_path(path))
         if not meta.get("range"):
-            warnings["without_range"].append(str(path))
+            warnings["without_range"].append(relative_path(path))
         if not meta.get("duration"):
-            warnings["without_duration"].append(str(path))
+            warnings["without_duration"].append(relative_path(path))
 
         text = scrub_metadata_lines(body)
         duration = str(meta.get("duration", ""))
         concentration = bool(meta.get("concentration"))
         detected_concentration = "concentration" in duration.lower()
         if concentration != duration.lower().startswith("concentration"):
-            warnings["concentration_incoherent"].append(str(path))
+            warnings["concentration_incoherent"].append(relative_path(path))
             if fix:
                 meta["concentration"] = duration.lower().startswith("concentration")
 
         detected_saves = detect_saves(text)
         current_save = str(meta.get("save", ""))
         if detected_saves and not current_save:
-            warnings["save_detected_but_empty"].append(f"{path}: {', '.join(detected_saves)}")
+            warnings["save_detected_but_empty"].append(f"{relative_path(path)}: {', '.join(detected_saves)}")
             if fix:
                 meta["save"] = ", ".join(detected_saves)
         if detect_attack_roll(text) and meta.get("attack_roll") is False:
-            warnings["attack_roll_detected_but_false"].append(str(path))
+            warnings["attack_roll_detected_but_false"].append(relative_path(path))
             if fix:
                 meta["attack_roll"] = True
         detected_damage = detect_damage_types(text)
         current_damage = meta.get("damage_types")
         if detected_damage and not current_damage:
-            warnings["damage_text_but_damage_types_empty"].append(f"{path}: {', '.join(detected_damage)}")
+            warnings["damage_text_but_damage_types_empty"].append(f"{relative_path(path)}: {', '.join(detected_damage)}")
             if fix:
                 meta["damage_types"] = detected_damage
         detected_conditions = detect_conditions(text)
         current_conditions = meta.get("conditions_inflicted")
         if detected_conditions and not current_conditions:
-            warnings["condition_text_but_conditions_empty"].append(f"{path}: {', '.join(detected_conditions)}")
+            warnings["condition_text_but_conditions_empty"].append(f"{relative_path(path)}: {', '.join(detected_conditions)}")
             if fix:
                 meta["conditions_inflicted"] = detected_conditions
         if detected_concentration and not concentration:
@@ -235,16 +242,16 @@ def analyze(fix: bool = False) -> tuple[str, int]:
             severe.append(f"duplicate slug: {slug}")
     titles = [str(meta.get("title", "")) for _, meta, _ in cards]
     duplicate_titles = [title for title, count in Counter(titles).items() if title and count > 1]
-    bad_filenames = [str(path) for path, meta, _ in cards if path.stem != slugify(str(meta.get("title", "")))]
-    missing_pages = [str(path) for path, meta, _ in cards if meta.get("page_start") in (None, "", 0) or meta.get("page_end") in (None, "", 0)]
-    needs_review = [str(path) for path, meta, _ in cards if "needs_review" in (meta.get("tags") or [])]
+    bad_filenames = [relative_path(path) for path, meta, _ in cards if path.stem != slugify(str(meta.get("title", "")))]
+    missing_pages = [relative_path(path) for path, meta, _ in cards if meta.get("page_start") in (None, "", 0) or meta.get("page_end") in (None, "", 0)]
+    needs_review = [relative_path(path) for path, meta, _ in cards if "needs_review" in (meta.get("tags") or [])]
 
     broken_links = []
     markdown_paths = list((PROJECT_ROOT / "Compendium" / "player-handbook").rglob("*.md"))
     for path in markdown_paths:
         for target in find_links(path, path.read_text(encoding="utf-8")):
             if not target.exists():
-                broken_links.append(f"{path}: {target}")
+                broken_links.append(f"{relative_path(path)}: {relative_path(target)}")
 
     if broken_links:
         warnings["broken_links"].extend(broken_links)

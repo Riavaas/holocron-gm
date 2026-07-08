@@ -72,6 +72,13 @@ def parse_scalar(value: str):
         return value
 
 
+def relative_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def parse_card(path: Path) -> tuple[dict[str, object], str, list[str]]:
     text = path.read_text(encoding="utf-8")
     errors: list[str] = []
@@ -146,23 +153,27 @@ def analyze() -> tuple[str, int]:
     for path in paths:
         meta, body, errors = parse_card(path)
         if errors:
-            severe.extend(f"{path}: {error}" for error in errors)
+            severe.extend(f"{relative_path(path)}: {error}" for error in errors)
         for key in ("title", "source", "page_start", "page_end"):
             if meta.get(key) in (None, "", 0):
-                severe.append(f"{path}: missing {key}")
+                severe.append(f"{relative_path(path)}: missing {key}")
         for field in REQUIRED_FIELDS:
             if field not in meta:
-                warnings["missing_required_fields"].append(f"{path}: {field}")
+                warnings["missing_required_fields"].append(f"{relative_path(path)}: {field}")
         if meta.get("category") != "creature_statblock":
-            warnings["invalid_category"].append(str(path))
+            warnings["invalid_category"].append(relative_path(path))
         if not meta.get("challenge_rating"):
-            warnings["missing_cr"].append(str(path))
+            warnings["missing_cr"].append(relative_path(path))
+        elif not re.fullmatch(r"(?:CR\s*)?(?:\d+|\d+/\d+)(?:\.\d+)?", str(meta["challenge_rating"])):
+            warnings["invalid_cr"].append(relative_path(path))
         if not meta.get("armor_class"):
-            warnings["missing_ac"].append(str(path))
+            warnings["missing_ac"].append(relative_path(path))
         if not meta.get("hit_points"):
-            warnings["missing_hp"].append(str(path))
+            warnings["missing_hp"].append(relative_path(path))
         if not meta.get("creature_type"):
-            warnings["missing_creature_type"].append(str(path))
+            warnings["missing_creature_type"].append(relative_path(path))
+        if not meta.get("actions"):
+            warnings["missing_actions"].append(relative_path(path))
         cards.append((path, meta, body))
 
     slugs = [path.stem for path, _, _ in cards]
@@ -191,9 +202,9 @@ def analyze() -> tuple[str, int]:
             continue
         for target in find_links(path, path.read_text(encoding="utf-8")):
             if not target.exists():
-                warnings["broken_index_links"].append(f"{path}: {target}")
+                warnings["broken_index_links"].append(f"{relative_path(path)}: {relative_path(target)}")
 
-    needs_review = [str(path) for path, meta, _ in cards if "needs_review" in (meta.get("tags") or [])]
+    needs_review = [relative_path(path) for path, meta, _ in cards if "needs_review" in (meta.get("tags") or [])]
     report = render_report(count=len(cards), warnings=warnings, severe=severe, needs_review=needs_review)
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(report, encoding="utf-8")

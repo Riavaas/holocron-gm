@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["darkvision 60 ft", "passive Perception 17"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
+traits: ["Circuitry", "Legendary Resistance (3/Day)", "Sneak Attack (1/Turn)"]
 actions: ["Multiattack", "Sniper Rifle", "Stock Strike"]
 reactions: []
 legendary_actions: ["Attack", "Detect"]
@@ -77,7 +77,7 @@ role: ["skirmisher", "legendary", "ranged"]
 
 ## Traits
 
-None detected.
+Circuitry, Legendary Resistance (3/Day), Sneak Attack (1/Turn)
 
 ## Actions
 

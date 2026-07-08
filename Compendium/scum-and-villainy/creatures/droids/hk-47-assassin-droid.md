@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["darkvision 60 ft", "passive Perception 17"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
+traits: ["Circuitry", "Droid Synergy", "Legendary Resistance (3/Day)"]
 actions: ["Multiattack", "Blaster Rifle", "Stock Strike"]
 reactions: ["Reactive Shield (1/day)"]
 legendary_actions: ["Attack", "Detect", "Rocket Boost"]
@@ -77,7 +77,7 @@ role: ["skirmisher", "legendary", "ranged"]
 
 ## Traits
 
-None detected.
+Circuitry, Droid Synergy, Legendary Resistance (3/Day)
 
 ## Actions
 

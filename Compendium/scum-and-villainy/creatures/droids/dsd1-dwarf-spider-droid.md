@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["truesight 120ft", "passive Perception 14"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
+traits: ["Circuitry", "Spider Climb"]
 actions: ["Blaster Cannon", "Burst", "Claw", "Self-Destruct"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["ranged"]
 
 ## Traits
 
-None detected.
+Circuitry, Spider Climb
 
 ## Actions
 

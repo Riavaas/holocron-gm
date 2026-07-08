@@ -59,6 +59,13 @@ def parse_scalar(value: str):
         return value
 
 
+def relative_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def parse_card(path: Path) -> tuple[dict[str, object], str, list[str]]:
     text = path.read_text(encoding="utf-8")
     errors: list[str] = []
@@ -163,35 +170,35 @@ def analyze() -> tuple[str, int]:
     for path in paths:
         meta, body, errors = parse_card(path)
         if errors:
-            severe.extend(f"{path}: {error}" for error in errors)
+            severe.extend(f"{relative_path(path)}: {error}" for error in errors)
         for key in ("title", "source", "page_start", "page_end"):
             if meta.get(key) in (None, "", 0):
-                severe.append(f"{path}: missing {key}")
+                severe.append(f"{relative_path(path)}: missing {key}")
         for field in REQUIRED_FIELDS:
             if field not in meta:
-                warnings["missing_required_fields"].append(f"{path}: {field}")
+                warnings["missing_required_fields"].append(f"{relative_path(path)}: {field}")
         for field in LIST_FIELDS:
             if field in meta and not isinstance(meta[field], list):
-                warnings["list_field_not_list"].append(f"{path}: {field}")
+                warnings["list_field_not_list"].append(f"{relative_path(path)}: {field}")
         if meta.get("category") != "maneuver":
-            warnings["invalid_category"].append(str(path))
+            warnings["invalid_category"].append(relative_path(path))
         if meta.get("maneuver_type") not in {"general", "mental", "physical"}:
-            warnings["invalid_maneuver_type"].append(str(path))
+            warnings["invalid_maneuver_type"].append(relative_path(path))
         if not meta.get("activation"):
-            warnings["without_activation"].append(str(path))
+            warnings["without_activation"].append(relative_path(path))
 
         text = scrub_metadata_lines(body)
         detected_saves = detect_saves(text)
         if detected_saves and not meta.get("save"):
-            warnings["save_detected_but_empty"].append(f"{path}: {', '.join(detected_saves)}")
+            warnings["save_detected_but_empty"].append(f"{relative_path(path)}: {', '.join(detected_saves)}")
         detected_damage = detect_damage_types(text)
         if detected_damage and not meta.get("damage_types"):
-            warnings["damage_text_but_damage_types_empty"].append(f"{path}: {', '.join(detected_damage)}")
+            warnings["damage_text_but_damage_types_empty"].append(f"{relative_path(path)}: {', '.join(detected_damage)}")
         detected_conditions = detect_conditions(text)
         if detected_conditions and not meta.get("conditions_inflicted"):
-            warnings["condition_text_but_conditions_empty"].append(f"{path}: {', '.join(detected_conditions)}")
+            warnings["condition_text_but_conditions_empty"].append(f"{relative_path(path)}: {', '.join(detected_conditions)}")
         if detect_attack_roll(text) and meta.get("attack_roll") is False:
-            warnings["attack_roll_detected_but_false"].append(str(path))
+            warnings["attack_roll_detected_but_false"].append(relative_path(path))
         cards.append((path, meta, body))
 
     slugs = [path.stem for path, _, _ in cards]
@@ -200,7 +207,7 @@ def analyze() -> tuple[str, int]:
             severe.append(f"duplicate slug: {slug}")
     for path, meta, _ in cards:
         if path.stem != slugify(str(meta.get("title", ""))):
-            warnings["bad_filenames"].append(str(path))
+            warnings["bad_filenames"].append(relative_path(path))
 
     index_paths = [
         MANEUVER_ROOT / "index.md",
@@ -212,9 +219,9 @@ def analyze() -> tuple[str, int]:
             continue
         for target in find_links(path, path.read_text(encoding="utf-8")):
             if not target.exists():
-                warnings["broken_index_links"].append(f"{path}: {target}")
+                warnings["broken_index_links"].append(f"{relative_path(path)}: {relative_path(target)}")
 
-    needs_review = [str(path) for path, meta, _ in cards if "needs_review" in (meta.get("tags") or [])]
+    needs_review = [relative_path(path) for path, meta, _ in cards if "needs_review" in (meta.get("tags") or [])]
     report = render_report(count=len(cards), warnings=warnings, severe=severe, needs_review=needs_review)
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(report, encoding="utf-8")

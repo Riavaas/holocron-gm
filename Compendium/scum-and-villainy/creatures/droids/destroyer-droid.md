@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["darkvision 60 ft", "passive Perception 15"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
+traits: ["Circuitry", "Ball Form"]
 actions: ["Multiattack", "Blaster Cannons", "Blaster Volley"]
 reactions: ["Deflector Shield"]
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["brute", "ranged"]
 
 ## Traits
 
-None detected.
+Circuitry, Ball Form
 
 ## Actions
 

@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["Darkvision 60 Ft", "passive Perception 13"]
 languages: ["Speaks binary", "understands Basic"]
-traits: []
+traits: ["Circuitry", "Keen Hearing and Sight", "Rocket Boost (1/day)", "Tech Casting"]
 actions: ["Shockprod"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["ranged"]
 
 ## Traits
 
-None detected.
+Circuitry, Keen Hearing and Sight, Rocket Boost (1/day), Tech Casting
 
 ## Actions
 

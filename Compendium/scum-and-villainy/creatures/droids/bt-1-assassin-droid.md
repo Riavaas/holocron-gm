@@ -29,8 +29,8 @@ damage_immunities: []
 condition_immunities: ["poison", "disease"]
 senses: ["darkvision 60 ft", "passive Perception 15"]
 languages: ["Binary", "Galactic Basic"]
-traits: []
-actions: ["Multiattack", "Cannon attacks", "Blaster Cannon", "DC 16 Dexterity saving throw", "Flamethrower (2/day)", "Rocket Barrage (2/Day)"]
+traits: ["Circuitry", "Legendary Resistance (3/Day)"]
+actions: ["Multiattack", "Blaster Cannon", "Flamethrower (2/day)", "Rocket Barrage (2/Day)"]
 reactions: []
 legendary_actions: ["Attack", "Detect", "Rocket Boost"]
 lair_actions: []
@@ -52,7 +52,7 @@ role: ["skirmisher", "legendary", "ranged"]
 
 * Type: Small droid, unaligned
 * Role: skirmisher, legendary, ranged
-* Main danger: Multiattack, Cannon attacks, Blaster Cannon, DC 16 Dexterity saving throw, Flamethrower (2/day), Rocket Barrage (2/Day)
+* Main danger: Multiattack, Blaster Cannon, Flamethrower (2/day), Rocket Barrage (2/Day)
 * Star Wars context: use as a independent threat or encounter piece when that faction/context fits.
 
 ## Stat Summary
@@ -77,11 +77,11 @@ role: ["skirmisher", "legendary", "ranged"]
 
 ## Traits
 
-None detected.
+Circuitry, Legendary Resistance (3/Day)
 
 ## Actions
 
-Multiattack, Cannon attacks, Blaster Cannon, DC 16 Dexterity saving throw, Flamethrower (2/day), Rocket Barrage (2/Day)
+Multiattack, Blaster Cannon, Flamethrower (2/day), Rocket Barrage (2/Day)
 
 ## Reactions
 

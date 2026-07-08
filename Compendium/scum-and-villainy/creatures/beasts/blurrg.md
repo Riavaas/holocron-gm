@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: []
 senses: ["passive Perception 8"]
 languages: []
-traits: []
+traits: ["Siege Monster", "Sure-Footed", "Beast of Burden"]
 actions: ["Bite"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["combatant"]
 
 ## Traits
 
-None detected.
+Siege Monster, Sure-Footed, Beast of Burden
 
 ## Actions
 

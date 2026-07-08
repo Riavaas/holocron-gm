@@ -29,8 +29,8 @@ damage_immunities: ["poison; kinetic", "ion", "energy from unenhanced weapons"]
 condition_immunities: ["charmed", "exhaustion", "frightened", "poisoned"]
 senses: ["truesight 120 ft", "passive Perception 29"]
 languages: ["all", "telepathy 120 ft"]
-traits: []
-actions: ["Multiattack", "Tentacles", "Will", "Wisdome saving throw", "Abeloth until the start of its next turn", "Abeloth's next turn"]
+traits: ["Innate Forcecasting", "Charisma (force save DC 23)", "Legendary Resistance (3/day)", "Force Resistance", "Enhanced Being", "One with the Force"]
+actions: ["Multiattack", "Tentacles", "Will"]
 reactions: []
 legendary_actions: ["Draining Lightning", "Maddening Will"]
 lair_actions: []
@@ -52,7 +52,7 @@ role: ["legendary"]
 
 * Type: Medium undead, neautral dark side
 * Role: legendary
-* Main danger: Multiattack, Tentacles, Will, Wisdome saving throw, Abeloth until the start of its next turn, Abeloth's next turn
+* Main danger: Multiattack, Tentacles, Will
 * Star Wars context: use as a unknown threat or encounter piece when that faction/context fits.
 
 ## Stat Summary
@@ -77,11 +77,11 @@ role: ["legendary"]
 
 ## Traits
 
-None detected.
+Innate Forcecasting, Charisma (force save DC 23), Legendary Resistance (3/day), Force Resistance, Enhanced Being, One with the Force
 
 ## Actions
 
-Multiattack, Tentacles, Will, Wisdome saving throw, Abeloth until the start of its next turn, Abeloth's next turn
+Multiattack, Tentacles, Will
 
 ## Reactions
 

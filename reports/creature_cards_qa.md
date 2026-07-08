@@ -2,7 +2,7 @@
 
 ## Summary
 
-* Creature cards: 30
+* Creature cards: 225
 * Warnings: 0
 * Severe errors: 0
 * Needs review tags: 0

@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: []
 senses: ["blindsight 120 ft", "passive Perception 13"]
 languages: []
-traits: []
+traits: ["Dive Attack", "Echolocation", "Hold Breath"]
 actions: ["Bite"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["combatant"]
 
 ## Traits
 
-None detected.
+Dive Attack, Echolocation, Hold Breath
 
 ## Actions
 

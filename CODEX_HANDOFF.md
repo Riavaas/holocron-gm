@@ -22,7 +22,7 @@ Initial Holocron GM rules encyclopedia is implemented.
 - Player Handbook conditions, Force/Tech casting, and equipment overview added with rule cards and lookup indexes.
 - Player Handbook Force and Tech power cards generated with metadata for future UI lookup.
 - Player Handbook Chapter 13 maneuver cards generated with metadata for future UI/combat tracker lookup.
-- Scum and Villainy creature/statblock compendium started with 30 generated creature cards and encounter indexes.
+- Scum and Villainy creature/statblock compendium expanded to all 225 detected creature cards and encounter indexes.
 - QA tooling available for power and maneuver cards.
 - Creature metadata QA exists for future encounter builder work.
 - Ingestion now indexes both `Books/` and `Compendium/`.
@@ -46,7 +46,7 @@ Build compendium:
 ```bash
 python3 scripts/build_compendium.py --book player-handbook
 python3 scripts/build_compendium.py --book player-handbook --chapter 13 --section maneuvers --maneuvers
-python3 scripts/build_compendium.py --book scum-and-villainy --creatures --limit 30
+python3 scripts/build_compendium.py --book scum-and-villainy --creatures
 ```
 
 ## Tests
@@ -59,7 +59,7 @@ pytest
 
 - Improve PDF section detection.
 - Review maneuver card metadata quality, then expand selected equipment tables without copying full text.
-- Expand Scum and Villainy creature extraction beyond the starter 30 cards.
+- Continue improving creature metadata heuristics, especially environment, faction, and combat role.
 - Add OCR option for scanned pages.
 - Add campaign note CRUD.
 - Add UI GM dashboard.

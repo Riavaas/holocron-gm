@@ -20,7 +20,7 @@ Force power cards and Tech power cards are available under `Compendium/player-ha
 
 Maneuver cards are available under `Compendium/player-handbook/maneuvers/`. Each card includes maneuver metadata for future UI and combat tracker filters: maneuver type, activation, range, duration, save, attack roll, damage types, conditions, resource cost, and prerequisites.
 
-Scum and Villainy creature/statblock compendium has started under `Compendium/scum-and-villainy/`. Creature cards include metadata for future encounter builder and combat tracker features: type, size, CR, XP, AC, HP, speed, abilities, saves, skills, defenses, senses, languages, traits, actions, reactions, legendary actions, environment, faction, and role.
+Scum and Villainy creature/statblock compendium under `Compendium/scum-and-villainy/` contains all 225 detected statblocks. Creature cards include metadata for future encounter builder and combat tracker features: type, size, CR, XP, AC, HP, speed, abilities, saves, skills, defenses, senses, languages, traits, actions, reactions, legendary actions, environment, faction, and role.
 
 Metadata QA exists at:
 

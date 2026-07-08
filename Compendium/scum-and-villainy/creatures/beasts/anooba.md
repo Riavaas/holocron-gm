@@ -29,7 +29,7 @@ damage_immunities: []
 condition_immunities: []
 senses: ["passive perception 13"]
 languages: []
-traits: []
+traits: ["Keen Hearing and Smell", "Pack Tactics"]
 actions: ["Bite"]
 reactions: []
 legendary_actions: []
@@ -77,7 +77,7 @@ role: ["combatant"]
 
 ## Traits
 
-None detected.
+Keen Hearing and Smell, Pack Tactics
 
 ## Actions
 

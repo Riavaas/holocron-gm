@@ -29,7 +29,7 @@ damage_immunities: ["poison; kinetic", "ion", "energy from unenhanced weapons"]
 condition_immunities: ["charmed", "exhaustion", "frightened", "paralyzed", "poisoned"]
 senses: ["truesight 120 ft", "passive Perception 19"]
 languages: ["all", "telepathy 120 ft"]
-traits: []
+traits: ["Legendary Resistance (3/Day)", "Force Resistance", "Font of Power", "Pool of Knowledge", "Forcecasting"]
 actions: ["Shotosaber", "Teleport"]
 reactions: []
 legendary_actions: ["At Will Power", "Attack", "Teleport"]
@@ -77,7 +77,7 @@ role: ["legendary"]
 
 ## Traits
 
-None detected.
+Legendary Resistance (3/Day), Force Resistance, Font of Power, Pool of Knowledge, Forcecasting
 
 ## Actions
 
