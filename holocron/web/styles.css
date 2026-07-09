@@ -98,7 +98,7 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; }
 input[type="range"] { width: 100%; accent-color: var(--accent); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
 label { color: var(--muted); font-size: 11px; }
-input[type="number"], input[type="text"], select {
+input[type="number"], input[type="text"], input[type="search"], select {
   width: 100%;
   height: 32px;
   margin-top: 4px;
@@ -222,8 +222,25 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 .secondary-button { border-color: var(--line); background: var(--panel-raised); color: var(--muted); }
 .quick-add { padding: 16px; }
-.token-library { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.library-entry { display: grid; justify-items: center; gap: 4px; color: var(--muted); font-size: 9px; cursor: grab; }
+.bestiary-filters { display: grid; grid-template-columns: 1fr 72px; gap: 6px; margin-bottom: 10px; }
+.bestiary-filters input, .bestiary-filters select { margin: 0; }
+.token-library { display: grid; gap: 5px; }
+.library-entry {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: grab;
+}
+.library-entry:hover { border-color: var(--line); background: var(--panel-raised); }
+.library-entry-info { min-width: 0; }
+.library-entry-info strong { display: block; overflow: hidden; color: var(--text); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.library-entry-info span, .library-entry > span:last-child { font-size: 9px; }
 .library-token { width: 36px; height: 36px; font-size: 12px; border: 2px solid #7f8a94; }
 dialog { width: 340px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); }
 dialog::backdrop { background: rgba(0,0,0,.7); }

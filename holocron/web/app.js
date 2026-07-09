@@ -28,6 +28,7 @@ state.imageUrl = null;
 state.pointer = null;
 state.measurement = null;
 state.draggedToken = null;
+state.creatureCache = [];
 
 const tokenPresets = [
   { name: "Sith Trooper", type: "enemy", hp: 18, ac: 14 },
@@ -45,6 +46,7 @@ function persist() {
   delete clean.pointer;
   delete clean.measurement;
   delete clean.draggedToken;
+  delete clean.creatureCache;
   localStorage.setItem("holocron.session", JSON.stringify(clean));
 }
 
@@ -277,12 +279,38 @@ function renderInitiative() {
   document.querySelector("#round-number").textContent = state.round;
 }
 
-function renderLibrary() {
-  document.querySelector("#token-library").innerHTML = tokenPresets.map((item, index) => `
-    <div class="library-entry" draggable="true" data-preset="${index}">
+function renderLibrary(items = tokenPresets) {
+  state.creatureCache = items;
+  document.querySelector("#token-library").innerHTML = items.map((item, index) => `
+    <div class="library-entry" draggable="true" data-creature="${index}" title="Drag ${item.name} to the map">
       <span class="library-token ${item.type}">${initials(item.name)}</span>
-      <span>${item.name}</span>
+      <span class="library-entry-info"><strong>${item.name}</strong><span>${item.type || "creature"}</span></span>
+      <span>CR ${item.cr ?? "—"}</span>
     </div>`).join("");
+}
+
+async function loadBestiary() {
+  const search = document.querySelector("#bestiary-search").value.trim();
+  const cr = document.querySelector("#bestiary-cr").value;
+  const params = new URLSearchParams({ limit: "30" });
+  if (search) params.set("q", search);
+  if (cr) params.set("cr", cr);
+  try {
+    const response = await fetch(`/api/compendium/creatures?${params}`);
+    if (!response.ok) throw new Error("Bestiary unavailable");
+    const payload = await response.json();
+    renderLibrary(payload.items);
+    document.querySelector("#bestiary-count").textContent = `${payload.total} creatures`;
+    const crSelect = document.querySelector("#bestiary-cr");
+    if (crSelect.options.length === 1) {
+      for (const value of payload.filters.challenge_ratings) {
+        crSelect.add(new Option(`CR ${value}`, value));
+      }
+    }
+  } catch {
+    renderLibrary();
+    document.querySelector("#bestiary-count").textContent = "Offline presets";
+  }
 }
 
 function updateZoom() {
@@ -395,15 +423,22 @@ document.querySelector("#clear-measurement").addEventListener("click", () => {
 });
 
 document.querySelector("#token-library").addEventListener("dragstart", (event) => {
-  const entry = event.target.closest("[data-preset]");
-  if (entry) event.dataTransfer.setData("application/holocron-token", entry.dataset.preset);
+  const entry = event.target.closest("[data-creature]");
+  if (entry) event.dataTransfer.setData("application/holocron-token", entry.dataset.creature);
 });
 canvas.addEventListener("dragover", (event) => event.preventDefault());
 canvas.addEventListener("drop", (event) => {
   event.preventDefault();
   const index = event.dataTransfer.getData("application/holocron-token");
-  if (index !== "") addCombatant(tokenPresets[Number(index)], worldPoint(event));
+  if (index !== "") addCombatant(state.creatureCache[Number(index)], worldPoint(event));
 });
+
+let bestiaryTimer;
+document.querySelector("#bestiary-search").addEventListener("input", () => {
+  clearTimeout(bestiaryTimer);
+  bestiaryTimer = setTimeout(loadBestiary, 180);
+});
+document.querySelector("#bestiary-cr").addEventListener("change", loadBestiary);
 
 const dialog = document.querySelector("#combatant-dialog");
 document.querySelector("#add-combatant").addEventListener("click", () => dialog.showModal());
@@ -458,6 +493,6 @@ document.querySelector("#clear-encounter").addEventListener("click", () => {
 });
 
 window.addEventListener("resize", resizeCanvas);
-renderLibrary();
+loadBestiary();
 renderInitiative();
 resizeCanvas();

@@ -114,7 +114,13 @@
         <button id="clear-encounter" class="secondary-button">Clear</button>
       </section>
       <section class="quick-add">
-        <div class="section-heading"><h2>Quick add</h2><span>Drag to map</span></div>
+        <div class="section-heading"><h2>Bestiary</h2><span id="bestiary-count">Local</span></div>
+        <div class="bestiary-filters">
+          <input id="bestiary-search" type="search" placeholder="Search creature, faction…">
+          <select id="bestiary-cr" aria-label="Challenge rating">
+            <option value="">All CR</option>
+          </select>
+        </div>
         <div id="token-library" class="token-library"></div>
       </section>
     </aside>

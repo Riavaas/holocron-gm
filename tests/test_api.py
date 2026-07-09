@@ -32,6 +32,30 @@ def test_dashboard_static_assets_are_served():
     assert "measurementResult" in response.text
 
 
+def test_compendium_creatures_can_be_filtered():
+    client = TestClient(app)
+
+    response = client.get("/api/compendium/creatures", params={"q": "droid", "type": "droid"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] > 0
+    assert all(item["type"] == "droid" for item in body["items"])
+    assert {"name", "cr", "hp", "ac", "actions"} <= body["items"][0].keys()
+
+
+def test_compendium_creature_detail_and_missing():
+    client = TestClient(app)
+    catalog = client.get("/api/compendium/creatures", params={"limit": 1}).json()
+    slug = catalog["items"][0]["slug"]
+
+    response = client.get(f"/api/compendium/creatures/{slug}")
+
+    assert response.status_code == 200
+    assert response.json()["slug"] == slug
+    assert client.get("/api/compendium/creatures/not-real").status_code == 404
+
+
 def test_api_search_and_chunk(tmp_path, monkeypatch):
     db_path = tmp_path / "holocron.sqlite"
     books = tmp_path / "Books"
