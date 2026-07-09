@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Holocron GM</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">H</span>
+      <div><strong>Holocron GM</strong><small>Session control</small></div>
+    </div>
+    <nav class="mode-tabs" aria-label="Workspace">
+      <button class="active" data-view="battlemap">Battlemap</button>
+      <button data-view="characters">Characters</button>
+      <button data-view="notes">Notes</button>
+      <button data-view="compendium">Compendium</button>
+      <button data-view="books">Books</button>
+      <button data-view="toolkit">Toolkit</button>
+    </nav>
+    <div class="campaign-controls">
+      <select id="campaign-select" aria-label="Active campaign"></select>
+      <button id="save-campaign" class="icon-button" title="Save campaign">◇</button>
+      <button id="new-campaign" class="icon-button" title="New campaign">＋</button>
+      <button id="delete-campaign" class="icon-button" title="Delete campaign">×</button>
+      <a id="export-campaign" class="icon-button" href="#" title="Export campaign">↓</a>
+      <label class="icon-button import-campaign" title="Import campaign">↑<input id="import-campaign" type="file" accept=".json,.holocron.json,application/json"></label>
+    </div>
+    <div class="session-status"><span></span><span id="campaign-save-status">Saved</span></div>
+    <a class="icon-button player-view-link" href="/player" target="_blank" title="Open player view">P</a>
+    <button id="assistant-toggle" class="icon-button assistant-toggle" title="Open AI assistant">AI</button>
+  </header>
+
+  <main id="battlemap-view" class="workspace">
+    <aside class="left-panel">
+      <section>
+        <div class="section-heading">
+          <h2>Map setup</h2>
+          <button id="reset-view" class="icon-button" title="Reset view" aria-label="Reset view">↺</button>
+        </div>
+        <label class="drop-zone" id="drop-zone">
+          <input id="map-file" type="file" accept="image/jpeg,image/png,image/webp">
+          <span class="upload-icon">＋</span>
+          <strong>Drop battlemap</strong>
+          <small>JPG, PNG or WEBP</small>
+        </label>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Grid & scale</h2><output id="grid-output">64 px</output></div>
+        <label class="control-label" for="grid-size">Grid density</label>
+        <input id="grid-size" type="range" min="20" max="180" value="64">
+        <div class="field-row">
+          <label>1 square
+            <input id="unit-value" type="number" min="0.1" step="0.1" value="5">
+          </label>
+          <label>Unit
+            <select id="unit-name">
+              <option value="ft">feet</option>
+              <option value="m">meters</option>
+              <option value="mi">miles</option>
+              <option value="km">kilometers</option>
+            </select>
+          </label>
+        </div>
+        <label class="control-label" for="travel-speed">Travel speed</label>
+        <select id="travel-speed">
+          <option value="0">Tactical movement</option>
+          <option value="3">Slow pace · 3 mph</option>
+          <option value="4">Normal pace · 4 mph</option>
+          <option value="5">Fast pace · 5 mph</option>
+          <option value="600">Speeder · 600 mph</option>
+        </select>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Layers</h2></div>
+        <label class="toggle-row"><span><i class="layer-dot background"></i>Background map</span><input data-layer="background" type="checkbox" checked></label>
+        <label class="toggle-row"><span><i class="layer-dot objects"></i>Interactive objects</span><input data-layer="objects" type="checkbox" checked></label>
+        <label class="toggle-row"><span><i class="layer-dot tokens"></i>Token layer</span><input data-layer="tokens" type="checkbox" checked></label>
+        <label class="toggle-row"><span><i class="layer-dot grid"></i>Grid overlay</span><input data-layer="grid" type="checkbox" checked></label>
+        <label class="toggle-row"><span><i class="layer-dot lighting"></i>Lighting preview</span><input data-layer="lighting" type="checkbox"></label>
+        <label class="toggle-row"><span><i class="layer-dot fog"></i>Persistent fog</span><input data-layer="fog" type="checkbox"></label>
+        <label class="control-label" for="ambient-darkness">Ambient darkness <output id="darkness-output">85%</output></label>
+        <input id="ambient-darkness" type="range" min="0" max="100" value="85">
+        <div class="field-row">
+          <label>Vision
+            <select id="vision-type">
+              <option value="normal">Normal</option>
+              <option value="darkvision">Darkvision</option>
+              <option value="thermal">Thermal</option>
+              <option value="blinded">Blinded</option>
+            </select>
+          </label>
+          <label>Range (squares)
+            <input id="vision-range" type="number" min="1" max="30" value="6">
+          </label>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Tools</h2></div>
+        <div class="tool-grid">
+          <button class="tool active" data-tool="select" title="Select and move tokens"><b>↖</b>Select</button>
+          <button class="tool" data-tool="measure" title="Measure map distance"><b>⌁</b>Measure</button>
+          <button class="tool" data-tool="wall" title="Draw line-of-sight walls"><b>╱</b>Wall</button>
+          <button class="tool" data-tool="ping" title="Place a map ping"><b>◎</b>Ping</button>
+          <button class="tool" data-tool="note" title="Attach a private GM note"><b>⌑</b>Note pin</button>
+          <button class="tool" data-tool="door" title="Draw an interactive door"><b>⊓</b>Door</button>
+        </div>
+      </section>
+    </aside>
+
+    <section class="map-shell" id="map-shell">
+      <canvas id="map-canvas"></canvas>
+      <div class="map-toolbar">
+        <button id="zoom-out" class="icon-button" title="Zoom out">−</button>
+        <output id="zoom-output">100%</output>
+        <button id="zoom-in" class="icon-button" title="Zoom in">＋</button>
+        <button id="clear-measurement" class="text-button">Clear marks</button>
+      </div>
+      <div id="measurement" class="measurement" hidden></div>
+      <div id="map-empty" class="map-empty">
+        <div class="empty-beacon">◇</div>
+        <strong>Battlemap ready</strong>
+        <span>Import a map or start placing tokens on the tactical grid.</span>
+      </div>
+    </section>
+
+    <aside class="right-panel">
+      <section class="encounter-header">
+        <div><small>ACTIVE ENCOUNTER</small><h2>Docking Bay 12</h2></div>
+        <button id="add-combatant" class="icon-button" title="Add combatant">＋</button>
+      </section>
+      <section class="round-strip">
+        <span>Round <strong id="round-number">1</strong></span>
+        <button id="previous-turn" title="Previous turn">←</button>
+        <button id="next-turn" title="Next turn">→</button>
+      </section>
+      <ol id="initiative-list" class="initiative-list"></ol>
+      <section id="combatant-inspector" class="combatant-inspector" hidden>
+        <div class="section-heading">
+          <div><small>SELECTED</small><h2 id="inspector-name"></h2></div>
+          <button id="roll-check" class="icon-button" title="Roll d20">D20</button>
+        </div>
+        <div class="condition-control">
+          <select id="condition-select" aria-label="Condition">
+            <option value="">Choose condition…</option>
+            <option value="blinded">Blinded</option>
+            <option value="frightened">Frightened</option>
+            <option value="grappled">Grappled</option>
+            <option value="incapacitated">Incapacitated</option>
+            <option value="poisoned">Poisoned</option>
+            <option value="prone">Prone</option>
+            <option value="restrained">Restrained</option>
+            <option value="shocked">Shocked</option>
+            <option value="slowed">Slowed</option>
+            <option value="stunned">Stunned</option>
+            <option value="unconscious">Unconscious</option>
+          </select>
+          <button id="toggle-condition" class="secondary-button">Apply</button>
+        </div>
+        <div id="condition-chips" class="condition-chips"></div>
+        <p id="action-restriction" class="action-restriction">No active restrictions.</p>
+        <div class="combat-automation">
+          <select id="combat-target" aria-label="Combat target"></select>
+          <div id="combat-actions" class="combat-actions"></div>
+        </div>
+        <output id="roll-result" class="roll-result" hidden></output>
+      </section>
+      <section class="encounter-actions">
+        <button id="roll-initiative" class="primary-button">Roll initiative</button>
+        <button id="clear-encounter" class="secondary-button">Clear</button>
+      </section>
+      <section class="combat-log-shell">
+        <div class="section-heading"><h2>Combat log</h2><button id="clear-combat-log" class="text-button">Clear</button></div>
+        <div id="combat-log" class="combat-log"></div>
+      </section>
+      <section class="quick-add">
+        <div class="section-heading"><h2>Bestiary</h2><span id="bestiary-count">Local</span></div>
+        <div class="bestiary-filters">
+          <input id="bestiary-search" type="search" placeholder="Search creature, faction…">
+          <select id="bestiary-cr" aria-label="Challenge rating">
+            <option value="">All CR</option>
+          </select>
+        </div>
+        <div id="token-library" class="token-library"></div>
+      </section>
+    </aside>
+  </main>
+  <section id="player-gate" class="player-gate" hidden>
+    <div>
+      <small>PLAYER VIEW</small>
+      <h1>Choose your character</h1>
+      <select id="player-character-select"></select>
+      <button id="join-as-player" class="primary-button">Enter session</button>
+    </div>
+  </section>
+  <aside id="player-hud" class="player-hud" hidden>
+    <div class="player-hud-title"><div><small>PLAYING</small><h2 id="player-name"></h2></div><button id="change-player" class="icon-button" title="Change character">↺</button></div>
+    <div id="player-resources" class="player-resource-list"></div>
+    <div class="section-heading"><h2>Equipment & inventory</h2><span id="player-credits"></span></div>
+    <div id="player-inventory" class="player-inventory"></div>
+  </aside>
+
+  <main id="characters-view" class="characters-workspace" hidden>
+    <aside class="character-roster">
+      <div class="notes-sidebar-header"><h2>Party</h2><button id="new-character" class="icon-button" title="New character">＋</button></div>
+      <div id="character-list"></div>
+    </aside>
+    <section class="character-main">
+      <header class="character-header">
+        <div><small>ACTIVE CHARACTER</small><h1 id="character-name"></h1></div>
+        <label>Species
+          <select id="character-species">
+            <option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option>
+          </select>
+        </label>
+        <div class="derived-stats"><span>AC <strong id="character-ac">10</strong></span><span>Attack <strong id="character-attack">+0</strong></span><span>Load <strong id="character-weight">0</strong> lb</span></div>
+        <button id="deploy-character" class="icon-button" title="Deploy character to battlemap">⌖</button>
+        <button id="delete-character" class="icon-button" title="Delete character">×</button>
+      </header>
+      <div class="paper-doll">
+        <div class="silhouette" aria-hidden="true">
+          <i class="body-head"></i><i class="body-torso"></i><i class="body-arm left"></i><i class="body-arm right"></i><i class="body-leg left"></i><i class="body-leg right"></i>
+        </div>
+        <button class="equipment-slot head" data-slot="head"><small>HEAD</small><strong>Empty</strong></button>
+        <button class="equipment-slot shoulders" data-slot="shoulders"><small>SHOULDERS</small><strong>Empty</strong></button>
+        <button class="equipment-slot chest" data-slot="chest"><small>CHEST</small><strong>Empty</strong></button>
+        <button class="equipment-slot back" data-slot="back"><small>BACK</small><strong>Empty</strong></button>
+        <button class="equipment-slot hands" data-slot="hands"><small>HANDS</small><strong>Empty</strong></button>
+        <button class="equipment-slot belt" data-slot="belt"><small>BELT</small><strong>Empty</strong></button>
+        <button class="equipment-slot legs" data-slot="legs"><small>LEGS</small><strong>Empty</strong></button>
+        <button class="equipment-slot feet" data-slot="feet"><small>FEET</small><strong>Empty</strong></button>
+        <button class="equipment-slot main-hand" data-slot="mainHand"><small>MAIN HAND</small><strong>Empty</strong></button>
+        <button class="equipment-slot off-hand" data-slot="offHand"><small>OFF HAND</small><strong>Empty</strong></button>
+        <button class="equipment-slot cybernetic" data-slot="cybernetic"><small>CYBERNETIC</small><strong>Empty</strong></button>
+      </div>
+      <footer class="stash-shell">
+        <div class="section-heading"><h2>Stash & cargo</h2><button id="add-inventory-item" class="text-button">Add item</button></div>
+        <div id="character-stash" class="character-stash"></div>
+      </footer>
+    </section>
+    <aside class="character-tracker">
+      <section>
+        <div class="section-heading"><h2>Resources</h2><span>Click to adjust</span></div>
+        <div id="resource-rings" class="resource-rings"></div>
+      </section>
+      <section>
+        <div class="section-heading"><h2>Alignment pressure</h2><output id="alignment-output">Balanced</output></div>
+        <input id="alignment-slider" type="range" min="-10" max="10" value="0">
+        <div class="alignment-labels"><span>Light</span><span>Dark</span></div>
+      </section>
+      <section>
+        <div class="section-heading"><h2>Economy</h2><span id="cargo-capacity">0 / 100 lb</span></div>
+        <div class="credit-control"><button data-credit-delta="-100">−</button><strong id="character-credits">0 cr</strong><button data-credit-delta="100">＋</button></div>
+        <button id="sell-selected-item" class="secondary-button" disabled>Sell selected item</button>
+      </section>
+      <section class="gm-private">
+        <div class="section-heading"><h2>GM private</h2><span>Hidden from player view</span></div>
+        <label>Passive insight<input id="passive-insight" type="number" min="0"></label>
+        <label>Backstory hooks<textarea id="gm-hooks" rows="8"></textarea></label>
+      </section>
+    </aside>
+  </main>
+
+  <main id="notes-view" class="notes-workspace" hidden>
+    <aside class="notes-sidebar">
+      <div class="notes-sidebar-header">
+        <h2>Campaign notes</h2>
+        <button id="new-note" class="icon-button" title="New note">＋</button>
+      </div>
+      <input id="note-search" type="search" placeholder="Search notes…">
+      <div id="note-list" class="note-list"></div>
+    </aside>
+    <section class="note-editor-shell">
+      <header class="note-toolbar">
+        <input id="note-title" type="text" maxlength="80" aria-label="Note title">
+        <span id="save-status">Saved locally</span>
+        <button id="delete-note" class="icon-button" title="Delete note">×</button>
+      </header>
+      <div class="note-surface">
+        <textarea id="note-editor" spellcheck="true" aria-label="Markdown note"></textarea>
+        <article id="note-preview" class="note-preview"></article>
+      </div>
+    </section>
+    <aside class="history-panel">
+      <div class="section-heading"><h2>Version history</h2><span id="version-count">0 versions</span></div>
+      <div id="version-list" class="version-list"></div>
+    </aside>
+  </main>
+
+  <main id="compendium-view" class="compendium-workspace" hidden>
+    <aside class="compendium-nav">
+      <div class="section-heading"><h2>SW5e Library</h2><span>Offline</span></div>
+      <button class="compendium-preset active" data-query="combat">Combat rules</button>
+      <button class="compendium-preset" data-query="force power">Force powers</button>
+      <button class="compendium-preset" data-query="tech power">Tech powers</button>
+      <button class="compendium-preset" data-query="weapon properties">Equipment</button>
+      <button class="compendium-preset" data-query="condition">Conditions</button>
+      <button class="compendium-preset" data-query="starship">Starships</button>
+      <button class="compendium-preset" data-query="creature">Bestiary</button>
+    </aside>
+    <section class="compendium-results-shell">
+      <header class="compendium-searchbar">
+        <input id="compendium-search" type="search" placeholder="Search every indexed SW5e source…" autocomplete="off">
+        <button id="run-compendium-search" class="primary-button">Search</button>
+      </header>
+      <div class="results-summary"><span id="results-count">Ready</span><span>Local source citations</span></div>
+      <div id="compendium-results" class="compendium-results"></div>
+    </section>
+    <aside class="rules-console">
+      <div class="section-heading"><div><small>RULES ASSISTANT</small><h2>Ask Holocron</h2></div><span>Extractive</span></div>
+      <div id="rules-answer" class="rules-answer">
+        <p>Ask a mechanical question. Answers are assembled from the local index and retain source citations.</p>
+      </div>
+      <form id="rules-form">
+        <textarea id="rules-question" rows="4" placeholder="How does cover interact with area effects?" required></textarea>
+        <button class="primary-button">Ask rules</button>
+      </form>
+    </aside>
+  </main>
+
+  <main id="books-view" class="books-workspace" hidden>
+    <aside class="books-library">
+      <div class="section-heading"><h2>Sourcebooks</h2><span id="books-count">Local</span></div>
+      <input id="book-search" type="search" placeholder="Filter books…">
+      <div id="book-list" class="book-list"></div>
+    </aside>
+    <section class="pdf-reader">
+      <header class="pdf-toolbar">
+        <div><small>READING</small><h2 id="reader-title">Select a sourcebook</h2></div>
+        <span id="reader-size"></span>
+        <a id="open-book-tab" class="secondary-button" href="#" target="_blank" rel="noopener" hidden>Open in new tab</a>
+      </header>
+      <div id="reader-empty" class="reader-empty">
+        <strong>Local PDF reader</strong>
+        <span>Select a book from the library. Files stay on this machine.</span>
+      </div>
+      <iframe id="book-frame" title="SW5e sourcebook reader" hidden></iframe>
+    </section>
+  </main>
+
+  <main id="toolkit-view" class="toolkit-workspace" hidden>
+    <section class="generator-column">
+      <header class="toolkit-heading"><div><small>PROCEDURAL</small><h1>NPC Generator</h1></div><button id="generate-npc" class="primary-button">Generate</button></header>
+      <div id="npc-output" class="npc-output"></div>
+      <div class="generator-controls">
+        <label>Species<select id="npc-species"><option value="">Any species</option><option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option><option>Rodian</option><option>Chiss</option></select></label>
+        <label>Role<select id="npc-role"><option value="">Any role</option><option>Smuggler</option><option>Bounty Hunter</option><option>Officer</option><option>Mechanic</option><option>Informant</option><option>Force Adept</option></select></label>
+      </div>
+      <section class="generated-details">
+        <h2>Attributes</h2>
+        <div id="npc-attributes" class="attribute-strip"></div>
+        <h2>Hook</h2>
+        <p id="npc-hook"></p>
+      </section>
+    </section>
+    <section class="generator-column middle">
+      <header class="toolkit-heading"><div><small>ENCOUNTER</small><h1>Loot & Opposition</h1></div></header>
+      <div class="toolkit-form-row">
+        <label>Target CR<input id="toolkit-cr" type="number" min="0" max="30" value="5"></label>
+        <label>Party size<input id="toolkit-party-size" type="number" min="1" max="10" value="4"></label>
+      </div>
+      <div class="dual-actions">
+        <button id="generate-loot" class="primary-button">Generate loot</button>
+        <button id="generate-encounter" class="secondary-button">Build encounter</button>
+      </div>
+      <div id="loot-output" class="toolkit-output"></div>
+      <div class="section-heading encounter-tool-heading"><h2>Suggested opposition</h2><button id="send-encounter" class="text-button" disabled>Add to tracker</button></div>
+      <div id="encounter-output" class="encounter-output"></div>
+      <section class="dice-tool">
+        <div class="section-heading"><h2>3D dice</h2><output id="dice-result">Ready</output></div>
+        <canvas id="dice-canvas"></canvas>
+        <div class="dice-buttons"><button data-die="6">D6</button><button data-die="8">D8</button><button data-die="12">D12</button><button data-die="20">D20</button></div>
+      </section>
+    </section>
+    <section class="generator-column">
+      <header class="toolkit-heading"><div><small>ATMOSPHERE</small><h1>Scene Flavor</h1></div><button id="generate-flavor" class="primary-button">Generate</button></header>
+      <div class="generator-controls">
+        <label>Scene<select id="flavor-scene"><option value="cantina">Cantina</option><option value="location">Location</option><option value="hazard">Hazard</option><option value="starship">Starship</option></select></label>
+        <label>Tone<select id="flavor-tone"><option value="tense">Tense</option><option value="mysterious">Mysterious</option><option value="lively">Lively</option><option value="grim">Grim</option></select></label>
+      </div>
+      <blockquote id="flavor-output" class="flavor-output"></blockquote>
+      <button id="flavor-to-note" class="secondary-button">Save as campaign note</button>
+      <section class="quick-prompts">
+        <div class="section-heading"><h2>Session sparks</h2><span>Local tables</span></div>
+        <p id="session-spark"></p>
+      </section>
+      <section class="soundboard">
+        <div class="section-heading"><h2>Soundboard</h2><span>Local output</span></div>
+        <div class="soundboard-grid">
+          <button data-sound="blaster">Blaster</button><button data-sound="saber">Lightsaber</button>
+          <button data-sound="alarm">Alarm</button><button data-sound="door">Blast door</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="combatant-dialog">
+    <form method="dialog" id="combatant-form">
+      <div class="dialog-heading"><h2>Add combatant</h2><button id="close-combatant-dialog" type="button" class="icon-button" aria-label="Close">×</button></div>
+      <label>Name<input name="name" required maxlength="40" autocomplete="off"></label>
+      <div class="field-row">
+        <label>HP<input name="hp" type="number" min="1" value="10" required></label>
+        <label>Armor class<input name="ac" type="number" min="1" value="12" required></label>
+      </div>
+      <label>Type<select name="type"><option value="enemy">Enemy</option><option value="ally">Ally</option><option value="player">Player</option></select></label>
+      <button class="primary-button" value="default">Add to encounter</button>
+    </form>
+  </dialog>
+  <dialog id="note-pin-dialog">
+    <form id="note-pin-form">
+      <div class="dialog-heading"><h2>GM note pin</h2><button id="close-note-pin" type="button" class="icon-button" aria-label="Close">×</button></div>
+      <label>Linked note<select id="pin-note-select" required></select></label>
+      <label>Map reminder<textarea id="pin-snippet" rows="4" maxlength="240" placeholder="What matters at this exact location?"></textarea></label>
+      <div class="dialog-actions">
+        <button id="delete-note-pin" type="button" class="secondary-button" hidden>Delete</button>
+        <button id="open-pin-note" type="button" class="secondary-button">Open note</button>
+        <button class="primary-button">Save pin</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="character-dialog">
+    <form id="character-form">
+      <div class="dialog-heading"><h2>New character</h2><button type="button" class="icon-button" data-close-dialog="character-dialog">×</button></div>
+      <label>Name<input name="name" required maxlength="40"></label>
+      <label>Species<select name="species"><option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option></select></label>
+      <button class="primary-button">Create character</button>
+    </form>
+  </dialog>
+  <dialog id="inventory-dialog">
+    <form id="inventory-form">
+      <div class="dialog-heading"><h2>Add inventory item</h2><button type="button" class="icon-button" data-close-dialog="inventory-dialog">×</button></div>
+      <label>Name<input name="name" required maxlength="60"></label>
+      <div class="field-row"><label>Weight<input name="weight" type="number" min="0" step=".1" value="1"></label><label>Value<input name="value" type="number" min="0" value="100"></label></div>
+      <label>Slot<select name="slot"><option value="">Cargo</option><option value="head">Head</option><option value="chest">Chest</option><option value="back">Back</option><option value="mainHand">Main hand</option><option value="offHand">Off hand</option><option value="cybernetic">Cybernetic</option></select></label>
+      <button class="primary-button">Add item</button>
+    </form>
+  </dialog>
+  <dialog id="campaign-dialog">
+    <form id="campaign-form">
+      <div class="dialog-heading"><h2>New campaign</h2><button type="button" class="icon-button" data-close-dialog="campaign-dialog">×</button></div>
+      <label>Campaign name<input name="name" required maxlength="100"></label>
+      <button class="primary-button">Create campaign</button>
+    </form>
+  </dialog>
+  <aside id="assistant-drawer" class="assistant-drawer" hidden>
+    <header>
+      <div><small>CONTEXT AWARE</small><h2>GM Assistant</h2></div>
+      <button id="close-assistant" class="icon-button" title="Close assistant">×</button>
+    </header>
+    <div id="assistant-status" class="assistant-status">Checking provider…</div>
+    <div id="assistant-messages" class="assistant-messages">
+      <p class="assistant-message system">I can read the active encounter, characters, and current note. Without an API key, rules questions use the local index.</p>
+    </div>
+    <form id="assistant-form">
+      <textarea id="assistant-input" rows="4" placeholder="Create a hacked datapad handout…" required></textarea>
+      <div class="assistant-actions">
+        <button id="assistant-to-note" type="button" class="secondary-button" disabled>Save handout</button>
+        <button class="primary-button">Send</button>
+      </div>
+    </form>
+  </aside>
+  <script src="/static/app.js"></script>
+  <script type="module" src="/static/dice.js"></script>
+</body>
+</html>
