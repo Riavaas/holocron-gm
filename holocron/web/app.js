@@ -584,3 +584,180 @@ window.addEventListener("resize", resizeCanvas);
 loadBestiary();
 renderInitiative();
 resizeCanvas();
+
+const noteDefaults = {
+  activeId: null,
+  notes: [],
+};
+const noteState = { ...noteDefaults, ...JSON.parse(localStorage.getItem("holocron.notes") || "null") };
+let noteSaveTimer;
+
+function noteTimestamp(value = Date.now()) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+  }).format(value);
+}
+
+function saveNotes() {
+  localStorage.setItem("holocron.notes", JSON.stringify(noteState));
+  document.querySelector("#save-status").textContent = "Saved locally";
+}
+
+function activeNote() {
+  return noteState.notes.find((note) => note.id === noteState.activeId);
+}
+
+function markdownToHtml(markdown) {
+  let html = escapeHtml(markdown);
+  html = html
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/\[\[([^\]]+)\]\]/g, '<button class="wiki-link" data-wiki="$1">$1</button>');
+  return html.split(/\n{2,}/).map((block) =>
+    /^<h[1-3]>/.test(block) ? block : `<p>${block.replace(/\n/g, "<br>")}</p>`
+  ).join("");
+}
+
+function createNote(title = "Untitled note", content = "") {
+  const note = {
+    id: crypto.randomUUID(),
+    title,
+    content,
+    updatedAt: Date.now(),
+    versions: [],
+  };
+  noteState.notes.unshift(note);
+  noteState.activeId = note.id;
+  commitNoteVersion(note);
+  saveNotes();
+  renderNotes();
+  document.querySelector("#note-title").focus();
+}
+
+function commitNoteVersion(note) {
+  note.versions ||= [];
+  const latest = note.versions[0];
+  if (latest?.title === note.title && latest?.content === note.content) return;
+  note.versions.unshift({
+    id: crypto.randomUUID(),
+    title: note.title,
+    content: note.content,
+    createdAt: Date.now(),
+  });
+  note.versions = note.versions.slice(0, 50);
+}
+
+function renderNoteList() {
+  const query = document.querySelector("#note-search").value.trim().toLowerCase();
+  const notes = noteState.notes.filter((note) =>
+    `${note.title} ${note.content}`.toLowerCase().includes(query)
+  );
+  document.querySelector("#note-list").innerHTML = notes.map((note) => `
+    <button data-note-id="${note.id}" class="${note.id === noteState.activeId ? "active" : ""}">
+      <strong>${escapeHtml(note.title)}</strong>
+      <span>${noteTimestamp(note.updatedAt)}</span>
+    </button>`).join("") || '<p class="initiative-empty">No matching notes.</p>';
+}
+
+function renderVersionList(note) {
+  const versions = note?.versions || [];
+  document.querySelector("#version-count").textContent = `${versions.length} version${versions.length === 1 ? "" : "s"}`;
+  document.querySelector("#version-list").innerHTML = versions.map((version, index) => `
+    <button data-version-id="${version.id}" class="${index === 0 ? "current" : ""}" title="Restore this version">
+      <strong>${escapeHtml(version.title)}</strong>
+      <span>${noteTimestamp(version.createdAt)}</span>
+    </button>`).join("");
+}
+
+function renderNotes() {
+  renderNoteList();
+  const note = activeNote();
+  if (!note && noteState.notes.length) {
+    noteState.activeId = noteState.notes[0].id;
+    return renderNotes();
+  }
+  document.querySelector("#note-title").value = note?.title || "";
+  document.querySelector("#note-editor").value = note?.content || "";
+  document.querySelector("#note-preview").innerHTML = note ? markdownToHtml(note.content) : "";
+  document.querySelector("#note-title").disabled = !note;
+  document.querySelector("#note-editor").disabled = !note;
+  document.querySelector("#delete-note").disabled = !note;
+  renderVersionList(note);
+}
+
+function scheduleNoteSave() {
+  const note = activeNote();
+  if (!note) return;
+  note.title = document.querySelector("#note-title").value.trim() || "Untitled note";
+  note.content = document.querySelector("#note-editor").value;
+  note.updatedAt = Date.now();
+  document.querySelector("#note-preview").innerHTML = markdownToHtml(note.content);
+  document.querySelector("#save-status").textContent = "Saving…";
+  renderNoteList();
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer = setTimeout(() => {
+    commitNoteVersion(note);
+    saveNotes();
+    renderVersionList(note);
+  }, 500);
+}
+
+document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
+  const view = button.dataset.view;
+  document.querySelector("#battlemap-view").hidden = view !== "battlemap";
+  document.querySelector("#notes-view").hidden = view !== "notes";
+  document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item === button));
+  if (view === "battlemap") resizeCanvas();
+}));
+document.querySelector("#new-note").addEventListener("click", () => createNote());
+document.querySelector("#note-search").addEventListener("input", renderNoteList);
+document.querySelector("#note-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-note-id]");
+  if (!button) return;
+  noteState.activeId = button.dataset.noteId;
+  saveNotes();
+  renderNotes();
+});
+document.querySelector("#note-title").addEventListener("input", scheduleNoteSave);
+document.querySelector("#note-editor").addEventListener("input", scheduleNoteSave);
+document.querySelector("#note-preview").addEventListener("click", (event) => {
+  const link = event.target.closest("[data-wiki]");
+  if (!link) return;
+  const existing = noteState.notes.find((note) => note.title.toLowerCase() === link.dataset.wiki.toLowerCase());
+  if (existing) {
+    noteState.activeId = existing.id;
+    saveNotes();
+    renderNotes();
+  } else {
+    createNote(link.dataset.wiki, `# ${link.dataset.wiki}\n\n`);
+  }
+});
+document.querySelector("#version-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-version-id]");
+  const note = activeNote();
+  const version = note?.versions.find((item) => item.id === button?.dataset.versionId);
+  if (!version) return;
+  note.title = version.title;
+  note.content = version.content;
+  note.updatedAt = Date.now();
+  commitNoteVersion(note);
+  saveNotes();
+  renderNotes();
+});
+document.querySelector("#delete-note").addEventListener("click", () => {
+  const note = activeNote();
+  if (!note) return;
+  noteState.notes = noteState.notes.filter((item) => item.id !== note.id);
+  noteState.activeId = noteState.notes[0]?.id || null;
+  saveNotes();
+  renderNotes();
+});
+
+if (!noteState.notes.length) {
+  createNote("Session notes", "# Session notes\n\n## Scene\n\nLink related lore with [[Dantooine Enclave]].");
+} else {
+  renderNotes();
+}
