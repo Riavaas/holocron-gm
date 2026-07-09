@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from holocron.api.routes import assistant, books, compendium, ingest, rules, session, sources
+from holocron.api.routes import assistant, books, campaigns, compendium, ingest, rules, session, sources
 from holocron.core.paths import PROJECT_ROOT
 
 app = FastAPI(title="Holocron GM", version="0.1.0")
@@ -23,6 +23,7 @@ app.include_router(compendium.router, prefix="/api/compendium")
 app.include_router(books.router, prefix="/api/books")
 app.include_router(assistant.router, prefix="/api/assistant")
 app.include_router(session.router, prefix="/api/session")
+app.include_router(campaigns.router, prefix="/api/campaigns")
 
 
 @app.get("/player", include_in_schema=False)

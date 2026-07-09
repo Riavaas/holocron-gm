@@ -62,6 +62,12 @@ button { color: inherit; }
 .session-status span { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: var(--accent); }
 .assistant-toggle { flex: 0 0 auto; color: var(--accent); font-size: 9px; font-weight: 800; }
 .player-view-link { display: grid; place-items: center; flex: 0 0 auto; color: var(--accent); font-size: 10px; text-decoration: none; }
+.campaign-controls { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.campaign-controls select { width: 150px; height: 28px; margin: 0; }
+.campaign-controls a, .import-campaign { display: grid; place-items: center; text-decoration: none; }
+.import-campaign { color: var(--text); cursor: pointer; }
+.import-campaign input { display: none; }
+.campaign-controls + .session-status { margin-left: 6px; }
 .workspace { display: grid; grid-template-columns: 250px minmax(460px, 1fr) 290px; height: calc(100vh - 58px); }
 .left-panel, .right-panel { overflow-y: auto; background: var(--panel); }
 .left-panel { border-right: 1px solid var(--line); padding: 16px; }
@@ -304,6 +310,19 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .player-mode .workspace { grid-template-columns: 1fr; height: 100vh; }
 .player-mode .left-panel, .player-mode .right-panel, .player-mode .map-toolbar, .player-mode .map-empty { display: none; }
 .player-mode .map-shell { display: block; }
+.player-gate { position: fixed; z-index: 40; inset: 0; display: grid; place-items: center; background: rgba(4, 7, 9, .94); }
+.player-gate > div { width: min(360px, calc(100vw - 32px)); padding: 24px; border: 1px solid var(--line); background: var(--panel); }
+.player-gate small, .player-hud small { color: var(--accent); font-size: 8px; }
+.player-gate h1 { margin: 4px 0 18px; font-size: 22px; }
+.player-gate select { margin-bottom: 10px; }
+.player-gate .primary-button { width: 100%; }
+.player-hud { position: fixed; z-index: 10; top: 14px; right: 14px; width: 245px; max-height: calc(100vh - 28px); overflow-y: auto; padding: 12px; border: 1px solid var(--line); background: rgba(15, 19, 23, .94); }
+.player-hud-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.player-resource-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 14px; }
+.player-resource { padding: 7px; border-left: 2px solid var(--resource-color); background: var(--panel-raised); }
+.player-resource strong, .player-resource span { display: block; }.player-resource strong { font-size: 12px; }.player-resource span { color: var(--muted); font-size: 8px; }
+.player-inventory { display: grid; gap: 3px; }
+.player-inventory-item { padding: 6px; background: var(--panel-raised); color: var(--muted); font-size: 9px; }
 .notes-workspace {
   display: grid;
   grid-template-columns: 240px minmax(500px, 1fr) 230px;
@@ -539,4 +558,13 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
   .books-workspace { grid-template-columns: 220px minmax(560px, 1fr); }
   .toolkit-workspace { grid-template-columns: 1fr 1fr 1fr; }
   .mode-tabs { gap: 12px; }
+}
+
+@media (max-width: 1350px) {
+  .topbar { gap: 10px; padding-inline: 12px; }
+  .brand { min-width: 165px; }
+  .brand small { display: none; }
+  .mode-tabs { gap: 9px; }
+  .campaign-controls select { width: 120px; }
+  .session-status { font-size: 10px; }
 }

@@ -20,7 +20,15 @@
       <button data-view="books">Books</button>
       <button data-view="toolkit">Toolkit</button>
     </nav>
-    <div class="session-status"><span></span> Local session</div>
+    <div class="campaign-controls">
+      <select id="campaign-select" aria-label="Active campaign"></select>
+      <button id="save-campaign" class="icon-button" title="Save campaign">◇</button>
+      <button id="new-campaign" class="icon-button" title="New campaign">＋</button>
+      <button id="delete-campaign" class="icon-button" title="Delete campaign">×</button>
+      <a id="export-campaign" class="icon-button" href="#" title="Export campaign">↓</a>
+      <label class="icon-button import-campaign" title="Import campaign">↑<input id="import-campaign" type="file" accept=".json,.holocron.json,application/json"></label>
+    </div>
+    <div class="session-status"><span></span><span id="campaign-save-status">Saved</span></div>
     <a class="icon-button player-view-link" href="/player" target="_blank" title="Open player view">P</a>
     <button id="assistant-toggle" class="icon-button assistant-toggle" title="Open AI assistant">AI</button>
   </header>
@@ -182,6 +190,20 @@
       </section>
     </aside>
   </main>
+  <section id="player-gate" class="player-gate" hidden>
+    <div>
+      <small>PLAYER VIEW</small>
+      <h1>Choose your character</h1>
+      <select id="player-character-select"></select>
+      <button id="join-as-player" class="primary-button">Enter session</button>
+    </div>
+  </section>
+  <aside id="player-hud" class="player-hud" hidden>
+    <div class="player-hud-title"><div><small>PLAYING</small><h2 id="player-name"></h2></div><button id="change-player" class="icon-button" title="Change character">↺</button></div>
+    <div id="player-resources" class="player-resource-list"></div>
+    <div class="section-heading"><h2>Equipment & inventory</h2><span id="player-credits"></span></div>
+    <div id="player-inventory" class="player-inventory"></div>
+  </aside>
 
   <main id="characters-view" class="characters-workspace" hidden>
     <aside class="character-roster">
@@ -197,6 +219,7 @@
           </select>
         </label>
         <div class="derived-stats"><span>AC <strong id="character-ac">10</strong></span><span>Attack <strong id="character-attack">+0</strong></span><span>Load <strong id="character-weight">0</strong> lb</span></div>
+        <button id="deploy-character" class="icon-button" title="Deploy character to battlemap">⌖</button>
         <button id="delete-character" class="icon-button" title="Delete character">×</button>
       </header>
       <div class="paper-doll">
@@ -415,6 +438,13 @@
       <div class="field-row"><label>Weight<input name="weight" type="number" min="0" step=".1" value="1"></label><label>Value<input name="value" type="number" min="0" value="100"></label></div>
       <label>Slot<select name="slot"><option value="">Cargo</option><option value="head">Head</option><option value="chest">Chest</option><option value="back">Back</option><option value="mainHand">Main hand</option><option value="offHand">Off hand</option><option value="cybernetic">Cybernetic</option></select></label>
       <button class="primary-button">Add item</button>
+    </form>
+  </dialog>
+  <dialog id="campaign-dialog">
+    <form id="campaign-form">
+      <div class="dialog-heading"><h2>New campaign</h2><button type="button" class="icon-button" data-close-dialog="campaign-dialog">×</button></div>
+      <label>Campaign name<input name="name" required maxlength="100"></label>
+      <button class="primary-button">Create campaign</button>
     </form>
   </dialog>
   <aside id="assistant-drawer" class="assistant-drawer" hidden>

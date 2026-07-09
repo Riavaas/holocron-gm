@@ -12,6 +12,7 @@ node_modules/
 data/*.sqlite
 data/*.db
 data/extracted/
+data/campaigns/
 
 *.tmp
 *.cache

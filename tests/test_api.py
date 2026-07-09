@@ -106,6 +106,55 @@ def test_shared_session_state_and_player_view():
     assert "Holocron GM" in player.text
 
 
+def test_campaign_full_save_export_and_import(tmp_path, monkeypatch):
+    campaign_dir = tmp_path / "campaigns"
+    monkeypatch.setattr("holocron.api.routes.campaigns.CAMPAIGNS_DIR", campaign_dir)
+    client = TestClient(app)
+
+    created = client.post("/api/campaigns", json={"name": "KOTOR", "state": {"round": 2}})
+    campaign_id = created.json()["id"]
+    updated = client.put(
+        f"/api/campaigns/{campaign_id}",
+        json={"name": "KOTOR Updated", "state": {"round": 4, "notes": [{"title": "Dantooine"}]}},
+    )
+    map_response = client.put(
+        f"/api/campaigns/{campaign_id}/map",
+        content=b"\x89PNG\r\ncampaign-map",
+        headers={"Content-Type": "image/png"},
+    )
+    exported = client.get(f"/api/campaigns/{campaign_id}/export")
+    imported = client.post("/api/campaigns/actions/import", json=exported.json())
+
+    assert created.status_code == 201
+    assert updated.json()["state"]["round"] == 4
+    assert map_response.status_code == 200
+    assert client.get(f"/api/campaigns/{campaign_id}/map").content.startswith(b"\x89PNG")
+    assert exported.json()["format"] == "holocron-campaign-v1"
+    assert exported.json()["map"]["base64"]
+    assert imported.status_code == 201
+    assert imported.json()["state"]["notes"][0]["title"] == "Dantooine"
+    assert client.get("/api/campaigns").json()["total"] == 2
+
+
+def test_campaign_rejects_invalid_map_and_export(tmp_path, monkeypatch):
+    monkeypatch.setattr("holocron.api.routes.campaigns.CAMPAIGNS_DIR", tmp_path / "campaigns")
+    client = TestClient(app)
+    campaign_id = client.post("/api/campaigns", json={"name": "Test", "state": {}}).json()["id"]
+
+    invalid_map = client.put(
+        f"/api/campaigns/{campaign_id}/map",
+        content=b"not-an-image",
+        headers={"Content-Type": "text/plain"},
+    )
+    invalid_import = client.post(
+        "/api/campaigns/actions/import",
+        json={"format": "unknown", "campaign": {}, "map": None},
+    )
+
+    assert invalid_map.status_code == 415
+    assert invalid_import.status_code == 400
+
+
 def test_api_search_and_chunk(tmp_path, monkeypatch):
     db_path = tmp_path / "holocron.sqlite"
     books = tmp_path / "Books"

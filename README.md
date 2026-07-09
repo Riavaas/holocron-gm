@@ -129,6 +129,15 @@ lists local PDFs and opens them in the integrated browser PDF reader.
 Open `http://127.0.0.1:8000/player` on the player display. The GM dashboard
 synchronizes map and encounter state through the local server.
 
+When the server starts, it prints two LAN addresses:
+
+- **GM address**: full dashboard and campaign controls
+- **Player address**: character selection, personal resources/inventory, and restricted line of sight
+
+Campaigns autosave to `data/campaigns/`. The top toolbar can create, switch,
+delete, export, and import complete campaign snapshots. Exports include the
+battlemap image and use the `.holocron.json` format.
+
 Optional OpenAI assistant:
 
 ```bash
@@ -164,6 +173,10 @@ curl -X POST "http://127.0.0.1:8000/api/rules/ask" \
 - `GET /api/assistant/status`
 - `POST /api/assistant/chat`
 - `GET|PUT /api/session/state`
+- `GET|POST /api/campaigns`
+- `GET|PUT|DELETE /api/campaigns/{campaign_id}`
+- `GET /api/campaigns/{campaign_id}/export`
+- `POST /api/campaigns/actions/import`
 - `GET /api/rules/search?q=...&limit=10`
 - `GET /api/rules/chunk/{chunk_id}`
 - `POST /api/rules/ask`

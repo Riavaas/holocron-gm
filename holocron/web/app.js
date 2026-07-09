@@ -4,6 +4,13 @@ const shell = document.querySelector("#map-shell");
 const emptyState = document.querySelector("#map-empty");
 const measurementLabel = document.querySelector("#measurement");
 const isPlayerView = window.location.pathname === "/player";
+let activeCampaignId = localStorage.getItem("holocron.activeCampaign");
+let activeCampaignName = "Default Campaign";
+let campaignSaveTimer;
+let sharedCharacters = [];
+let playerCharacters = [];
+let selectedPlayerId = localStorage.getItem("holocron.playerCharacter");
+let playerJoined = false;
 
 const defaults = {
   gridSize: 64,
@@ -71,7 +78,7 @@ function escapeHtml(value) {
   })[character]);
 }
 
-function persist() {
+function sessionSnapshot() {
   const clean = { ...state };
   delete clean.image;
   delete clean.imageUrl;
@@ -80,14 +87,42 @@ function persist() {
   delete clean.draggedToken;
   delete clean.creatureCache;
   delete clean.pendingNotePin;
+  return clean;
+}
+
+function publishLiveSession(clean = sessionSnapshot()) {
+  if (isPlayerView) return;
+  const publicMap = {
+    ...clean,
+    notePins: [],
+    combatLog: [],
+    selectedCombatantId: null,
+    combatants: clean.combatants.map((combatant) => ({
+      id: combatant.id,
+      characterId: combatant.characterId || null,
+      name: combatant.name,
+      type: combatant.type,
+      conditions: combatant.conditions || [],
+    })),
+  };
+  fetch("/api/session/state", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      state: {
+        campaignId: activeCampaignId,
+        map: publicMap,
+        characters: sharedCharacters,
+      },
+    }),
+  }).catch(() => {});
+}
+
+function persist() {
+  const clean = sessionSnapshot();
   localStorage.setItem("holocron.session", JSON.stringify(clean));
-  if (!isPlayerView) {
-    fetch("/api/session/state", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ state: clean }),
-    }).catch(() => {});
-  }
+  publishLiveSession(clean);
+  scheduleCampaignSave();
 }
 
 function resizeCanvas() {
@@ -154,6 +189,7 @@ function initials(name) {
 }
 
 function drawToken(token) {
+  if (isPlayerView && !tokenVisibleToPlayer(token)) return;
   const point = screenPoint(token);
   const radius = Math.max(13, state.gridSize * state.zoom * .38);
   ctx.beginPath();
@@ -177,6 +213,27 @@ function drawToken(token) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(initials(token.name), point.x, point.y);
+}
+
+function playerVisionToken() {
+  const player = playerCharacters.find((character) => character.id === selectedPlayerId);
+  if (!player) return null;
+  return state.tokens.find((token) => token.characterId === player.id)
+    || state.tokens.find((token) => token.name.toLowerCase() === player.name.toLowerCase())
+    || null;
+}
+
+function tokenVisibleToPlayer(token) {
+  const origin = playerVisionToken();
+  if (!origin) return false;
+  if (token === origin) return true;
+  const distance = Math.hypot(token.x - origin.x, token.y - origin.y);
+  if (distance > state.visionRange * state.gridSize) return false;
+  const direction = { x: (token.x - origin.x) / distance, y: (token.y - origin.y) / distance };
+  return ![...state.walls, ...state.doors.filter((door) => !door.open)].some((wall) => {
+    const hit = rayWallIntersection(origin, direction, wall);
+    return hit !== null && hit < distance;
+  });
 }
 
 function drawWalls() {
@@ -221,7 +278,8 @@ function drawPersistentFog(width, height) {
   fogCtx.fillStyle = "rgba(0, 2, 5, .92)";
   fogCtx.fillRect(0, 0, width, height);
   fogCtx.globalCompositeOperation = "destination-out";
-  for (const point of state.explored) {
+  const visiblePoints = isPlayerView ? [playerVisionToken()].filter(Boolean) : state.explored;
+  for (const point of visiblePoints) {
     const screen = screenPoint(point);
     fogCtx.beginPath();
     fogCtx.arc(screen.x, screen.y, state.visionRange * state.gridSize * state.zoom, 0, Math.PI * 2);
@@ -263,7 +321,8 @@ function visibilityPolygon(origin, radius) {
 function drawLighting(width, height) {
   if (!state.layers.lighting) return;
   const opacity = Math.max(0, Math.min(1, state.ambientDarkness / 100));
-  const visionToken = state.tokens.find((token) => token.selected)
+  const visionToken = (isPlayerView ? playerVisionToken() : null)
+    || state.tokens.find((token) => token.selected)
     || state.tokens.find((token) => token.combatantId === state.selectedCombatantId);
   ctx.save();
   ctx.beginPath();
@@ -366,10 +425,12 @@ function draw() {
   drawPersistentFog(width, height);
   drawLighting(width, height);
   if (state.layers.objects) {
-    drawWalls();
     drawDoors();
     drawPings();
-    drawNotePins();
+    if (!isPlayerView) {
+      drawWalls();
+      drawNotePins();
+    }
   }
   if (state.layers.tokens) state.tokens.forEach(drawToken);
   drawMeasurement();
@@ -411,10 +472,47 @@ function loadMap(file) {
     draw();
   };
   image.src = state.imageUrl;
+  if (activeCampaignId) {
+    fetch(`/api/campaigns/${activeCampaignId}/map`, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file,
+    }).then((response) => response.json()).then((payload) => {
+      state.mapImageUrl = `${payload.url}?v=${Date.now()}`;
+      persist();
+    }).catch(() => {});
+  }
+}
+
+function loadMapFromUrl(url) {
+  if (!url || state.imageUrl === url) return;
+  const image = new Image();
+  image.onload = () => {
+    state.image = image;
+    state.imageUrl = url;
+    emptyState.hidden = true;
+    draw();
+  };
+  image.src = url;
+}
+
+function combatActionProfile(name, cr = 1) {
+  const normalized = name.toLowerCase();
+  const bonus = 3 + Math.ceil(cr / 2);
+  const baseDamage = `${Math.max(1, Math.ceil(cr / 3))}d8+${Math.max(1, Math.ceil(cr / 2))}`;
+  if (normalized.includes("multiattack")) return { name, kind: "attack", attacks: 2, bonus, damage: baseDamage };
+  if (normalized.includes("grenade") || normalized.includes("explosive")) return { name, kind: "save", save: "DEX", dc: 11 + Math.ceil(cr / 2), damage: `${Math.max(2, Math.ceil(cr / 2))}d6+1`, half: true };
+  if (normalized.includes("stinger") || normalized.includes("poison")) return { name, kind: "attack", attacks: 1, bonus, damage: baseDamage, condition: "poisoned" };
+  if (normalized.includes("claw") || normalized.includes("slam")) return { name, kind: "attack", attacks: normalized.includes("claw") ? 2 : 1, bonus, damage: `${Math.max(1, Math.ceil(cr / 4))}d6+${Math.max(1, Math.ceil(cr / 2))}` };
+  if (normalized.includes("bite")) return { name, kind: "attack", attacks: 1, bonus, damage: baseDamage, condition: "prone" };
+  if (normalized.includes("blaster") || normalized.includes("rifle") || normalized.includes("pistol")) return { name, kind: "attack", attacks: 1, bonus: bonus + 1, damage: `${Math.max(1, Math.ceil(cr / 3))}d8+${Math.max(2, Math.ceil(cr / 2))}` };
+  if (normalized.includes("force") || normalized.includes("tech") || normalized.includes("breath")) return { name, kind: "save", save: "WIS", dc: 11 + Math.ceil(cr / 2), damage: baseDamage, half: false };
+  return { name, kind: "attack", attacks: 1, bonus, damage: baseDamage };
 }
 
 function addCombatant(source, point = null) {
   const cr = Number(source.cr) || 1;
+  const actionNames = source.actions?.length ? source.actions.slice(0, 8) : ["Attack"];
   const combatant = {
     id: crypto.randomUUID(),
     name: source.name,
@@ -424,13 +522,20 @@ function addCombatant(source, point = null) {
     ac: Number(source.ac || 12),
     initiative: Math.floor(Math.random() * 20) + 1,
     conditions: [],
-    actions: source.actions || [],
+    actions: actionNames,
+    actionProfiles: actionNames.map((name) => combatActionProfile(name, cr)),
     attackBonus: 3 + Math.ceil(cr / 2),
     saveDc: 10 + Math.ceil(cr / 2),
     damage: `${Math.max(1, Math.ceil(cr / 3))}d8+${Math.max(1, Math.ceil(cr / 2))}`,
   };
   state.combatants.push(combatant);
-  if (point) state.tokens.push({ ...point, combatantId: combatant.id, name: combatant.name, type: combatant.type });
+  if (point) state.tokens.push({
+    ...point,
+    combatantId: combatant.id,
+    characterId: source.characterId || null,
+    name: combatant.name,
+    type: combatant.type,
+  });
   persist();
   renderInitiative();
   draw();
@@ -479,9 +584,11 @@ function renderCombatantInspector() {
   ).join("") || '<option value="">No target</option>';
   const blocked = combatant.conditions.some((condition) => ["incapacitated", "stunned", "unconscious"].includes(condition));
   const actions = combatant.actions.length ? combatant.actions.slice(0, 5) : ["Attack"];
-  document.querySelector("#combat-actions").innerHTML = actions.map((action) =>
-    `<button class="combat-action" data-combat-action="${escapeHtml(action)}" ${blocked || !targets.length ? "disabled" : ""}>${escapeHtml(action)}</button>`
-  ).join("") + `<button class="combat-action" data-save-check ${!targets.length ? "disabled" : ""}>Force save DC ${combatant.saveDc}</button>`;
+  combatant.actionProfiles ||= actions.map((name) => combatActionProfile(name));
+  document.querySelector("#combat-actions").innerHTML = combatant.actionProfiles.slice(0, 5).map((action, index) => {
+    const detail = action.kind === "save" ? `${action.save} DC ${action.dc}` : `+${action.bonus} · ${action.damage}`;
+    return `<button class="combat-action" data-action-index="${index}" ${blocked || !targets.length ? "disabled" : ""}>${escapeHtml(action.name)} · ${detail}</button>`;
+  }).join("");
 }
 
 function rollDice(expression) {
@@ -770,21 +877,33 @@ document.querySelector("#combat-actions").addEventListener("click", (event) => {
   const actor = selectedCombatant();
   const target = state.combatants.find((item) => item.id === document.querySelector("#combat-target").value);
   if (!actor || !target) return;
-  if (event.target.closest("[data-save-check]")) {
+  const actionButton = event.target.closest("[data-action-index]");
+  if (!actionButton) return;
+  const action = actor.actionProfiles[Number(actionButton.dataset.actionIndex)];
+  if (action.kind === "save") {
     const roll = Math.floor(Math.random() * 20) + 1;
-    const success = roll >= actor.saveDc;
-    const damage = success ? 0 : rollDice(actor.damage);
+    const success = roll >= action.dc;
+    const rolledDamage = rollDice(action.damage);
+    const damage = success ? (action.half ? Math.floor(rolledDamage / 2) : 0) : rolledDamage;
     target.hp = Math.max(0, target.hp - damage);
-    addCombatLog(`<strong>${escapeHtml(target.name)}</strong> ${success ? "saves" : `fails DC ${actor.saveDc} and takes ${damage} damage`}.`);
-  }
-  const action = event.target.closest("[data-combat-action]");
-  if (action) {
-    const die = Math.floor(Math.random() * 20) + 1;
-    const total = die + actor.attackBonus;
-    const hit = die === 20 || (die !== 1 && total >= target.ac);
-    const damage = hit ? rollDice(actor.damage) : 0;
-    target.hp = Math.max(0, target.hp - damage);
-    addCombatLog(`<strong>${escapeHtml(actor.name)}</strong> uses ${escapeHtml(action.dataset.combatAction)}: ${total} vs AC ${target.ac} · ${hit ? `${damage} damage` : "miss"}.`);
+    addCombatLog(`<strong>${escapeHtml(target.name)}</strong> rolls ${roll} on ${action.save}: ${success ? "save" : "failure"} · ${damage} damage from ${escapeHtml(action.name)}.`);
+  } else {
+    const rolls = [];
+    let totalDamage = 0;
+    for (let index = 0; index < (action.attacks || 1); index++) {
+      const die = Math.floor(Math.random() * 20) + 1;
+      const total = die + action.bonus;
+      const hit = die === 20 || (die !== 1 && total >= target.ac);
+      const damage = hit ? rollDice(action.damage) : 0;
+      totalDamage += damage;
+      rolls.push(`${total}${hit ? " hit" : " miss"}`);
+    }
+    target.hp = Math.max(0, target.hp - totalDamage);
+    if (totalDamage && action.condition) {
+      target.conditions ||= [];
+      if (!target.conditions.includes(action.condition)) target.conditions.push(action.condition);
+    }
+    addCombatLog(`<strong>${escapeHtml(actor.name)}</strong> uses ${escapeHtml(action.name)}: ${rolls.join(", ")} · ${totalDamage} damage${action.condition && totalDamage ? ` · ${action.condition}` : ""}.`);
   }
   persist();
   renderInitiative();
@@ -849,6 +968,7 @@ function noteTimestamp(value = Date.now()) {
 function saveNotes() {
   localStorage.setItem("holocron.notes", JSON.stringify(noteState));
   document.querySelector("#save-status").textContent = "Saved locally";
+  scheduleCampaignSave();
 }
 
 function activeNote() {
@@ -1103,12 +1223,30 @@ const characterState = JSON.parse(localStorage.getItem("holocron.characters") ||
   characters: [defaultCharacter],
 };
 
+function publicCharacter(character) {
+  return {
+    id: character.id,
+    name: character.name,
+    species: character.species,
+    resources: character.resources,
+    credits: character.credits || 0,
+    equipped: character.equipped,
+    inventory: character.inventory,
+    baseAc: character.baseAc,
+  };
+}
+
+sharedCharacters = characterState.characters.map(publicCharacter);
+
 function currentCharacter() {
   return characterState.characters.find((character) => character.id === characterState.activeId);
 }
 
 function saveCharacters() {
   localStorage.setItem("holocron.characters", JSON.stringify(characterState));
+  sharedCharacters = characterState.characters.map(publicCharacter);
+  publishLiveSession();
+  scheduleCampaignSave();
 }
 
 function alignmentLabel(value) {
@@ -1220,6 +1358,31 @@ document.querySelector("#gm-hooks").addEventListener("input", (event) => {
   saveCharacters();
 });
 document.querySelector("#new-character").addEventListener("click", () => document.querySelector("#character-dialog").showModal());
+document.querySelector("#deploy-character").addEventListener("click", () => {
+  const character = currentCharacter();
+  if (!character) return;
+  const existing = state.combatants.find((combatant) => combatant.characterId === character.id || combatant.name === character.name);
+  if (!existing) {
+    const equippedItems = Object.values(character.equipped).map((id) => character.inventory.find((item) => item.id === id)).filter(Boolean);
+    const ac = character.baseAc + equippedItems.reduce((total, item) => total + (item.ac || 0), 0);
+    const point = {
+      x: (shell.clientWidth / 2 - state.offset.x) / state.zoom,
+      y: (shell.clientHeight / 2 - state.offset.y) / state.zoom,
+    };
+    addCombatant({
+      name: character.name,
+      type: "player",
+      hp: character.resources.hp.max,
+      ac,
+      characterId: character.id,
+      actions: ["Weapon attack"],
+    }, point);
+    state.combatants[state.combatants.length - 1].characterId = character.id;
+  }
+  document.querySelector('[data-view="battlemap"]').click();
+  persist();
+  draw();
+});
 document.querySelector("#delete-character").addEventListener("click", () => {
   if (characterState.characters.length <= 1) return;
   const currentId = characterState.activeId;
@@ -1695,7 +1858,185 @@ document.querySelector("#assistant-to-note").addEventListener("click", () => {
   document.querySelector('[data-view="notes"]').click();
 });
 
+function campaignSnapshot() {
+  return {
+    session: sessionSnapshot(),
+    notes: noteState,
+    characters: characterState,
+  };
+}
+
+async function saveCampaignNow() {
+  if (!activeCampaignId || isPlayerView) return;
+  document.querySelector("#campaign-save-status").textContent = "Saving…";
+  const response = await fetch(`/api/campaigns/${activeCampaignId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: activeCampaignName, state: campaignSnapshot() }),
+  });
+  document.querySelector("#campaign-save-status").textContent = response.ok ? "Saved" : "Save failed";
+}
+
+function scheduleCampaignSave() {
+  if (!activeCampaignId || isPlayerView) return;
+  document.querySelector("#campaign-save-status").textContent = "Unsaved";
+  clearTimeout(campaignSaveTimer);
+  campaignSaveTimer = setTimeout(saveCampaignNow, 700);
+}
+
+async function loadCampaign(campaignId) {
+  const response = await fetch(`/api/campaigns/${campaignId}`);
+  if (!response.ok) return;
+  const campaign = await response.json();
+  activeCampaignId = campaign.id;
+  activeCampaignName = campaign.name;
+  localStorage.setItem("holocron.activeCampaign", campaign.id);
+  const snapshot = campaign.state || {};
+  if (snapshot.session) {
+    const transient = {
+      image: null, imageUrl: null, pointer: null, measurement: null,
+      draggedToken: null, creatureCache: state.creatureCache, pendingNotePin: null,
+    };
+    Object.assign(state, defaults, snapshot.session, transient);
+    state.layers = { ...defaults.layers, ...(snapshot.session.layers || {}) };
+    localStorage.setItem("holocron.session", JSON.stringify(sessionSnapshot()));
+  }
+  if (snapshot.notes) {
+    Object.keys(noteState).forEach((key) => delete noteState[key]);
+    Object.assign(noteState, snapshot.notes);
+    localStorage.setItem("holocron.notes", JSON.stringify(noteState));
+  }
+  if (snapshot.characters) {
+    Object.keys(characterState).forEach((key) => delete characterState[key]);
+    Object.assign(characterState, snapshot.characters);
+    localStorage.setItem("holocron.characters", JSON.stringify(characterState));
+    sharedCharacters = characterState.characters.map(publicCharacter);
+  }
+  state.mapImageUrl = campaign.map_filename ? `/api/campaigns/${campaign.id}/map?v=${Date.now()}` : null;
+  if (state.mapImageUrl) loadMapFromUrl(state.mapImageUrl);
+  else {
+    state.image = null;
+    state.imageUrl = null;
+    emptyState.hidden = false;
+  }
+  document.querySelector("#campaign-select").value = campaign.id;
+  document.querySelector("#export-campaign").href = `/api/campaigns/${campaign.id}/export`;
+  renderNotes();
+  renderCharacters();
+  renderInitiative();
+  publishLiveSession();
+  resizeCanvas();
+}
+
+async function refreshCampaignList(selectId = activeCampaignId) {
+  const response = await fetch("/api/campaigns");
+  const payload = await response.json();
+  const select = document.querySelector("#campaign-select");
+  select.innerHTML = payload.items.map((campaign) =>
+    `<option value="${campaign.id}">${escapeHtml(campaign.name)}</option>`
+  ).join("");
+  if (selectId) select.value = selectId;
+  return payload.items;
+}
+
+async function createCampaign(name) {
+  const response = await fetch("/api/campaigns", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, state: campaignSnapshot() }),
+  });
+  const campaign = await response.json();
+  activeCampaignId = campaign.id;
+  activeCampaignName = campaign.name;
+  await refreshCampaignList(campaign.id);
+  await loadCampaign(campaign.id);
+}
+
+async function initializeCampaigns() {
+  if (isPlayerView) return;
+  const campaigns = await refreshCampaignList();
+  const selected = campaigns.find((campaign) => campaign.id === activeCampaignId) || campaigns[0];
+  if (selected) await loadCampaign(selected.id);
+  else await createCampaign("Default Campaign");
+}
+
+document.querySelector("#campaign-select").addEventListener("change", (event) => loadCampaign(event.target.value));
+document.querySelector("#save-campaign").addEventListener("click", saveCampaignNow);
+document.querySelector("#new-campaign").addEventListener("click", () => document.querySelector("#campaign-dialog").showModal());
+document.querySelector("#campaign-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const name = new FormData(event.currentTarget).get("name");
+  event.currentTarget.reset();
+  document.querySelector("#campaign-dialog").close();
+  await createCampaign(name);
+});
+document.querySelector("#delete-campaign").addEventListener("click", async () => {
+  const campaignId = document.querySelector("#campaign-select").value;
+  if (!campaignId) return;
+  await fetch(`/api/campaigns/${campaignId}`, { method: "DELETE" });
+  activeCampaignId = null;
+  localStorage.removeItem("holocron.activeCampaign");
+  const campaigns = await refreshCampaignList();
+  if (campaigns.length) await loadCampaign(campaigns[0].id);
+  else await createCampaign("Default Campaign");
+});
+document.querySelector("#import-campaign").addEventListener("change", async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const bundle = JSON.parse(await file.text());
+  const response = await fetch("/api/campaigns/actions/import", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(bundle),
+  });
+  if (response.ok) {
+    const campaign = await response.json();
+    await refreshCampaignList(campaign.id);
+    await loadCampaign(campaign.id);
+  }
+  event.target.value = "";
+});
+
+initializeCampaigns();
+
+function renderPlayerIdentity() {
+  if (!isPlayerView) return;
+  const select = document.querySelector("#player-character-select");
+  select.innerHTML = playerCharacters.map((character) =>
+    `<option value="${character.id}">${escapeHtml(character.name)} · ${escapeHtml(character.species)}</option>`
+  ).join("");
+  if (playerCharacters.some((character) => character.id === selectedPlayerId)) select.value = selectedPlayerId;
+  const player = playerCharacters.find((character) => character.id === selectedPlayerId);
+  document.querySelector("#player-gate").hidden = playerJoined;
+  document.querySelector("#player-hud").hidden = !playerJoined || !player;
+  if (!player) return;
+  document.querySelector("#player-name").textContent = player.name;
+  document.querySelector("#player-credits").textContent = `${player.credits || 0} cr`;
+  document.querySelector("#player-resources").innerHTML = Object.values(player.resources || {}).map((resource) => `
+    <div class="player-resource" style="--resource-color:${resource.color}">
+      <strong>${resource.value}/${resource.max}</strong><span>${escapeHtml(resource.label)}</span>
+    </div>`).join("");
+  const equippedIds = new Set(Object.values(player.equipped || {}));
+  document.querySelector("#player-inventory").innerHTML = (player.inventory || []).map((item) => `
+    <div class="player-inventory-item">${equippedIds.has(item.id) ? "Equipped · " : ""}${escapeHtml(item.name)} · ${item.weight} lb</div>
+  `).join("");
+}
+
+document.querySelector("#join-as-player").addEventListener("click", () => {
+  selectedPlayerId = document.querySelector("#player-character-select").value;
+  if (!selectedPlayerId) return;
+  localStorage.setItem("holocron.playerCharacter", selectedPlayerId);
+  playerJoined = true;
+  renderPlayerIdentity();
+  draw();
+});
+document.querySelector("#change-player").addEventListener("click", () => {
+  playerJoined = false;
+  renderPlayerIdentity();
+});
+
 if (isPlayerView) {
+  document.querySelector("#player-gate").hidden = false;
   let playerStateVersion = -1;
   setInterval(async () => {
     try {
@@ -1703,14 +2044,18 @@ if (isPlayerView) {
       const payload = await response.json();
       if (payload.version === playerStateVersion || !Object.keys(payload.state).length) return;
       playerStateVersion = payload.version;
+      const bundle = payload.state;
+      const mapState = bundle.map || bundle;
+      playerCharacters = bundle.characters || [];
       const transient = {
         image: state.image,
         imageUrl: state.imageUrl,
         creatureCache: state.creatureCache,
       };
-      Object.assign(state, payload.state, transient);
-      state.layers = { ...defaults.layers, ...(payload.state.layers || {}) };
-      renderInitiative();
+      Object.assign(state, mapState, transient);
+      state.layers = { ...defaults.layers, ...(mapState.layers || {}), lighting: true, fog: true };
+      if (mapState.mapImageUrl) loadMapFromUrl(mapState.mapImageUrl);
+      renderPlayerIdentity();
       resizeCanvas();
     } catch {
       // Keep the last received state visible while the GM reconnects.
