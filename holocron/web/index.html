@@ -14,7 +14,7 @@
     </div>
     <nav class="mode-tabs" aria-label="Workspace">
       <button class="active" data-view="battlemap">Battlemap</button>
-      <button disabled>Characters</button>
+      <button data-view="characters">Characters</button>
       <button data-view="notes">Notes</button>
       <button disabled>Compendium</button>
     </nav>
@@ -148,6 +148,60 @@
           </select>
         </div>
         <div id="token-library" class="token-library"></div>
+      </section>
+    </aside>
+  </main>
+
+  <main id="characters-view" class="characters-workspace" hidden>
+    <aside class="character-roster">
+      <div class="notes-sidebar-header"><h2>Party</h2><span>Live</span></div>
+      <div id="character-list"></div>
+    </aside>
+    <section class="character-main">
+      <header class="character-header">
+        <div><small>ACTIVE CHARACTER</small><h1 id="character-name"></h1></div>
+        <label>Species
+          <select id="character-species">
+            <option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option>
+          </select>
+        </label>
+        <div class="derived-stats"><span>AC <strong id="character-ac">10</strong></span><span>Attack <strong id="character-attack">+0</strong></span><span>Load <strong id="character-weight">0</strong> lb</span></div>
+      </header>
+      <div class="paper-doll">
+        <div class="silhouette" aria-hidden="true">
+          <i class="body-head"></i><i class="body-torso"></i><i class="body-arm left"></i><i class="body-arm right"></i><i class="body-leg left"></i><i class="body-leg right"></i>
+        </div>
+        <button class="equipment-slot head" data-slot="head"><small>HEAD</small><strong>Empty</strong></button>
+        <button class="equipment-slot shoulders" data-slot="shoulders"><small>SHOULDERS</small><strong>Empty</strong></button>
+        <button class="equipment-slot chest" data-slot="chest"><small>CHEST</small><strong>Empty</strong></button>
+        <button class="equipment-slot back" data-slot="back"><small>BACK</small><strong>Empty</strong></button>
+        <button class="equipment-slot hands" data-slot="hands"><small>HANDS</small><strong>Empty</strong></button>
+        <button class="equipment-slot belt" data-slot="belt"><small>BELT</small><strong>Empty</strong></button>
+        <button class="equipment-slot legs" data-slot="legs"><small>LEGS</small><strong>Empty</strong></button>
+        <button class="equipment-slot feet" data-slot="feet"><small>FEET</small><strong>Empty</strong></button>
+        <button class="equipment-slot main-hand" data-slot="mainHand"><small>MAIN HAND</small><strong>Empty</strong></button>
+        <button class="equipment-slot off-hand" data-slot="offHand"><small>OFF HAND</small><strong>Empty</strong></button>
+        <button class="equipment-slot cybernetic" data-slot="cybernetic"><small>CYBERNETIC</small><strong>Empty</strong></button>
+      </div>
+      <footer class="stash-shell">
+        <div class="section-heading"><h2>Stash & cargo</h2><span>Select item, then equipment slot</span></div>
+        <div id="character-stash" class="character-stash"></div>
+      </footer>
+    </section>
+    <aside class="character-tracker">
+      <section>
+        <div class="section-heading"><h2>Resources</h2><span>Click to adjust</span></div>
+        <div id="resource-rings" class="resource-rings"></div>
+      </section>
+      <section>
+        <div class="section-heading"><h2>Alignment pressure</h2><output id="alignment-output">Balanced</output></div>
+        <input id="alignment-slider" type="range" min="-10" max="10" value="0">
+        <div class="alignment-labels"><span>Light</span><span>Dark</span></div>
+      </section>
+      <section class="gm-private">
+        <div class="section-heading"><h2>GM private</h2><span>Hidden from player view</span></div>
+        <label>Passive insight<input id="passive-insight" type="number" min="0"></label>
+        <label>Backstory hooks<textarea id="gm-hooks" rows="8"></textarea></label>
       </section>
     </aside>
   </main>

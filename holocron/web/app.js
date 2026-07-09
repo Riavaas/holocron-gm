@@ -709,6 +709,7 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
   const view = button.dataset.view;
   document.querySelector("#battlemap-view").hidden = view !== "battlemap";
   document.querySelector("#notes-view").hidden = view !== "notes";
+  document.querySelector("#characters-view").hidden = view !== "characters";
   document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item === button));
   if (view === "battlemap") resizeCanvas();
 }));
@@ -761,3 +762,148 @@ if (!noteState.notes.length) {
 } else {
   renderNotes();
 }
+
+const defaultCharacter = {
+  id: "player-1",
+  name: "Kira Venn",
+  species: "Human",
+  baseAc: 10,
+  resources: {
+    hp: { label: "HP", value: 36, max: 42, color: "#e36969" },
+    force: { label: "Force", value: 12, max: 16, color: "#58b8e8" },
+    tech: { label: "Tech", value: 8, max: 10, color: "#e1ad4f" },
+    hitDice: { label: "Hit Dice", value: 5, max: 7, color: "#8e79c6" },
+  },
+  alignment: 0,
+  passiveInsight: 14,
+  gmHooks: "Former contact inside the Exchange. Protects their sibling at any cost.",
+  equipped: {},
+  inventory: [
+    { id: "armor-1", name: "Reinforced Fiber Armor", slot: "chest", weight: 12, ac: 4 },
+    { id: "weapon-1", name: "Modified Blaster", slot: "mainHand", weight: 3, attack: 2 },
+    { id: "shield-1", name: "Light Shield", slot: "offHand", weight: 4, ac: 1 },
+    { id: "head-1", name: "Tactical Visor", slot: "head", weight: 1, attack: 1 },
+    { id: "cyber-1", name: "Reflex Augment", slot: "cybernetic", weight: 0, ac: 1 },
+    { id: "cargo-1", name: "Medpac ×3", slot: null, weight: 3 },
+  ],
+};
+const characterState = JSON.parse(localStorage.getItem("holocron.characters") || "null") || {
+  activeId: defaultCharacter.id,
+  selectedItemId: null,
+  characters: [defaultCharacter],
+};
+
+function currentCharacter() {
+  return characterState.characters.find((character) => character.id === characterState.activeId);
+}
+
+function saveCharacters() {
+  localStorage.setItem("holocron.characters", JSON.stringify(characterState));
+}
+
+function alignmentLabel(value) {
+  if (value <= -7) return "Radiant";
+  if (value <= -3) return "Light";
+  if (value >= 7) return "Corrupted";
+  if (value >= 3) return "Dark";
+  return "Balanced";
+}
+
+function renderCharacters() {
+  const character = currentCharacter();
+  if (!character) return;
+  document.querySelector("#character-list").innerHTML = characterState.characters.map((item) => `
+    <button class="character-list-item" data-character-id="${item.id}">
+      <i>${initials(item.name)}</i><strong>${escapeHtml(item.name)}<span>${escapeHtml(item.species)}</span></strong>
+    </button>`).join("");
+  document.querySelector("#character-name").textContent = character.name;
+  document.querySelector("#character-species").value = character.species;
+  const equippedItems = Object.values(character.equipped).map((id) => character.inventory.find((item) => item.id === id)).filter(Boolean);
+  const ac = character.baseAc + equippedItems.reduce((total, item) => total + (item.ac || 0), 0);
+  const attack = equippedItems.reduce((total, item) => total + (item.attack || 0), 0);
+  const weight = character.inventory.reduce((total, item) => total + item.weight, 0);
+  document.querySelector("#character-ac").textContent = ac;
+  document.querySelector("#character-attack").textContent = `${attack >= 0 ? "+" : ""}${attack}`;
+  document.querySelector("#character-weight").textContent = weight;
+  document.querySelectorAll("[data-slot]").forEach((slot) => {
+    const item = character.inventory.find((candidate) => candidate.id === character.equipped[slot.dataset.slot]);
+    slot.querySelector("strong").textContent = item?.name || "Empty";
+    slot.classList.toggle("target", Boolean(characterState.selectedItemId && character.inventory.find((candidate) => candidate.id === characterState.selectedItemId)?.slot === slot.dataset.slot));
+  });
+  document.querySelector("#character-stash").innerHTML = character.inventory
+    .filter((item) => !Object.values(character.equipped).includes(item.id))
+    .map((item) => `
+      <button class="stash-item ${item.id === characterState.selectedItemId ? "selected" : ""}" data-item-id="${item.id}">
+        <strong>${escapeHtml(item.name)}</strong>
+        <span>${item.slot ? escapeHtml(item.slot) : "cargo"} · ${item.weight} lb${item.ac ? ` · +${item.ac} AC` : ""}${item.attack ? ` · +${item.attack} attack` : ""}</span>
+      </button>`).join("");
+  document.querySelector("#resource-rings").innerHTML = Object.entries(character.resources).map(([key, resource]) => `
+    <div class="resource-ring" style="--fill:${Math.max(0, Math.min(100, resource.value / resource.max * 100))}%;--ring-color:${resource.color}">
+      <div class="resource-ring-inner">
+        <strong>${resource.value}/${resource.max}</strong><small>${resource.label}</small>
+        <span class="resource-ring-controls"><button data-resource="${key}" data-delta="-1">−</button><button data-resource="${key}" data-delta="1">＋</button></span>
+      </div>
+    </div>`).join("");
+  document.querySelector("#alignment-slider").value = character.alignment;
+  document.querySelector("#alignment-output").textContent = alignmentLabel(character.alignment);
+  document.querySelector("#passive-insight").value = character.passiveInsight;
+  document.querySelector("#gm-hooks").value = character.gmHooks;
+}
+
+document.querySelector("#character-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-character-id]");
+  if (!button) return;
+  characterState.activeId = button.dataset.characterId;
+  characterState.selectedItemId = null;
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#character-stash").addEventListener("click", (event) => {
+  const item = event.target.closest("[data-item-id]");
+  if (!item) return;
+  characterState.selectedItemId = characterState.selectedItemId === item.dataset.itemId ? null : item.dataset.itemId;
+  renderCharacters();
+});
+document.querySelector(".paper-doll").addEventListener("click", (event) => {
+  const slot = event.target.closest("[data-slot]");
+  const character = currentCharacter();
+  if (!slot || !character) return;
+  const selected = character.inventory.find((item) => item.id === characterState.selectedItemId);
+  if (selected?.slot === slot.dataset.slot) {
+    character.equipped[slot.dataset.slot] = selected.id;
+    characterState.selectedItemId = null;
+  } else if (!selected && character.equipped[slot.dataset.slot]) {
+    delete character.equipped[slot.dataset.slot];
+  }
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#resource-rings").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-resource]");
+  const character = currentCharacter();
+  if (!button || !character) return;
+  const resource = character.resources[button.dataset.resource];
+  resource.value = Math.max(0, Math.min(resource.max, resource.value + Number(button.dataset.delta)));
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#character-species").addEventListener("change", (event) => {
+  currentCharacter().species = event.target.value;
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#alignment-slider").addEventListener("input", (event) => {
+  currentCharacter().alignment = Number(event.target.value);
+  document.querySelector("#alignment-output").textContent = alignmentLabel(currentCharacter().alignment);
+  saveCharacters();
+});
+document.querySelector("#passive-insight").addEventListener("input", (event) => {
+  currentCharacter().passiveInsight = Number(event.target.value);
+  saveCharacters();
+});
+document.querySelector("#gm-hooks").addEventListener("input", (event) => {
+  currentCharacter().gmHooks = event.target.value;
+  saveCharacters();
+});
+
+renderCharacters();

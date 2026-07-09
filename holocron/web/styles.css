@@ -326,9 +326,83 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .wiki-link { padding: 0; border: 0; background: none; color: var(--accent); text-decoration: underline; cursor: pointer; }
 .history-panel .section-heading { margin-bottom: 12px; }
 .version-list button.current { border-color: var(--accent); }
+.characters-workspace { display: grid; grid-template-columns: 200px minmax(570px, 1fr) 260px; height: calc(100vh - 58px); }
+.character-roster, .character-tracker { overflow-y: auto; padding: 16px; background: var(--panel); }
+.character-roster { border-right: 1px solid var(--line); }
+.character-tracker { border-left: 1px solid var(--line); }
+.character-roster .notes-sidebar-header span { color: var(--accent); font-size: 10px; }
+#character-list { display: grid; gap: 5px; }
+.character-list-item {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel-raised);
+  color: var(--text);
+  text-align: left;
+}
+.character-list-item i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-style: normal; font-weight: 700; }
+.character-list-item span { display: block; color: var(--muted); font-size: 9px; }
+.character-main { display: grid; grid-template-rows: 68px minmax(400px, 1fr) 130px; min-width: 0; background: #0b0f12; }
+.character-header { display: flex; align-items: center; gap: 22px; padding: 10px 20px; border-bottom: 1px solid var(--line); }
+.character-header small { color: var(--accent); font-size: 9px; }
+.character-header h1 { margin: 2px 0 0; font-size: 20px; }
+.character-header label { margin-left: auto; }
+.character-header select { width: 110px; height: 28px; margin: 0 0 0 6px; }
+.derived-stats { display: flex; gap: 14px; }
+.derived-stats span { color: var(--muted); font-size: 10px; }
+.derived-stats strong { color: var(--text); font-size: 14px; }
+.paper-doll { position: relative; min-height: 420px; overflow: hidden; }
+.silhouette { position: absolute; left: 50%; top: 44px; width: 170px; height: 330px; transform: translateX(-50%); opacity: .48; }
+.silhouette i { position: absolute; display: block; border: 2px solid #65747d; background: #182126; }
+.body-head { left: 62px; width: 46px; height: 55px; border-radius: 50% 50% 42% 42%; }
+.body-torso { left: 40px; top: 58px; width: 90px; height: 130px; clip-path: polygon(18% 0, 82% 0, 100% 85%, 75% 100%, 25% 100%, 0 85%); }
+.body-arm { top: 70px; width: 25px; height: 145px; border-radius: 15px; }
+.body-arm.left { left: 10px; transform: rotate(7deg); }.body-arm.right { right: 10px; transform: rotate(-7deg); }
+.body-leg { top: 185px; width: 38px; height: 140px; border-radius: 8px 8px 16px 16px; }
+.body-leg.left { left: 43px; }.body-leg.right { right: 43px; }
+.equipment-slot {
+  position: absolute;
+  width: 138px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #12181d;
+  text-align: left;
+  cursor: pointer;
+}
+.equipment-slot:hover, .equipment-slot.target { border-color: var(--accent); }
+.equipment-slot small { display: block; color: var(--muted); font-size: 8px; }
+.equipment-slot strong { display: block; overflow: hidden; margin-top: 2px; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.equipment-slot.head { left: calc(50% - 260px); top: 35px; }.equipment-slot.shoulders { right: calc(50% - 260px); top: 35px; }
+.equipment-slot.chest { left: calc(50% - 300px); top: 105px; }.equipment-slot.back { right: calc(50% - 300px); top: 105px; }
+.equipment-slot.hands { left: calc(50% - 330px); top: 175px; }.equipment-slot.belt { right: calc(50% - 330px); top: 175px; }
+.equipment-slot.legs { left: calc(50% - 300px); top: 245px; }.equipment-slot.feet { right: calc(50% - 300px); top: 245px; }
+.equipment-slot.main-hand { left: calc(50% - 330px); top: 315px; }.equipment-slot.off-hand { right: calc(50% - 330px); top: 315px; }
+.equipment-slot.cybernetic { left: 50%; top: 380px; transform: translateX(-50%); }
+.stash-shell { min-width: 0; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--panel); }
+.character-stash { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 5px; }
+.stash-item { flex: 0 0 130px; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-raised); color: var(--text); text-align: left; cursor: pointer; }
+.stash-item.selected { border-color: var(--accent); background: var(--accent-soft); }
+.stash-item strong, .stash-item span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stash-item strong { font-size: 10px; }.stash-item span { color: var(--muted); font-size: 8px; }
+.character-tracker section { padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+.resource-rings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.resource-ring { display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%; background: conic-gradient(var(--ring-color) var(--fill), #293038 0); }
+.resource-ring-inner { display: grid; place-items: center; width: 78%; height: 78%; border-radius: 50%; background: var(--panel); }
+.resource-ring strong { font-size: 14px; }.resource-ring small { color: var(--muted); font-size: 8px; }
+.resource-ring-controls { display: flex; gap: 5px; margin-top: 3px; }.resource-ring-controls button { width: 18px; height: 18px; padding: 0; border: 0; background: #29323a; color: var(--text); cursor: pointer; }
+.alignment-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; }
+.gm-private textarea { width: 100%; margin-top: 4px; padding: 8px; resize: vertical; border: 1px solid var(--line); border-radius: 4px; background: #0e1216; color: var(--text); font: inherit; }
+.gm-private label { display: block; margin-top: 10px; }
 
 @media (max-width: 1100px) {
   .workspace { grid-template-columns: 220px minmax(400px, 1fr) 260px; }
   .notes-workspace { grid-template-columns: 210px minmax(460px, 1fr) 200px; }
+  .characters-workspace { grid-template-columns: 170px minmax(540px, 1fr) 230px; }
   .mode-tabs { gap: 12px; }
 }
