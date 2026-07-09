@@ -13,6 +13,25 @@ def test_api_health():
     assert response.json() == {"status": "ok"}
 
 
+def test_dashboard_is_served():
+    client = TestClient(app)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "Holocron GM" in response.text
+    assert "/static/app.js" in response.text
+
+
+def test_dashboard_static_assets_are_served():
+    client = TestClient(app)
+
+    response = client.get("/static/app.js")
+
+    assert response.status_code == 200
+    assert "measurementResult" in response.text
+
+
 def test_api_search_and_chunk(tmp_path, monkeypatch):
     db_path = tmp_path / "holocron.sqlite"
     books = tmp_path / "Books"
@@ -43,4 +62,3 @@ def test_api_ask_absent(tmp_path, monkeypatch):
 
     assert response.status_code == 200
     assert response.json()["found"] is False
-

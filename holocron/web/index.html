@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Holocron GM</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">H</span>
+      <div><strong>Holocron GM</strong><small>Session control</small></div>
+    </div>
+    <nav class="mode-tabs" aria-label="Workspace">
+      <button class="active">Battlemap</button>
+      <button disabled>Characters</button>
+      <button disabled>Notes</button>
+      <button disabled>Compendium</button>
+    </nav>
+    <div class="session-status"><span></span> Local session</div>
+  </header>
+
+  <main class="workspace">
+    <aside class="left-panel">
+      <section>
+        <div class="section-heading">
+          <h2>Map setup</h2>
+          <button id="reset-view" class="icon-button" title="Reset view" aria-label="Reset view">↺</button>
+        </div>
+        <label class="drop-zone" id="drop-zone">
+          <input id="map-file" type="file" accept="image/jpeg,image/png,image/webp">
+          <span class="upload-icon">＋</span>
+          <strong>Drop battlemap</strong>
+          <small>JPG, PNG or WEBP</small>
+        </label>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Grid & scale</h2><output id="grid-output">64 px</output></div>
+        <label class="control-label" for="grid-size">Grid density</label>
+        <input id="grid-size" type="range" min="20" max="180" value="64">
+        <div class="field-row">
+          <label>1 square
+            <input id="unit-value" type="number" min="0.1" step="0.1" value="5">
+          </label>
+          <label>Unit
+            <select id="unit-name">
+              <option value="ft">feet</option>
+              <option value="m">meters</option>
+              <option value="mi">miles</option>
+              <option value="km">kilometers</option>
+            </select>
+          </label>
+        </div>
+        <label class="control-label" for="travel-speed">Travel speed</label>
+        <select id="travel-speed">
+          <option value="0">Tactical movement</option>
+          <option value="3">Slow pace · 3 mph</option>
+          <option value="4">Normal pace · 4 mph</option>
+          <option value="5">Fast pace · 5 mph</option>
+          <option value="600">Speeder · 600 mph</option>
+        </select>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Layers</h2></div>
+        <label class="toggle-row"><span><i class="layer-dot background"></i>Background map</span><input data-layer="background" type="checkbox" checked></label>
+        <label class="toggle-row"><span><i class="layer-dot objects"></i>Interactive objects</span><input data-layer="objects" type="checkbox" checked></label>
+        <label class="toggle-row"><span><i class="layer-dot tokens"></i>Token layer</span><input data-layer="tokens" type="checkbox" checked></label>
+        <label class="toggle-row"><span><i class="layer-dot grid"></i>Grid overlay</span><input data-layer="grid" type="checkbox" checked></label>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Tools</h2></div>
+        <div class="tool-grid">
+          <button class="tool active" data-tool="select" title="Select and move tokens"><b>↖</b>Select</button>
+          <button class="tool" data-tool="measure" title="Measure map distance"><b>⌁</b>Measure</button>
+          <button class="tool" data-tool="wall" title="Draw line-of-sight walls"><b>╱</b>Wall</button>
+          <button class="tool" data-tool="ping" title="Place a map ping"><b>◎</b>Ping</button>
+        </div>
+      </section>
+    </aside>
+
+    <section class="map-shell" id="map-shell">
+      <canvas id="map-canvas"></canvas>
+      <div class="map-toolbar">
+        <button id="zoom-out" class="icon-button" title="Zoom out">−</button>
+        <output id="zoom-output">100%</output>
+        <button id="zoom-in" class="icon-button" title="Zoom in">＋</button>
+        <button id="clear-measurement" class="text-button">Clear marks</button>
+      </div>
+      <div id="measurement" class="measurement" hidden></div>
+      <div id="map-empty" class="map-empty">
+        <div class="empty-beacon">◇</div>
+        <strong>Battlemap ready</strong>
+        <span>Import a map or start placing tokens on the tactical grid.</span>
+      </div>
+    </section>
+
+    <aside class="right-panel">
+      <section class="encounter-header">
+        <div><small>ACTIVE ENCOUNTER</small><h2>Docking Bay 12</h2></div>
+        <button id="add-combatant" class="icon-button" title="Add combatant">＋</button>
+      </section>
+      <section class="round-strip">
+        <span>Round <strong id="round-number">1</strong></span>
+        <button id="previous-turn" title="Previous turn">←</button>
+        <button id="next-turn" title="Next turn">→</button>
+      </section>
+      <ol id="initiative-list" class="initiative-list"></ol>
+      <section class="encounter-actions">
+        <button id="roll-initiative" class="primary-button">Roll initiative</button>
+        <button id="clear-encounter" class="secondary-button">Clear</button>
+      </section>
+      <section class="quick-add">
+        <div class="section-heading"><h2>Quick add</h2><span>Drag to map</span></div>
+        <div id="token-library" class="token-library"></div>
+      </section>
+    </aside>
+  </main>
+
+  <dialog id="combatant-dialog">
+    <form method="dialog" id="combatant-form">
+      <div class="dialog-heading"><h2>Add combatant</h2><button id="close-combatant-dialog" type="button" class="icon-button" aria-label="Close">×</button></div>
+      <label>Name<input name="name" required maxlength="40" autocomplete="off"></label>
+      <div class="field-row">
+        <label>HP<input name="hp" type="number" min="1" value="10" required></label>
+        <label>Armor class<input name="ac" type="number" min="1" value="12" required></label>
+      </div>
+      <label>Type<select name="type"><option value="enemy">Enemy</option><option value="ally">Ally</option><option value="player">Player</option></select></label>
+      <button class="primary-button" value="default">Add to encounter</button>
+    </form>
+  </dialog>
+  <script src="/static/app.js"></script>
+</body>
+</html>
