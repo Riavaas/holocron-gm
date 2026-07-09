@@ -21,6 +21,8 @@
       <button data-view="toolkit">Toolkit</button>
     </nav>
     <div class="session-status"><span></span> Local session</div>
+    <a class="icon-button player-view-link" href="/player" target="_blank" title="Open player view">P</a>
+    <button id="assistant-toggle" class="icon-button assistant-toggle" title="Open AI assistant">AI</button>
   </header>
 
   <main id="battlemap-view" class="workspace">
@@ -72,6 +74,7 @@
         <label class="toggle-row"><span><i class="layer-dot tokens"></i>Token layer</span><input data-layer="tokens" type="checkbox" checked></label>
         <label class="toggle-row"><span><i class="layer-dot grid"></i>Grid overlay</span><input data-layer="grid" type="checkbox" checked></label>
         <label class="toggle-row"><span><i class="layer-dot lighting"></i>Lighting preview</span><input data-layer="lighting" type="checkbox"></label>
+        <label class="toggle-row"><span><i class="layer-dot fog"></i>Persistent fog</span><input data-layer="fog" type="checkbox"></label>
         <label class="control-label" for="ambient-darkness">Ambient darkness <output id="darkness-output">85%</output></label>
         <input id="ambient-darkness" type="range" min="0" max="100" value="85">
         <div class="field-row">
@@ -97,6 +100,7 @@
           <button class="tool" data-tool="wall" title="Draw line-of-sight walls"><b>╱</b>Wall</button>
           <button class="tool" data-tool="ping" title="Place a map ping"><b>◎</b>Ping</button>
           <button class="tool" data-tool="note" title="Attach a private GM note"><b>⌑</b>Note pin</button>
+          <button class="tool" data-tool="door" title="Draw an interactive door"><b>⊓</b>Door</button>
         </div>
       </section>
     </aside>
@@ -152,11 +156,19 @@
         </div>
         <div id="condition-chips" class="condition-chips"></div>
         <p id="action-restriction" class="action-restriction">No active restrictions.</p>
+        <div class="combat-automation">
+          <select id="combat-target" aria-label="Combat target"></select>
+          <div id="combat-actions" class="combat-actions"></div>
+        </div>
         <output id="roll-result" class="roll-result" hidden></output>
       </section>
       <section class="encounter-actions">
         <button id="roll-initiative" class="primary-button">Roll initiative</button>
         <button id="clear-encounter" class="secondary-button">Clear</button>
+      </section>
+      <section class="combat-log-shell">
+        <div class="section-heading"><h2>Combat log</h2><button id="clear-combat-log" class="text-button">Clear</button></div>
+        <div id="combat-log" class="combat-log"></div>
       </section>
       <section class="quick-add">
         <div class="section-heading"><h2>Bestiary</h2><span id="bestiary-count">Local</span></div>
@@ -173,7 +185,7 @@
 
   <main id="characters-view" class="characters-workspace" hidden>
     <aside class="character-roster">
-      <div class="notes-sidebar-header"><h2>Party</h2><span>Live</span></div>
+      <div class="notes-sidebar-header"><h2>Party</h2><button id="new-character" class="icon-button" title="New character">＋</button></div>
       <div id="character-list"></div>
     </aside>
     <section class="character-main">
@@ -185,6 +197,7 @@
           </select>
         </label>
         <div class="derived-stats"><span>AC <strong id="character-ac">10</strong></span><span>Attack <strong id="character-attack">+0</strong></span><span>Load <strong id="character-weight">0</strong> lb</span></div>
+        <button id="delete-character" class="icon-button" title="Delete character">×</button>
       </header>
       <div class="paper-doll">
         <div class="silhouette" aria-hidden="true">
@@ -203,7 +216,7 @@
         <button class="equipment-slot cybernetic" data-slot="cybernetic"><small>CYBERNETIC</small><strong>Empty</strong></button>
       </div>
       <footer class="stash-shell">
-        <div class="section-heading"><h2>Stash & cargo</h2><span>Select item, then equipment slot</span></div>
+        <div class="section-heading"><h2>Stash & cargo</h2><button id="add-inventory-item" class="text-button">Add item</button></div>
         <div id="character-stash" class="character-stash"></div>
       </footer>
     </section>
@@ -216,6 +229,11 @@
         <div class="section-heading"><h2>Alignment pressure</h2><output id="alignment-output">Balanced</output></div>
         <input id="alignment-slider" type="range" min="-10" max="10" value="0">
         <div class="alignment-labels"><span>Light</span><span>Dark</span></div>
+      </section>
+      <section>
+        <div class="section-heading"><h2>Economy</h2><span id="cargo-capacity">0 / 100 lb</span></div>
+        <div class="credit-control"><button data-credit-delta="-100">−</button><strong id="character-credits">0 cr</strong><button data-credit-delta="100">＋</button></div>
+        <button id="sell-selected-item" class="secondary-button" disabled>Sell selected item</button>
       </section>
       <section class="gm-private">
         <div class="section-heading"><h2>GM private</h2><span>Hidden from player view</span></div>
@@ -330,6 +348,11 @@
       <div id="loot-output" class="toolkit-output"></div>
       <div class="section-heading encounter-tool-heading"><h2>Suggested opposition</h2><button id="send-encounter" class="text-button" disabled>Add to tracker</button></div>
       <div id="encounter-output" class="encounter-output"></div>
+      <section class="dice-tool">
+        <div class="section-heading"><h2>3D dice</h2><output id="dice-result">Ready</output></div>
+        <canvas id="dice-canvas"></canvas>
+        <div class="dice-buttons"><button data-die="6">D6</button><button data-die="8">D8</button><button data-die="12">D12</button><button data-die="20">D20</button></div>
+      </section>
     </section>
     <section class="generator-column">
       <header class="toolkit-heading"><div><small>ATMOSPHERE</small><h1>Scene Flavor</h1></div><button id="generate-flavor" class="primary-button">Generate</button></header>
@@ -342,6 +365,13 @@
       <section class="quick-prompts">
         <div class="section-heading"><h2>Session sparks</h2><span>Local tables</span></div>
         <p id="session-spark"></p>
+      </section>
+      <section class="soundboard">
+        <div class="section-heading"><h2>Soundboard</h2><span>Local output</span></div>
+        <div class="soundboard-grid">
+          <button data-sound="blaster">Blaster</button><button data-sound="saber">Lightsaber</button>
+          <button data-sound="alarm">Alarm</button><button data-sound="door">Blast door</button>
+        </div>
       </section>
     </section>
   </main>
@@ -370,6 +400,41 @@
       </div>
     </form>
   </dialog>
+  <dialog id="character-dialog">
+    <form id="character-form">
+      <div class="dialog-heading"><h2>New character</h2><button type="button" class="icon-button" data-close-dialog="character-dialog">×</button></div>
+      <label>Name<input name="name" required maxlength="40"></label>
+      <label>Species<select name="species"><option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option></select></label>
+      <button class="primary-button">Create character</button>
+    </form>
+  </dialog>
+  <dialog id="inventory-dialog">
+    <form id="inventory-form">
+      <div class="dialog-heading"><h2>Add inventory item</h2><button type="button" class="icon-button" data-close-dialog="inventory-dialog">×</button></div>
+      <label>Name<input name="name" required maxlength="60"></label>
+      <div class="field-row"><label>Weight<input name="weight" type="number" min="0" step=".1" value="1"></label><label>Value<input name="value" type="number" min="0" value="100"></label></div>
+      <label>Slot<select name="slot"><option value="">Cargo</option><option value="head">Head</option><option value="chest">Chest</option><option value="back">Back</option><option value="mainHand">Main hand</option><option value="offHand">Off hand</option><option value="cybernetic">Cybernetic</option></select></label>
+      <button class="primary-button">Add item</button>
+    </form>
+  </dialog>
+  <aside id="assistant-drawer" class="assistant-drawer" hidden>
+    <header>
+      <div><small>CONTEXT AWARE</small><h2>GM Assistant</h2></div>
+      <button id="close-assistant" class="icon-button" title="Close assistant">×</button>
+    </header>
+    <div id="assistant-status" class="assistant-status">Checking provider…</div>
+    <div id="assistant-messages" class="assistant-messages">
+      <p class="assistant-message system">I can read the active encounter, characters, and current note. Without an API key, rules questions use the local index.</p>
+    </div>
+    <form id="assistant-form">
+      <textarea id="assistant-input" rows="4" placeholder="Create a hacked datapad handout…" required></textarea>
+      <div class="assistant-actions">
+        <button id="assistant-to-note" type="button" class="secondary-button" disabled>Save handout</button>
+        <button class="primary-button">Send</button>
+      </div>
+    </form>
+  </aside>
   <script src="/static/app.js"></script>
+  <script type="module" src="/static/dice.js"></script>
 </body>
 </html>

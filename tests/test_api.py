@@ -81,6 +81,31 @@ def test_books_reader_rejects_missing_file(tmp_path, monkeypatch):
     assert client.get("/api/books/file/not-found.pdf").status_code == 404
 
 
+def test_assistant_status_and_missing_key(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    client = TestClient(app)
+
+    status = client.get("/api/assistant/status")
+    response = client.post("/api/assistant/chat", json={"message": "Create a handout", "context": {}})
+
+    assert status.status_code == 200
+    assert status.json()["configured"] is False
+    assert response.status_code == 503
+
+
+def test_shared_session_state_and_player_view():
+    client = TestClient(app)
+
+    updated = client.put("/api/session/state", json={"state": {"round": 3}})
+    shared = client.get("/api/session/state")
+    player = client.get("/player")
+
+    assert updated.status_code == 200
+    assert shared.json()["state"]["round"] == 3
+    assert player.status_code == 200
+    assert "Holocron GM" in player.text
+
+
 def test_api_search_and_chunk(tmp_path, monkeypatch):
     db_path = tmp_path / "holocron.sqlite"
     books = tmp_path / "Books"

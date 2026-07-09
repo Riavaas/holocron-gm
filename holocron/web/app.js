@@ -3,6 +3,7 @@ const ctx = canvas.getContext("2d");
 const shell = document.querySelector("#map-shell");
 const emptyState = document.querySelector("#map-empty");
 const measurementLabel = document.querySelector("#measurement");
+const isPlayerView = window.location.pathname === "/player";
 
 const defaults = {
   gridSize: 64,
@@ -15,14 +16,17 @@ const defaults = {
   zoom: 1,
   offset: { x: 0, y: 0 },
   tool: "select",
-  layers: { background: true, objects: true, tokens: true, grid: true, lighting: false },
+  layers: { background: true, objects: true, tokens: true, grid: true, lighting: false, fog: false },
   tokens: [],
   walls: [],
   pings: [],
   notePins: [],
+  doors: [],
+  explored: [],
   combatants: [],
   activeTurn: 0,
   selectedCombatantId: null,
+  combatLog: [],
   round: 1,
 };
 
@@ -35,6 +39,8 @@ state.measurement = null;
 state.draggedToken = null;
 state.creatureCache = [];
 state.pendingNotePin = null;
+
+if (isPlayerView) document.body.classList.add("player-mode");
 
 const tokenPresets = [
   { name: "Sith Trooper", type: "enemy", hp: 18, ac: 14 },
@@ -75,6 +81,13 @@ function persist() {
   delete clean.creatureCache;
   delete clean.pendingNotePin;
   localStorage.setItem("holocron.session", JSON.stringify(clean));
+  if (!isPlayerView) {
+    fetch("/api/session/state", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ state: clean }),
+    }).catch(() => {});
+  }
 }
 
 function resizeCanvas() {
@@ -180,6 +193,43 @@ function drawWalls() {
   }
 }
 
+function drawDoors() {
+  for (const door of state.doors) {
+    const a = screenPoint(door.start);
+    const b = screenPoint(door.end);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.strokeStyle = door.open ? "#35d0ba" : "#e1ad4f";
+    ctx.lineWidth = 7;
+    ctx.stroke();
+    ctx.fillStyle = "#0b0d10";
+    ctx.beginPath();
+    ctx.arc((a.x + b.x) / 2, (a.y + b.y) / 2, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawPersistentFog(width, height) {
+  if (!state.layers.fog) return;
+  const ratio = window.devicePixelRatio || 1;
+  const fog = document.createElement("canvas");
+  fog.width = width * ratio;
+  fog.height = height * ratio;
+  const fogCtx = fog.getContext("2d");
+  fogCtx.scale(ratio, ratio);
+  fogCtx.fillStyle = "rgba(0, 2, 5, .92)";
+  fogCtx.fillRect(0, 0, width, height);
+  fogCtx.globalCompositeOperation = "destination-out";
+  for (const point of state.explored) {
+    const screen = screenPoint(point);
+    fogCtx.beginPath();
+    fogCtx.arc(screen.x, screen.y, state.visionRange * state.gridSize * state.zoom, 0, Math.PI * 2);
+    fogCtx.fill();
+  }
+  ctx.drawImage(fog, 0, 0, width, height);
+}
+
 function rayWallIntersection(origin, direction, wall) {
   const segment = { x: wall.end.x - wall.start.x, y: wall.end.y - wall.start.y };
   const denominator = direction.x * segment.y - direction.y * segment.x;
@@ -198,7 +248,7 @@ function visibilityPolygon(origin, radius) {
     const angle = index / rayCount * Math.PI * 2;
     const direction = { x: Math.cos(angle), y: Math.sin(angle) };
     let distance = radius;
-    for (const wall of state.walls) {
+    for (const wall of [...state.walls, ...state.doors.filter((door) => !door.open)]) {
       const hit = rayWallIntersection(origin, direction, wall);
       if (hit !== null) distance = Math.min(distance, hit);
     }
@@ -313,9 +363,11 @@ function draw() {
     ctx.restore();
   }
   if (state.layers.grid) drawGrid(width, height);
+  drawPersistentFog(width, height);
   drawLighting(width, height);
   if (state.layers.objects) {
     drawWalls();
+    drawDoors();
     drawPings();
     drawNotePins();
   }
@@ -362,6 +414,7 @@ function loadMap(file) {
 }
 
 function addCombatant(source, point = null) {
+  const cr = Number(source.cr) || 1;
   const combatant = {
     id: crypto.randomUUID(),
     name: source.name,
@@ -372,6 +425,9 @@ function addCombatant(source, point = null) {
     initiative: Math.floor(Math.random() * 20) + 1,
     conditions: [],
     actions: source.actions || [],
+    attackBonus: 3 + Math.ceil(cr / 2),
+    saveDc: 10 + Math.ceil(cr / 2),
+    damage: `${Math.max(1, Math.ceil(cr / 3))}d8+${Math.max(1, Math.ceil(cr / 2))}`,
   };
   state.combatants.push(combatant);
   if (point) state.tokens.push({ ...point, combatantId: combatant.id, name: combatant.name, type: combatant.type });
@@ -398,6 +454,7 @@ function renderInitiative() {
   }
   document.querySelector("#round-number").textContent = state.round;
   renderCombatantInspector();
+  renderCombatLog();
 }
 
 function selectedCombatant() {
@@ -416,6 +473,38 @@ function renderCombatantInspector() {
   ).join("");
   const restrictions = combatant.conditions.map((condition) => conditionRules[condition]?.rule).filter(Boolean);
   document.querySelector("#action-restriction").textContent = restrictions.join(" ") || "No active restrictions.";
+  const targets = state.combatants.filter((item) => item.id !== combatant.id);
+  document.querySelector("#combat-target").innerHTML = targets.map((target) =>
+    `<option value="${target.id}">${escapeHtml(target.name)} · AC ${target.ac}</option>`
+  ).join("") || '<option value="">No target</option>';
+  const blocked = combatant.conditions.some((condition) => ["incapacitated", "stunned", "unconscious"].includes(condition));
+  const actions = combatant.actions.length ? combatant.actions.slice(0, 5) : ["Attack"];
+  document.querySelector("#combat-actions").innerHTML = actions.map((action) =>
+    `<button class="combat-action" data-combat-action="${escapeHtml(action)}" ${blocked || !targets.length ? "disabled" : ""}>${escapeHtml(action)}</button>`
+  ).join("") + `<button class="combat-action" data-save-check ${!targets.length ? "disabled" : ""}>Force save DC ${combatant.saveDc}</button>`;
+}
+
+function rollDice(expression) {
+  const match = String(expression).match(/^(\d+)d(\d+)(?:\+(\d+))?$/);
+  if (!match) return 0;
+  const [, count, sides, bonus = 0] = match.map(Number);
+  let total = bonus;
+  for (let index = 0; index < count; index++) total += Math.floor(Math.random() * sides) + 1;
+  return total;
+}
+
+function addCombatLog(message) {
+  state.combatLog ||= [];
+  state.combatLog.unshift({ id: crypto.randomUUID(), message, createdAt: Date.now() });
+  state.combatLog = state.combatLog.slice(0, 50);
+  persist();
+  renderCombatLog();
+}
+
+function renderCombatLog() {
+  document.querySelector("#combat-log").innerHTML = (state.combatLog || []).map((entry) =>
+    `<div class="combat-log-entry">${entry.message}</div>`
+  ).join("") || '<p class="initiative-empty">No rolls yet.</p>';
 }
 
 function renderLibrary(items = tokenPresets) {
@@ -522,9 +611,22 @@ canvas.addEventListener("pointerdown", (event) => {
   state.pointer = point;
   if (state.tool === "measure") state.measurement = { start: point, end: point };
   if (state.tool === "wall") state.measurement = { start: point, end: point, wall: true };
+  if (state.tool === "door") state.measurement = { start: point, end: point, door: true };
   if (state.tool === "ping") state.pings.push({ ...point, created: Date.now() });
   if (state.tool === "note") openNotePinDialog(null, point);
   if (state.tool === "select") {
+    const door = [...state.doors].reverse().find((item) => {
+      const length = Math.hypot(item.end.x - item.start.x, item.end.y - item.start.y) || 1;
+      const t = Math.max(0, Math.min(1, ((point.x - item.start.x) * (item.end.x - item.start.x) + (point.y - item.start.y) * (item.end.y - item.start.y)) / (length * length)));
+      return Math.hypot(point.x - (item.start.x + t * (item.end.x - item.start.x)), point.y - (item.start.y + t * (item.end.y - item.start.y))) < 10 / state.zoom;
+    });
+    if (door) {
+      door.open = !door.open;
+      persist();
+      draw();
+      state.pointer = null;
+      return;
+    }
     const pin = [...state.notePins].reverse().find((item) => Math.hypot(item.x - point.x, item.y - point.y) < 16 / state.zoom);
     if (pin) {
       openNotePinDialog(pin);
@@ -550,11 +652,17 @@ canvas.addEventListener("pointermove", (event) => {
   if (state.draggedToken) {
     state.draggedToken.x = Math.round(point.x / state.gridSize) * state.gridSize + state.gridSize / 2;
     state.draggedToken.y = Math.round(point.y / state.gridSize) * state.gridSize + state.gridSize / 2;
+    if (state.layers.fog) state.explored.push({ x: state.draggedToken.x, y: state.draggedToken.y });
   }
   draw();
 });
 
 canvas.addEventListener("pointerup", () => {
+  if (state.measurement?.door) {
+    state.doors.push({ id: crypto.randomUUID(), start: state.measurement.start, end: state.measurement.end, open: false });
+    state.measurement = null;
+    measurementLabel.hidden = true;
+  }
   if (state.measurement?.wall) {
     state.walls.push({ start: state.measurement.start, end: state.measurement.end });
     state.measurement = null;
@@ -658,12 +766,41 @@ document.querySelector("#roll-check").addEventListener("click", () => {
   output.hidden = false;
   output.textContent = `${combatant.name} rolled ${result}${result === 20 ? " · Critical" : result === 1 ? " · Critical failure" : ""}`;
 });
+document.querySelector("#combat-actions").addEventListener("click", (event) => {
+  const actor = selectedCombatant();
+  const target = state.combatants.find((item) => item.id === document.querySelector("#combat-target").value);
+  if (!actor || !target) return;
+  if (event.target.closest("[data-save-check]")) {
+    const roll = Math.floor(Math.random() * 20) + 1;
+    const success = roll >= actor.saveDc;
+    const damage = success ? 0 : rollDice(actor.damage);
+    target.hp = Math.max(0, target.hp - damage);
+    addCombatLog(`<strong>${escapeHtml(target.name)}</strong> ${success ? "saves" : `fails DC ${actor.saveDc} and takes ${damage} damage`}.`);
+  }
+  const action = event.target.closest("[data-combat-action]");
+  if (action) {
+    const die = Math.floor(Math.random() * 20) + 1;
+    const total = die + actor.attackBonus;
+    const hit = die === 20 || (die !== 1 && total >= target.ac);
+    const damage = hit ? rollDice(actor.damage) : 0;
+    target.hp = Math.max(0, target.hp - damage);
+    addCombatLog(`<strong>${escapeHtml(actor.name)}</strong> uses ${escapeHtml(action.dataset.combatAction)}: ${total} vs AC ${target.ac} · ${hit ? `${damage} damage` : "miss"}.`);
+  }
+  persist();
+  renderInitiative();
+});
+document.querySelector("#clear-combat-log").addEventListener("click", () => {
+  state.combatLog = [];
+  persist();
+  renderCombatLog();
+});
 document.querySelector("#roll-initiative").addEventListener("click", () => {
   state.combatants.forEach((item) => { item.initiative = Math.floor(Math.random() * 20) + 1; });
   state.combatants.sort((a, b) => b.initiative - a.initiative);
   state.activeTurn = 0;
   state.selectedCombatantId = null;
   state.round = 1;
+  state.combatLog = [];
   persist();
   renderInitiative();
 });
@@ -947,6 +1084,8 @@ const defaultCharacter = {
   },
   alignment: 0,
   passiveInsight: 14,
+  credits: 1200,
+  cargoCapacity: 100,
   gmHooks: "Former contact inside the Exchange. Protects their sibling at any cost.",
   equipped: {},
   inventory: [
@@ -989,6 +1128,7 @@ function renderCharacters() {
     </button>`).join("");
   document.querySelector("#character-name").textContent = character.name;
   document.querySelector("#character-species").value = character.species;
+  document.querySelector(".silhouette").dataset.species = character.species;
   const equippedItems = Object.values(character.equipped).map((id) => character.inventory.find((item) => item.id === id)).filter(Boolean);
   const ac = character.baseAc + equippedItems.reduce((total, item) => total + (item.ac || 0), 0);
   const attack = equippedItems.reduce((total, item) => total + (item.attack || 0), 0);
@@ -996,6 +1136,9 @@ function renderCharacters() {
   document.querySelector("#character-ac").textContent = ac;
   document.querySelector("#character-attack").textContent = `${attack >= 0 ? "+" : ""}${attack}`;
   document.querySelector("#character-weight").textContent = weight;
+  document.querySelector("#character-credits").textContent = `${character.credits || 0} cr`;
+  document.querySelector("#cargo-capacity").textContent = `${weight} / ${character.cargoCapacity || 100} lb`;
+  document.querySelector("#sell-selected-item").disabled = !characterState.selectedItemId;
   document.querySelectorAll("[data-slot]").forEach((slot) => {
     const item = character.inventory.find((candidate) => candidate.id === character.equipped[slot.dataset.slot]);
     slot.querySelector("strong").textContent = item?.name || "Empty";
@@ -1075,6 +1218,69 @@ document.querySelector("#passive-insight").addEventListener("input", (event) => 
 document.querySelector("#gm-hooks").addEventListener("input", (event) => {
   currentCharacter().gmHooks = event.target.value;
   saveCharacters();
+});
+document.querySelector("#new-character").addEventListener("click", () => document.querySelector("#character-dialog").showModal());
+document.querySelector("#delete-character").addEventListener("click", () => {
+  if (characterState.characters.length <= 1) return;
+  const currentId = characterState.activeId;
+  characterState.characters = characterState.characters.filter((character) => character.id !== currentId);
+  characterState.activeId = characterState.characters[0].id;
+  characterState.selectedItemId = null;
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#add-inventory-item").addEventListener("click", () => document.querySelector("#inventory-dialog").showModal());
+document.querySelectorAll("[data-close-dialog]").forEach((button) => button.addEventListener("click", () => {
+  document.querySelector(`#${button.dataset.closeDialog}`).close();
+}));
+document.querySelector("#character-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+  const character = structuredClone(defaultCharacter);
+  character.id = crypto.randomUUID();
+  character.name = data.name;
+  character.species = data.species;
+  character.inventory = [];
+  character.equipped = {};
+  character.credits = 500;
+  characterState.characters.push(character);
+  characterState.activeId = character.id;
+  saveCharacters();
+  renderCharacters();
+  event.currentTarget.reset();
+  document.querySelector("#character-dialog").close();
+});
+document.querySelector("#inventory-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+  currentCharacter().inventory.push({
+    id: crypto.randomUUID(),
+    name: data.name,
+    weight: Number(data.weight),
+    value: Number(data.value),
+    slot: data.slot || null,
+  });
+  saveCharacters();
+  renderCharacters();
+  event.currentTarget.reset();
+  document.querySelector("#inventory-dialog").close();
+});
+document.querySelector(".credit-control").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-credit-delta]");
+  if (!button) return;
+  currentCharacter().credits = Math.max(0, (currentCharacter().credits || 0) + Number(button.dataset.creditDelta));
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#sell-selected-item").addEventListener("click", () => {
+  const character = currentCharacter();
+  const item = character.inventory.find((candidate) => candidate.id === characterState.selectedItemId);
+  if (!item) return;
+  character.credits = (character.credits || 0) + Math.floor((item.value || 0) / 2);
+  character.inventory = character.inventory.filter((candidate) => candidate.id !== item.id);
+  characterState.selectedItemId = null;
+  saveCharacters();
+  renderCharacters();
 });
 
 renderCharacters();
@@ -1274,12 +1480,45 @@ function generateNpc() {
     label, value: 8 + Math.floor(Math.random() * 11),
   }));
   document.querySelector("#npc-output").innerHTML = `
-    <div class="npc-portrait">${initials(name)}</div>
+    <canvas id="npc-portrait-canvas" class="npc-portrait" width="144" height="144"></canvas>
     <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(randomItem(npcQuirks))}</p></div>`;
+  drawNpcPortrait(species, name);
   document.querySelector("#npc-attributes").innerHTML = attributes.map((attribute) =>
     `<span>${attribute.label}<strong>${attribute.value}</strong></span>`
   ).join("");
   document.querySelector("#npc-hook").textContent = randomItem(npcHooks);
+}
+
+function drawNpcPortrait(species, name) {
+  const portrait = document.querySelector("#npc-portrait-canvas");
+  const portraitCtx = portrait.getContext("2d");
+  const hue = [...name].reduce((total, character) => total + character.charCodeAt(0), 0) % 360;
+  const skin = species === "Duros" ? "#4b9a9d" : species === "Twi'lek" ? "#6f89b8" : species === "Rodian" ? "#739755" : `hsl(${hue}, 28%, 55%)`;
+  const gradient = portraitCtx.createRadialGradient(54, 42, 10, 72, 72, 90);
+  gradient.addColorStop(0, `hsl(${hue}, 30%, 30%)`);
+  gradient.addColorStop(1, "#0b1114");
+  portraitCtx.fillStyle = gradient;
+  portraitCtx.fillRect(0, 0, 144, 144);
+  portraitCtx.fillStyle = skin;
+  portraitCtx.beginPath();
+  portraitCtx.ellipse(72, 72, species === "Duros" ? 42 : 34, species === "Duros" ? 47 : 43, 0, 0, Math.PI * 2);
+  portraitCtx.fill();
+  if (species === "Zabrak") {
+    portraitCtx.fillStyle = "#d8c3a4";
+    for (let x = 46; x <= 98; x += 13) {
+      portraitCtx.beginPath(); portraitCtx.moveTo(x, 35); portraitCtx.lineTo(x + 6, 12); portraitCtx.lineTo(x + 11, 38); portraitCtx.fill();
+    }
+  }
+  if (species === "Twi'lek") {
+    portraitCtx.strokeStyle = skin; portraitCtx.lineWidth = 15; portraitCtx.lineCap = "round";
+    portraitCtx.beginPath(); portraitCtx.moveTo(48, 82); portraitCtx.quadraticCurveTo(27, 116, 36, 137); portraitCtx.stroke();
+    portraitCtx.beginPath(); portraitCtx.moveTo(96, 82); portraitCtx.quadraticCurveTo(117, 116, 108, 137); portraitCtx.stroke();
+  }
+  portraitCtx.fillStyle = "#10191c";
+  portraitCtx.beginPath(); portraitCtx.ellipse(58, 67, species === "Duros" ? 10 : 6, 5, 0, 0, Math.PI * 2); portraitCtx.fill();
+  portraitCtx.beginPath(); portraitCtx.ellipse(86, 67, species === "Duros" ? 10 : 6, 5, 0, 0, Math.PI * 2); portraitCtx.fill();
+  portraitCtx.strokeStyle = "#222"; portraitCtx.lineWidth = 3;
+  portraitCtx.beginPath(); portraitCtx.moveTo(58, 97); portraitCtx.quadraticCurveTo(72, 104, 87, 97); portraitCtx.stroke();
 }
 
 function generateLoot() {
@@ -1337,3 +1576,144 @@ document.querySelector("#flavor-to-note").addEventListener("click", () => {
 generateNpc();
 generateLoot();
 generateFlavor();
+
+function playSoundEffect(type) {
+  const audio = new AudioContext();
+  const oscillator = audio.createOscillator();
+  const gain = audio.createGain();
+  const now = audio.currentTime;
+  oscillator.connect(gain).connect(audio.destination);
+  if (type === "blaster") {
+    oscillator.type = "sawtooth"; oscillator.frequency.setValueAtTime(900, now); oscillator.frequency.exponentialRampToValueAtTime(90, now + .18);
+    gain.gain.setValueAtTime(.35, now); gain.gain.exponentialRampToValueAtTime(.001, now + .2);
+  } else if (type === "saber") {
+    oscillator.type = "sawtooth"; oscillator.frequency.setValueAtTime(75, now); oscillator.frequency.linearRampToValueAtTime(130, now + .5);
+    gain.gain.setValueAtTime(.18, now); gain.gain.exponentialRampToValueAtTime(.001, now + .65);
+  } else if (type === "alarm") {
+    oscillator.type = "square"; oscillator.frequency.setValueAtTime(440, now); oscillator.frequency.setValueAtTime(660, now + .22); oscillator.frequency.setValueAtTime(440, now + .44);
+    gain.gain.setValueAtTime(.15, now); gain.gain.exponentialRampToValueAtTime(.001, now + .7);
+  } else {
+    oscillator.type = "triangle"; oscillator.frequency.setValueAtTime(65, now); oscillator.frequency.exponentialRampToValueAtTime(28, now + .7);
+    gain.gain.setValueAtTime(.3, now); gain.gain.exponentialRampToValueAtTime(.001, now + .75);
+  }
+  oscillator.start(now);
+  oscillator.stop(now + .8);
+}
+
+document.querySelector(".soundboard-grid").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-sound]");
+  if (button) playSoundEffect(button.dataset.sound);
+});
+
+let lastAssistantAnswer = "";
+
+function liveAssistantContext() {
+  const note = activeNote();
+  return {
+    round: state.round,
+    activeTurn: state.combatants[state.activeTurn]?.name || null,
+    combatants: state.combatants.map((item) => ({
+      name: item.name, hp: item.hp, maxHp: item.maxHp, ac: item.ac, conditions: item.conditions,
+    })),
+    characters: characterState.characters.map((character) => ({
+      name: character.name,
+      species: character.species,
+      resources: character.resources,
+      alignment: character.alignment,
+      gmHooks: character.gmHooks,
+    })),
+    currentNote: note ? { title: note.title, content: note.content.slice(0, 3000) } : null,
+  };
+}
+
+function appendAssistantMessage(role, text) {
+  const message = document.createElement("p");
+  message.className = `assistant-message ${role}`;
+  message.textContent = text;
+  const container = document.querySelector("#assistant-messages");
+  container.append(message);
+  container.scrollTop = container.scrollHeight;
+}
+
+async function updateAssistantStatus() {
+  try {
+    const response = await fetch("/api/assistant/status");
+    const payload = await response.json();
+    document.querySelector("#assistant-status").textContent = payload.configured
+      ? `OpenAI connected · ${payload.model}`
+      : "Local fallback · set OPENAI_API_KEY for generative assistance";
+  } catch {
+    document.querySelector("#assistant-status").textContent = "Assistant service unavailable";
+  }
+}
+
+document.querySelector("#assistant-toggle").addEventListener("click", () => {
+  document.querySelector("#assistant-drawer").hidden = false;
+  updateAssistantStatus();
+  document.querySelector("#assistant-input").focus();
+});
+document.querySelector("#close-assistant").addEventListener("click", () => {
+  document.querySelector("#assistant-drawer").hidden = true;
+});
+document.querySelector("#assistant-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const input = document.querySelector("#assistant-input");
+  const message = input.value.trim();
+  if (!message) return;
+  appendAssistantMessage("user", message);
+  input.value = "";
+  appendAssistantMessage("system", "Working…");
+  const pending = document.querySelector("#assistant-messages .assistant-message:last-child");
+  try {
+    const response = await fetch("/api/assistant/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, context: liveAssistantContext() }),
+    });
+    if (!response.ok) throw new Error("OpenAI unavailable");
+    const payload = await response.json();
+    lastAssistantAnswer = payload.answer;
+    pending.className = "assistant-message assistant";
+    pending.textContent = payload.answer;
+  } catch {
+    const response = await fetch("/api/rules/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: message, limit: 5 }),
+    });
+    const payload = await response.json();
+    lastAssistantAnswer = payload.found ? payload.answer : "OpenAI is not configured, and the local rules index found no answer.";
+    pending.className = "assistant-message assistant";
+    pending.textContent = lastAssistantAnswer;
+  }
+  document.querySelector("#assistant-to-note").disabled = !lastAssistantAnswer;
+});
+document.querySelector("#assistant-to-note").addEventListener("click", () => {
+  if (!lastAssistantAnswer) return;
+  createNote(`AI handout · ${noteTimestamp()}`, `# Handout\n\n${lastAssistantAnswer}`);
+  document.querySelector("#assistant-drawer").hidden = true;
+  document.querySelector('[data-view="notes"]').click();
+});
+
+if (isPlayerView) {
+  let playerStateVersion = -1;
+  setInterval(async () => {
+    try {
+      const response = await fetch("/api/session/state");
+      const payload = await response.json();
+      if (payload.version === playerStateVersion || !Object.keys(payload.state).length) return;
+      playerStateVersion = payload.version;
+      const transient = {
+        image: state.image,
+        imageUrl: state.imageUrl,
+        creatureCache: state.creatureCache,
+      };
+      Object.assign(state, payload.state, transient);
+      state.layers = { ...defaults.layers, ...(payload.state.layers || {}) };
+      renderInitiative();
+      resizeCanvas();
+    } catch {
+      // Keep the last received state visible while the GM reconnects.
+    }
+  }, 500);
+}

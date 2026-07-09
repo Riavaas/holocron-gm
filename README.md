@@ -126,6 +126,20 @@ python3 scripts/dev_server.py
 Open `http://127.0.0.1:8000` for the GM dashboard. The **Books** workspace
 lists local PDFs and opens them in the integrated browser PDF reader.
 
+Open `http://127.0.0.1:8000/player` on the player display. The GM dashboard
+synchronizes map and encounter state through the local server.
+
+Optional OpenAI assistant:
+
+```bash
+export OPENAI_API_KEY="..."
+export OPENAI_MODEL="gpt-5.4-mini"
+python3 scripts/dev_server.py
+```
+
+The API key stays server-side. Without it, the assistant falls back to the
+local cited rules index.
+
 ## Search
 
 ```bash
@@ -147,6 +161,9 @@ curl -X POST "http://127.0.0.1:8000/api/rules/ask" \
 - `GET /api/sources`
 - `GET /api/books`
 - `GET /api/books/file/{book_path}`
+- `GET /api/assistant/status`
+- `POST /api/assistant/chat`
+- `GET|PUT /api/session/state`
 - `GET /api/rules/search?q=...&limit=10`
 - `GET /api/rules/chunk/{chunk_id}`
 - `POST /api/rules/ask`
