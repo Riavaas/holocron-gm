@@ -96,6 +96,7 @@
           <button class="tool" data-tool="measure" title="Measure map distance"><b>⌁</b>Measure</button>
           <button class="tool" data-tool="wall" title="Draw line-of-sight walls"><b>╱</b>Wall</button>
           <button class="tool" data-tool="ping" title="Place a map ping"><b>◎</b>Ping</button>
+          <button class="tool" data-tool="note" title="Attach a private GM note"><b>⌑</b>Note pin</button>
         </div>
       </section>
     </aside>
@@ -355,6 +356,18 @@
       </div>
       <label>Type<select name="type"><option value="enemy">Enemy</option><option value="ally">Ally</option><option value="player">Player</option></select></label>
       <button class="primary-button" value="default">Add to encounter</button>
+    </form>
+  </dialog>
+  <dialog id="note-pin-dialog">
+    <form id="note-pin-form">
+      <div class="dialog-heading"><h2>GM note pin</h2><button id="close-note-pin" type="button" class="icon-button" aria-label="Close">×</button></div>
+      <label>Linked note<select id="pin-note-select" required></select></label>
+      <label>Map reminder<textarea id="pin-snippet" rows="4" maxlength="240" placeholder="What matters at this exact location?"></textarea></label>
+      <div class="dialog-actions">
+        <button id="delete-note-pin" type="button" class="secondary-button" hidden>Delete</button>
+        <button id="open-pin-note" type="button" class="secondary-button">Open note</button>
+        <button class="primary-button">Save pin</button>
+      </div>
     </form>
   </dialog>
   <script src="/static/app.js"></script>

@@ -276,6 +276,8 @@ dialog { width: 340px; padding: 0; border: 1px solid var(--line); border-radius:
 dialog::backdrop { background: rgba(0,0,0,.7); }
 dialog form { display: grid; gap: 14px; padding: 18px; }
 .dialog-heading { display: flex; align-items: center; justify-content: space-between; }
+.dialog-actions { display: grid; grid-template-columns: 72px 86px 1fr; gap: 8px; }
+#note-pin-dialog textarea { width: 100%; margin-top: 4px; padding: 8px; resize: vertical; border: 1px solid var(--line); border-radius: 4px; background: #0e1216; color: var(--text); font: inherit; }
 .notes-workspace {
   display: grid;
   grid-template-columns: 240px minmax(500px, 1fr) 230px;

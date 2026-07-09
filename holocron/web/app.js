@@ -19,6 +19,7 @@ const defaults = {
   tokens: [],
   walls: [],
   pings: [],
+  notePins: [],
   combatants: [],
   activeTurn: 0,
   selectedCombatantId: null,
@@ -33,6 +34,7 @@ state.pointer = null;
 state.measurement = null;
 state.draggedToken = null;
 state.creatureCache = [];
+state.pendingNotePin = null;
 
 const tokenPresets = [
   { name: "Sith Trooper", type: "enemy", hp: 18, ac: 14 },
@@ -71,6 +73,7 @@ function persist() {
   delete clean.measurement;
   delete clean.draggedToken;
   delete clean.creatureCache;
+  delete clean.pendingNotePin;
   localStorage.setItem("holocron.session", JSON.stringify(clean));
 }
 
@@ -277,6 +280,26 @@ function drawPings() {
   if (state.pings.length) requestAnimationFrame(draw);
 }
 
+function drawNotePins() {
+  for (const pin of state.notePins) {
+    const point = screenPoint(pin);
+    ctx.save();
+    ctx.translate(point.x, point.y);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = "#171d21";
+    ctx.strokeStyle = "#a875d2";
+    ctx.lineWidth = 2;
+    ctx.fillRect(-8, -8, 16, 16);
+    ctx.strokeRect(-8, -8, 16, 16);
+    ctx.restore();
+    ctx.fillStyle = "#d6b9ef";
+    ctx.font = "700 9px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("N", point.x, point.y);
+  }
+}
+
 function draw() {
   const width = shell.clientWidth;
   const height = shell.clientHeight;
@@ -294,6 +317,7 @@ function draw() {
   if (state.layers.objects) {
     drawWalls();
     drawPings();
+    drawNotePins();
   }
   if (state.layers.tokens) state.tokens.forEach(drawToken);
   drawMeasurement();
@@ -499,7 +523,14 @@ canvas.addEventListener("pointerdown", (event) => {
   if (state.tool === "measure") state.measurement = { start: point, end: point };
   if (state.tool === "wall") state.measurement = { start: point, end: point, wall: true };
   if (state.tool === "ping") state.pings.push({ ...point, created: Date.now() });
+  if (state.tool === "note") openNotePinDialog(null, point);
   if (state.tool === "select") {
+    const pin = [...state.notePins].reverse().find((item) => Math.hypot(item.x - point.x, item.y - point.y) < 16 / state.zoom);
+    if (pin) {
+      openNotePinDialog(pin);
+      state.pointer = null;
+      return;
+    }
     const hit = [...state.tokens].reverse().find((token) => Math.hypot(token.x - point.x, token.y - point.y) < state.gridSize * .5);
     state.tokens.forEach((token) => { token.selected = token === hit; });
     state.draggedToken = hit || null;
@@ -845,6 +876,63 @@ if (!noteState.notes.length) {
 } else {
   renderNotes();
 }
+
+const notePinDialog = document.querySelector("#note-pin-dialog");
+
+function openNotePinDialog(pin, point = null) {
+  const select = document.querySelector("#pin-note-select");
+  select.innerHTML = noteState.notes.map((note) =>
+    `<option value="${note.id}">${escapeHtml(note.title)}</option>`
+  ).join("");
+  state.pendingNotePin = pin
+    ? { id: pin.id, x: pin.x, y: pin.y }
+    : { id: null, x: point.x, y: point.y };
+  select.value = pin?.noteId || noteState.activeId;
+  document.querySelector("#pin-snippet").value = pin?.snippet || "";
+  document.querySelector("#delete-note-pin").hidden = !pin;
+  notePinDialog.showModal();
+}
+
+document.querySelector("#close-note-pin").addEventListener("click", () => {
+  state.pendingNotePin = null;
+  notePinDialog.close();
+});
+document.querySelector("#note-pin-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const pending = state.pendingNotePin;
+  if (!pending) return;
+  const pin = {
+    id: pending.id || crypto.randomUUID(),
+    x: pending.x,
+    y: pending.y,
+    noteId: document.querySelector("#pin-note-select").value,
+    snippet: document.querySelector("#pin-snippet").value.trim(),
+  };
+  const index = state.notePins.findIndex((item) => item.id === pin.id);
+  if (index >= 0) state.notePins[index] = pin;
+  else state.notePins.push(pin);
+  state.pendingNotePin = null;
+  persist();
+  draw();
+  notePinDialog.close();
+});
+document.querySelector("#delete-note-pin").addEventListener("click", () => {
+  if (!state.pendingNotePin?.id) return;
+  state.notePins = state.notePins.filter((pin) => pin.id !== state.pendingNotePin.id);
+  state.pendingNotePin = null;
+  persist();
+  draw();
+  notePinDialog.close();
+});
+document.querySelector("#open-pin-note").addEventListener("click", () => {
+  const noteId = document.querySelector("#pin-note-select").value;
+  if (!noteId) return;
+  noteState.activeId = noteId;
+  saveNotes();
+  renderNotes();
+  notePinDialog.close();
+  document.querySelector('[data-view="notes"]').click();
+});
 
 const defaultCharacter = {
   id: "player-1",
