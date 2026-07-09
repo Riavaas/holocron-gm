@@ -710,6 +710,7 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
   document.querySelector("#battlemap-view").hidden = view !== "battlemap";
   document.querySelector("#notes-view").hidden = view !== "notes";
   document.querySelector("#characters-view").hidden = view !== "characters";
+  document.querySelector("#compendium-view").hidden = view !== "compendium";
   document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item === button));
   if (view === "battlemap") resizeCanvas();
 }));
@@ -907,3 +908,73 @@ document.querySelector("#gm-hooks").addEventListener("input", (event) => {
 });
 
 renderCharacters();
+
+function citationLabel(result) {
+  const pages = result.page_start
+    ? `p. ${result.page_start}${result.page_end && result.page_end !== result.page_start ? `–${result.page_end}` : ""}`
+    : "page unknown";
+  return `${result.source_title} · ${pages}`;
+}
+
+async function searchCompendium(query) {
+  const input = document.querySelector("#compendium-search");
+  query = (query ?? input.value).trim();
+  if (!query) return;
+  input.value = query;
+  const results = document.querySelector("#compendium-results");
+  results.innerHTML = '<p class="loading-line">Searching local index…</p>';
+  document.querySelector("#results-count").textContent = "Searching";
+  try {
+    const response = await fetch(`/api/rules/search?q=${encodeURIComponent(query)}&limit=30`);
+    if (!response.ok) throw new Error("Search failed");
+    const items = await response.json();
+    document.querySelector("#results-count").textContent = `${items.length} result${items.length === 1 ? "" : "s"}`;
+    results.innerHTML = items.map((item) => `
+      <article class="search-result">
+        <header><h3>${escapeHtml(item.section_title || item.source_title)}</h3><span>${escapeHtml(item.knowledge_type.replaceAll("_", " "))}</span></header>
+        <p>${escapeHtml(item.excerpt)}</p>
+        <footer>${escapeHtml(citationLabel(item))}</footer>
+      </article>`).join("") || '<p class="loading-line">No indexed source matched this query.</p>';
+  } catch {
+    document.querySelector("#results-count").textContent = "Unavailable";
+    results.innerHTML = '<p class="loading-line">The local index is unavailable. Run the ingestion command to rebuild it.</p>';
+  }
+}
+
+document.querySelector("#run-compendium-search").addEventListener("click", () => searchCompendium());
+document.querySelector("#compendium-search").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") searchCompendium();
+});
+document.querySelector(".compendium-nav").addEventListener("click", (event) => {
+  const preset = event.target.closest("[data-query]");
+  if (!preset) return;
+  document.querySelectorAll(".compendium-preset").forEach((item) => item.classList.toggle("active", item === preset));
+  searchCompendium(preset.dataset.query);
+});
+document.querySelector("#rules-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const question = document.querySelector("#rules-question").value.trim();
+  if (!question) return;
+  const answer = document.querySelector("#rules-answer");
+  answer.innerHTML = '<p class="loading-line">Consulting local sources…</p>';
+  try {
+    const response = await fetch("/api/rules/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, limit: 8 }),
+    });
+    if (!response.ok) throw new Error("Rules lookup failed");
+    const payload = await response.json();
+    if (!payload.found) {
+      answer.innerHTML = "<p>No matching rule was found in the local index.</p>";
+      return;
+    }
+    answer.innerHTML = `<p>${escapeHtml(payload.answer)}</p>${payload.citations.map((citation) =>
+      `<p class="citation">${escapeHtml(citationLabel(citation))}</p>`
+    ).join("")}`;
+  } catch {
+    answer.innerHTML = "<p>The rules assistant could not reach the local index.</p>";
+  }
+});
+
+searchCompendium("combat");

@@ -18,11 +18,14 @@ def test_search_and_answer_have_citations(tmp_path, monkeypatch):
     ingest_books(books)
     results = search_chunks("Advantage", 5)
     answer = answer_question("Advantage", 5)
+    natural_answer = answer_question("How does advantage work?", 5)
 
     assert results
     assert results[0]["source_title"] == "Combat Rules"
     assert answer.found is True
     assert answer.citations
+    assert natural_answer.found is True
+    assert natural_answer.citations
 
 
 def test_search_no_result(tmp_path, monkeypatch):
@@ -34,4 +37,3 @@ def test_search_no_result(tmp_path, monkeypatch):
 
     assert search_chunks("missingterm", 5) == []
     assert answer_question("missingterm").found is False
-

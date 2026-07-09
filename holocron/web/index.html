@@ -16,7 +16,7 @@
       <button class="active" data-view="battlemap">Battlemap</button>
       <button data-view="characters">Characters</button>
       <button data-view="notes">Notes</button>
-      <button disabled>Compendium</button>
+      <button data-view="compendium">Compendium</button>
     </nav>
     <div class="session-status"><span></span> Local session</div>
   </header>
@@ -229,6 +229,37 @@
     <aside class="history-panel">
       <div class="section-heading"><h2>Version history</h2><span id="version-count">0 versions</span></div>
       <div id="version-list" class="version-list"></div>
+    </aside>
+  </main>
+
+  <main id="compendium-view" class="compendium-workspace" hidden>
+    <aside class="compendium-nav">
+      <div class="section-heading"><h2>SW5e Library</h2><span>Offline</span></div>
+      <button class="compendium-preset active" data-query="combat">Combat rules</button>
+      <button class="compendium-preset" data-query="force power">Force powers</button>
+      <button class="compendium-preset" data-query="tech power">Tech powers</button>
+      <button class="compendium-preset" data-query="weapon properties">Equipment</button>
+      <button class="compendium-preset" data-query="condition">Conditions</button>
+      <button class="compendium-preset" data-query="starship">Starships</button>
+      <button class="compendium-preset" data-query="creature">Bestiary</button>
+    </aside>
+    <section class="compendium-results-shell">
+      <header class="compendium-searchbar">
+        <input id="compendium-search" type="search" placeholder="Search every indexed SW5e source…" autocomplete="off">
+        <button id="run-compendium-search" class="primary-button">Search</button>
+      </header>
+      <div class="results-summary"><span id="results-count">Ready</span><span>Local source citations</span></div>
+      <div id="compendium-results" class="compendium-results"></div>
+    </section>
+    <aside class="rules-console">
+      <div class="section-heading"><div><small>RULES ASSISTANT</small><h2>Ask Holocron</h2></div><span>Extractive</span></div>
+      <div id="rules-answer" class="rules-answer">
+        <p>Ask a mechanical question. Answers are assembled from the local index and retain source citations.</p>
+      </div>
+      <form id="rules-form">
+        <textarea id="rules-question" rows="4" placeholder="How does cover interact with area effects?" required></textarea>
+        <button class="primary-button">Ask rules</button>
+      </form>
     </aside>
   </main>
 
