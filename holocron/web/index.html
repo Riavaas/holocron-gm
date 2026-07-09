@@ -17,6 +17,7 @@
       <button data-view="characters">Characters</button>
       <button data-view="notes">Notes</button>
       <button data-view="compendium">Compendium</button>
+      <button data-view="books">Books</button>
     </nav>
     <div class="session-status"><span></span> Local session</div>
   </header>
@@ -277,6 +278,26 @@
         <button class="primary-button">Ask rules</button>
       </form>
     </aside>
+  </main>
+
+  <main id="books-view" class="books-workspace" hidden>
+    <aside class="books-library">
+      <div class="section-heading"><h2>Sourcebooks</h2><span id="books-count">Local</span></div>
+      <input id="book-search" type="search" placeholder="Filter books…">
+      <div id="book-list" class="book-list"></div>
+    </aside>
+    <section class="pdf-reader">
+      <header class="pdf-toolbar">
+        <div><small>READING</small><h2 id="reader-title">Select a sourcebook</h2></div>
+        <span id="reader-size"></span>
+        <a id="open-book-tab" class="secondary-button" href="#" target="_blank" rel="noopener" hidden>Open in new tab</a>
+      </header>
+      <div id="reader-empty" class="reader-empty">
+        <strong>Local PDF reader</strong>
+        <span>Select a book from the library. Files stay on this machine.</span>
+      </div>
+      <iframe id="book-frame" title="SW5e sourcebook reader" hidden></iframe>
+    </section>
   </main>
 
   <dialog id="combatant-dialog">

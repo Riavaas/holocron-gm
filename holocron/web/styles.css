@@ -427,11 +427,44 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .rules-console form { display: grid; gap: 7px; }
 .rules-console textarea { width: 100%; padding: 8px; resize: vertical; border: 1px solid var(--line); border-radius: 4px; background: #0e1216; color: var(--text); font: inherit; }
 .loading-line { padding: 30px; color: var(--muted); text-align: center; font-size: 11px; }
+.books-workspace { display: grid; grid-template-columns: 260px minmax(600px, 1fr); height: calc(100vh - 58px); }
+.books-library { overflow-y: auto; padding: 16px; border-right: 1px solid var(--line); background: var(--panel); }
+.books-library #book-search { margin: 0 0 12px; }
+.book-list { display: grid; gap: 5px; }
+.book-entry {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel-raised);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.book-entry:hover, .book-entry.active { border-color: var(--accent); background: var(--accent-soft); }
+.book-entry i { display: grid; place-items: center; width: 34px; height: 40px; border: 1px solid #53616b; color: var(--accent); font-size: 9px; font-style: normal; }
+.book-entry strong, .book-entry span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.book-entry strong { font-size: 11px; }.book-entry span { color: var(--muted); font-size: 9px; }
+.pdf-reader { display: grid; grid-template-rows: 58px 1fr; min-width: 0; background: #080a0d; }
+.pdf-toolbar { display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.pdf-toolbar small { color: var(--accent); font-size: 8px; }
+.pdf-toolbar h2 { margin-top: 2px; }
+.pdf-toolbar > span { margin-left: auto; color: var(--muted); font-size: 9px; }
+.pdf-toolbar .secondary-button { display: grid; place-items: center; min-height: 30px; padding: 0 10px; text-decoration: none; font-size: 10px; }
+#book-frame { width: 100%; height: 100%; border: 0; background: #202124; }
+.reader-empty { display: grid; place-items: center; align-content: center; gap: 5px; color: var(--muted); }
+.reader-empty strong { color: var(--text); }
+.reader-empty span { font-size: 10px; }
 
 @media (max-width: 1100px) {
   .workspace { grid-template-columns: 220px minmax(400px, 1fr) 260px; }
   .notes-workspace { grid-template-columns: 210px minmax(460px, 1fr) 200px; }
   .characters-workspace { grid-template-columns: 170px minmax(540px, 1fr) 230px; }
   .compendium-workspace { grid-template-columns: 180px minmax(460px, 1fr) 280px; }
+  .books-workspace { grid-template-columns: 220px minmax(560px, 1fr); }
   .mode-tabs { gap: 12px; }
 }

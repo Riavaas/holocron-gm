@@ -791,6 +791,7 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
   document.querySelector("#notes-view").hidden = view !== "notes";
   document.querySelector("#characters-view").hidden = view !== "characters";
   document.querySelector("#compendium-view").hidden = view !== "compendium";
+  document.querySelector("#books-view").hidden = view !== "books";
   document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item === button));
   if (view === "battlemap") resizeCanvas();
 }));
@@ -1058,3 +1059,59 @@ document.querySelector("#rules-form").addEventListener("submit", async (event) =
 });
 
 searchCompendium("combat");
+
+let bookCatalog = [];
+let activeBookId = null;
+
+function formatBytes(bytes) {
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function renderBookList() {
+  const query = document.querySelector("#book-search").value.trim().toLowerCase();
+  const books = bookCatalog.filter((book) => `${book.title} ${book.filename}`.toLowerCase().includes(query));
+  document.querySelector("#book-list").innerHTML = books.map((book) => `
+    <button class="book-entry ${book.id === activeBookId ? "active" : ""}" data-book-id="${escapeHtml(book.id)}">
+      <i>PDF</i>
+      <span><strong>${escapeHtml(book.title)}</strong><span>${formatBytes(book.size_bytes)}</span></span>
+    </button>`).join("") || '<p class="loading-line">No matching sourcebook.</p>';
+}
+
+function openBook(book) {
+  activeBookId = book.id;
+  const frame = document.querySelector("#book-frame");
+  const external = document.querySelector("#open-book-tab");
+  frame.src = book.url;
+  frame.hidden = false;
+  document.querySelector("#reader-empty").hidden = true;
+  document.querySelector("#reader-title").textContent = book.title;
+  document.querySelector("#reader-size").textContent = formatBytes(book.size_bytes);
+  external.href = book.url;
+  external.hidden = false;
+  renderBookList();
+}
+
+async function loadBooks() {
+  const list = document.querySelector("#book-list");
+  list.innerHTML = '<p class="loading-line">Loading local library…</p>';
+  try {
+    const response = await fetch("/api/books");
+    if (!response.ok) throw new Error("Book library unavailable");
+    const payload = await response.json();
+    bookCatalog = payload.items;
+    document.querySelector("#books-count").textContent = `${payload.total} books`;
+    renderBookList();
+  } catch {
+    document.querySelector("#books-count").textContent = "Unavailable";
+    list.innerHTML = '<p class="loading-line">The local book directory is unavailable.</p>';
+  }
+}
+
+document.querySelector("#book-search").addEventListener("input", renderBookList);
+document.querySelector("#book-list").addEventListener("click", (event) => {
+  const entry = event.target.closest("[data-book-id]");
+  const book = bookCatalog.find((item) => item.id === entry?.dataset.bookId);
+  if (book) openBook(book);
+});
+
+loadBooks();

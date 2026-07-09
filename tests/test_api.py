@@ -56,6 +56,31 @@ def test_compendium_creature_detail_and_missing():
     assert client.get("/api/compendium/creatures/not-real").status_code == 404
 
 
+def test_books_library_and_inline_reader(tmp_path, monkeypatch):
+    books = tmp_path / "Books"
+    books.mkdir()
+    pdf = books / "SW5e - Test Book - 20260101.pdf"
+    pdf.write_bytes(b"%PDF-1.4 test")
+    monkeypatch.setattr("holocron.api.routes.books.BOOKS_DIR", books)
+    client = TestClient(app)
+
+    library = client.get("/api/books")
+    reader = client.get("/api/books/file/SW5e%20-%20Test%20Book%20-%2020260101.pdf")
+
+    assert library.status_code == 200
+    assert library.json()["items"][0]["title"] == "Test Book"
+    assert reader.status_code == 200
+    assert reader.headers["content-type"] == "application/pdf"
+    assert reader.headers["content-disposition"].startswith("inline")
+
+
+def test_books_reader_rejects_missing_file(tmp_path, monkeypatch):
+    monkeypatch.setattr("holocron.api.routes.books.BOOKS_DIR", tmp_path)
+    client = TestClient(app)
+
+    assert client.get("/api/books/file/not-found.pdf").status_code == 404
+
+
 def test_api_search_and_chunk(tmp_path, monkeypatch):
     db_path = tmp_path / "holocron.sqlite"
     books = tmp_path / "Books"

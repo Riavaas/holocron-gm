@@ -123,6 +123,9 @@ Or:
 python3 scripts/dev_server.py
 ```
 
+Open `http://127.0.0.1:8000` for the GM dashboard. The **Books** workspace
+lists local PDFs and opens them in the integrated browser PDF reader.
+
 ## Search
 
 ```bash
@@ -142,6 +145,8 @@ curl -X POST "http://127.0.0.1:8000/api/rules/ask" \
 - `GET /health`
 - `POST /api/ingest`
 - `GET /api/sources`
+- `GET /api/books`
+- `GET /api/books/file/{book_path}`
 - `GET /api/rules/search?q=...&limit=10`
 - `GET /api/rules/chunk/{chunk_id}`
 - `POST /api/rules/ask`

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from holocron.api.routes import compendium, ingest, rules, sources
+from holocron.api.routes import books, compendium, ingest, rules, sources
 from holocron.core.paths import PROJECT_ROOT
 
 app = FastAPI(title="Holocron GM", version="0.1.0")
@@ -20,6 +20,7 @@ app.include_router(ingest.router, prefix="/api")
 app.include_router(sources.router, prefix="/api")
 app.include_router(rules.router, prefix="/api/rules")
 app.include_router(compendium.router, prefix="/api/compendium")
+app.include_router(books.router, prefix="/api/books")
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 
