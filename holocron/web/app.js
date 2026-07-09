@@ -18,6 +18,7 @@ const defaults = {
   pings: [],
   combatants: [],
   activeTurn: 0,
+  selectedCombatantId: null,
   round: 1,
 };
 
@@ -38,6 +39,26 @@ const tokenPresets = [
   { name: "Player", type: "player", hp: 40, ac: 16 },
   { name: "Civilian", type: "ally", hp: 8, ac: 10 },
 ];
+
+const conditionRules = {
+  blinded: { color: "#9aa6b2", rule: "Cannot see; attacks have disadvantage and incoming attacks have advantage." },
+  frightened: { color: "#a875d2", rule: "Disadvantage on checks and attacks while the source of fear is visible." },
+  grappled: { color: "#e3a24e", rule: "Speed becomes 0." },
+  incapacitated: { color: "#ef6464", rule: "Cannot take actions or reactions." },
+  poisoned: { color: "#74bd62", rule: "Disadvantage on attack rolls and ability checks." },
+  prone: { color: "#d68a55", rule: "Crawl movement; attacks affected by attacker distance." },
+  restrained: { color: "#d9b05f", rule: "Speed 0; attacks have disadvantage; incoming attacks have advantage." },
+  shocked: { color: "#58b8e8", rule: "Cannot take reactions; limited action economy." },
+  slowed: { color: "#6ca8cb", rule: "Movement and action economy are reduced." },
+  stunned: { color: "#f07878", rule: "Incapacitated, cannot move, automatically fails STR and DEX saves." },
+  unconscious: { color: "#7c8490", rule: "Incapacitated, prone, cannot move or speak, unaware." },
+};
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
+  })[character]);
+}
 
 function persist() {
   const clean = { ...state };
@@ -123,6 +144,15 @@ function drawToken(token) {
   ctx.strokeStyle = token.selected ? "#fff" : "#b8c0c7";
   ctx.lineWidth = token.selected ? 3 : 1.5;
   ctx.stroke();
+  const combatant = state.combatants.find((item) => item.id === token.combatantId);
+  const conditions = combatant?.conditions || [];
+  conditions.slice(0, 3).forEach((condition, index) => {
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, radius + 4 + index * 4, 0, Math.PI * 2);
+    ctx.strokeStyle = conditionRules[condition]?.color || "#fff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  });
   ctx.fillStyle = "#fff";
   ctx.font = `700 ${Math.max(9, radius * .55)}px system-ui`;
   ctx.textAlign = "center";
@@ -252,6 +282,8 @@ function addCombatant(source, point = null) {
     maxHp: Number(source.hp || 10),
     ac: Number(source.ac || 12),
     initiative: Math.floor(Math.random() * 20) + 1,
+    conditions: [],
+    actions: source.actions || [],
   };
   state.combatants.push(combatant);
   if (point) state.tokens.push({ ...point, combatantId: combatant.id, name: combatant.name, type: combatant.type });
@@ -266,9 +298,9 @@ function renderInitiative() {
     list.innerHTML = '<li class="initiative-empty">Add combatants or drag a token onto the map.</li>';
   } else {
     list.innerHTML = state.combatants.map((item, index) => `
-      <li class="combatant ${index === state.activeTurn ? "active" : ""}" data-id="${item.id}">
+      <li class="combatant ${index === state.activeTurn ? "active" : ""} ${item.id === state.selectedCombatantId ? "selected" : ""}" data-id="${item.id}">
         <span class="combatant-token ${item.type}">${initials(item.name)}</span>
-        <span class="combatant-info"><strong>${item.name}</strong><span>INIT ${item.initiative} · AC ${item.ac}</span></span>
+        <span class="combatant-info"><strong>${escapeHtml(item.name)}</strong><span>INIT ${item.initiative} · AC ${item.ac}${item.conditions?.length ? ` · ${item.conditions.length} FX` : ""}</span></span>
         <span class="hp-control">
           <button data-hp="-1" title="Reduce HP">−</button>
           <output>${item.hp}/${item.maxHp}</output>
@@ -277,14 +309,33 @@ function renderInitiative() {
       </li>`).join("");
   }
   document.querySelector("#round-number").textContent = state.round;
+  renderCombatantInspector();
+}
+
+function selectedCombatant() {
+  return state.combatants.find((item) => item.id === state.selectedCombatantId);
+}
+
+function renderCombatantInspector() {
+  const inspector = document.querySelector("#combatant-inspector");
+  const combatant = selectedCombatant();
+  inspector.hidden = !combatant;
+  if (!combatant) return;
+  combatant.conditions ||= [];
+  document.querySelector("#inspector-name").textContent = combatant.name;
+  document.querySelector("#condition-chips").innerHTML = combatant.conditions.map((condition) =>
+    `<button class="condition-chip" data-remove-condition="${condition}" title="Remove condition">${escapeHtml(condition)}</button>`
+  ).join("");
+  const restrictions = combatant.conditions.map((condition) => conditionRules[condition]?.rule).filter(Boolean);
+  document.querySelector("#action-restriction").textContent = restrictions.join(" ") || "No active restrictions.";
 }
 
 function renderLibrary(items = tokenPresets) {
   state.creatureCache = items;
   document.querySelector("#token-library").innerHTML = items.map((item, index) => `
-    <div class="library-entry" draggable="true" data-creature="${index}" title="Drag ${item.name} to the map">
+    <div class="library-entry" draggable="true" data-creature="${index}" title="Drag ${escapeHtml(item.name)} to the map">
       <span class="library-token ${item.type}">${initials(item.name)}</span>
-      <span class="library-entry-info"><strong>${item.name}</strong><span>${item.type || "creature"}</span></span>
+      <span class="library-entry-info"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type || "creature")}</span></span>
       <span>CR ${item.cr ?? "—"}</span>
     </div>`).join("");
 }
@@ -372,6 +423,10 @@ canvas.addEventListener("pointerdown", (event) => {
     const hit = [...state.tokens].reverse().find((token) => Math.hypot(token.x - point.x, token.y - point.y) < state.gridSize * .5);
     state.tokens.forEach((token) => { token.selected = token === hit; });
     state.draggedToken = hit || null;
+    if (hit) {
+      state.selectedCombatantId = hit.combatantId;
+      renderInitiative();
+    }
   }
   canvas.setPointerCapture(event.pointerId);
   draw();
@@ -454,16 +509,49 @@ document.querySelector("#combatant-form").addEventListener("submit", (event) => 
 document.querySelector("#initiative-list").addEventListener("click", (event) => {
   const button = event.target.closest("[data-hp]");
   const row = event.target.closest("[data-id]");
-  if (!button || !row) return;
+  if (!row) return;
   const combatant = state.combatants.find((item) => item.id === row.dataset.id);
-  combatant.hp = Math.max(0, Math.min(combatant.maxHp, combatant.hp + Number(button.dataset.hp)));
+  state.selectedCombatantId = combatant.id;
+  if (button) combatant.hp = Math.max(0, Math.min(combatant.maxHp, combatant.hp + Number(button.dataset.hp)));
   persist();
   renderInitiative();
+});
+document.querySelector("#toggle-condition").addEventListener("click", () => {
+  const combatant = selectedCombatant();
+  const condition = document.querySelector("#condition-select").value;
+  if (!combatant || !condition) return;
+  combatant.conditions ||= [];
+  if (combatant.conditions.includes(condition)) {
+    combatant.conditions = combatant.conditions.filter((item) => item !== condition);
+  } else {
+    combatant.conditions.push(condition);
+  }
+  persist();
+  renderInitiative();
+  draw();
+});
+document.querySelector("#condition-chips").addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-remove-condition]");
+  const combatant = selectedCombatant();
+  if (!chip || !combatant) return;
+  combatant.conditions = combatant.conditions.filter((item) => item !== chip.dataset.removeCondition);
+  persist();
+  renderInitiative();
+  draw();
+});
+document.querySelector("#roll-check").addEventListener("click", () => {
+  const combatant = selectedCombatant();
+  if (!combatant) return;
+  const result = Math.floor(Math.random() * 20) + 1;
+  const output = document.querySelector("#roll-result");
+  output.hidden = false;
+  output.textContent = `${combatant.name} rolled ${result}${result === 20 ? " · Critical" : result === 1 ? " · Critical failure" : ""}`;
 });
 document.querySelector("#roll-initiative").addEventListener("click", () => {
   state.combatants.forEach((item) => { item.initiative = Math.floor(Math.random() * 20) + 1; });
   state.combatants.sort((a, b) => b.initiative - a.initiative);
   state.activeTurn = 0;
+  state.selectedCombatantId = null;
   state.round = 1;
   persist();
   renderInitiative();

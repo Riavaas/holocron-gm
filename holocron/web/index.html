@@ -109,6 +109,32 @@
         <button id="next-turn" title="Next turn">→</button>
       </section>
       <ol id="initiative-list" class="initiative-list"></ol>
+      <section id="combatant-inspector" class="combatant-inspector" hidden>
+        <div class="section-heading">
+          <div><small>SELECTED</small><h2 id="inspector-name"></h2></div>
+          <button id="roll-check" class="icon-button" title="Roll d20">D20</button>
+        </div>
+        <div class="condition-control">
+          <select id="condition-select" aria-label="Condition">
+            <option value="">Choose condition…</option>
+            <option value="blinded">Blinded</option>
+            <option value="frightened">Frightened</option>
+            <option value="grappled">Grappled</option>
+            <option value="incapacitated">Incapacitated</option>
+            <option value="poisoned">Poisoned</option>
+            <option value="prone">Prone</option>
+            <option value="restrained">Restrained</option>
+            <option value="shocked">Shocked</option>
+            <option value="slowed">Slowed</option>
+            <option value="stunned">Stunned</option>
+            <option value="unconscious">Unconscious</option>
+          </select>
+          <button id="toggle-condition" class="secondary-button">Apply</button>
+        </div>
+        <div id="condition-chips" class="condition-chips"></div>
+        <p id="action-restriction" class="action-restriction">No active restrictions.</p>
+        <output id="roll-result" class="roll-result" hidden></output>
+      </section>
       <section class="encounter-actions">
         <button id="roll-initiative" class="primary-button">Roll initiative</button>
         <button id="clear-encounter" class="secondary-button">Clear</button>
