@@ -9,10 +9,13 @@ const defaults = {
   unitValue: 5,
   unitName: "ft",
   travelSpeed: 0,
+  ambientDarkness: 85,
+  visionType: "normal",
+  visionRange: 6,
   zoom: 1,
   offset: { x: 0, y: 0 },
   tool: "select",
-  layers: { background: true, objects: true, tokens: true, grid: true },
+  layers: { background: true, objects: true, tokens: true, grid: true, lighting: false },
   tokens: [],
   walls: [],
   pings: [],
@@ -174,6 +177,66 @@ function drawWalls() {
   }
 }
 
+function rayWallIntersection(origin, direction, wall) {
+  const segment = { x: wall.end.x - wall.start.x, y: wall.end.y - wall.start.y };
+  const denominator = direction.x * segment.y - direction.y * segment.x;
+  if (Math.abs(denominator) < .00001) return null;
+  const delta = { x: wall.start.x - origin.x, y: wall.start.y - origin.y };
+  const rayDistance = (delta.x * segment.y - delta.y * segment.x) / denominator;
+  const segmentPosition = (delta.x * direction.y - delta.y * direction.x) / denominator;
+  if (rayDistance < 0 || segmentPosition < 0 || segmentPosition > 1) return null;
+  return rayDistance;
+}
+
+function visibilityPolygon(origin, radius) {
+  const points = [];
+  const rayCount = 180;
+  for (let index = 0; index < rayCount; index++) {
+    const angle = index / rayCount * Math.PI * 2;
+    const direction = { x: Math.cos(angle), y: Math.sin(angle) };
+    let distance = radius;
+    for (const wall of state.walls) {
+      const hit = rayWallIntersection(origin, direction, wall);
+      if (hit !== null) distance = Math.min(distance, hit);
+    }
+    points.push(screenPoint({
+      x: origin.x + direction.x * distance,
+      y: origin.y + direction.y * distance,
+    }));
+  }
+  return points;
+}
+
+function drawLighting(width, height) {
+  if (!state.layers.lighting) return;
+  const opacity = Math.max(0, Math.min(1, state.ambientDarkness / 100));
+  const visionToken = state.tokens.find((token) => token.selected)
+    || state.tokens.find((token) => token.combatantId === state.selectedCombatantId);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, width, height);
+  if (visionToken) {
+    const range = state.visionType === "blinded" ? state.gridSize * .5 : state.visionRange * state.gridSize;
+    const polygon = visibilityPolygon(visionToken, range);
+    if (polygon.length) {
+      ctx.moveTo(polygon[0].x, polygon[0].y);
+      polygon.slice(1).forEach((point) => ctx.lineTo(point.x, point.y));
+      ctx.closePath();
+    }
+  }
+  const darknessColor = state.visionType === "darkvision" ? "29, 38, 45" : "0, 2, 5";
+  ctx.fillStyle = `rgba(${darknessColor}, ${opacity})`;
+  ctx.fill("evenodd");
+  if (visionToken && state.visionType === "thermal") {
+    const center = screenPoint(visionToken);
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, state.visionRange * state.gridSize * state.zoom, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(180, 55, 45, .08)";
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawMeasurement() {
   if (!state.measurement) return;
   const start = screenPoint(state.measurement.start);
@@ -227,6 +290,7 @@ function draw() {
     ctx.restore();
   }
   if (state.layers.grid) drawGrid(width, height);
+  drawLighting(width, height);
   if (state.layers.objects) {
     drawWalls();
     drawPings();
@@ -374,6 +438,10 @@ document.querySelector("#grid-output").textContent = `${state.gridSize} px`;
 document.querySelector("#unit-value").value = state.unitValue;
 document.querySelector("#unit-name").value = state.unitName;
 document.querySelector("#travel-speed").value = state.travelSpeed;
+document.querySelector("#ambient-darkness").value = state.ambientDarkness;
+document.querySelector("#darkness-output").textContent = `${state.ambientDarkness}%`;
+document.querySelector("#vision-type").value = state.visionType;
+document.querySelector("#vision-range").value = state.visionRange;
 document.querySelectorAll("[data-layer]").forEach((input) => { input.checked = state.layers[input.dataset.layer]; });
 
 document.querySelector("#map-file").addEventListener("change", (event) => loadMap(event.target.files[0]));
@@ -401,6 +469,18 @@ document.querySelector("#unit-value").addEventListener("input", (event) => {
 });
 document.querySelector("#unit-name").addEventListener("change", (event) => { state.unitName = event.target.value; persist(); draw(); });
 document.querySelector("#travel-speed").addEventListener("change", (event) => { state.travelSpeed = Number(event.target.value); persist(); draw(); });
+document.querySelector("#ambient-darkness").addEventListener("input", (event) => {
+  state.ambientDarkness = Number(event.target.value);
+  document.querySelector("#darkness-output").textContent = `${state.ambientDarkness}%`;
+  persist();
+  draw();
+});
+document.querySelector("#vision-type").addEventListener("change", (event) => { state.visionType = event.target.value; persist(); draw(); });
+document.querySelector("#vision-range").addEventListener("input", (event) => {
+  state.visionRange = Math.max(1, Number(event.target.value) || 1);
+  persist();
+  draw();
+});
 document.querySelectorAll("[data-layer]").forEach((input) => input.addEventListener("change", () => {
   state.layers[input.dataset.layer] = input.checked;
   persist();

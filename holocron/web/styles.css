@@ -118,6 +118,8 @@ input:focus, select:focus { border-color: var(--accent); }
 .layer-dot.objects { background: var(--warning); }
 .layer-dot.tokens { background: var(--danger); }
 .layer-dot.grid { background: var(--accent); }
+.layer-dot.lighting { background: #a875d2; }
+.control-label output { float: right; color: var(--text); }
 .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .tool {
   height: 48px;

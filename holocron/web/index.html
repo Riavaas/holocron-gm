@@ -69,6 +69,22 @@
         <label class="toggle-row"><span><i class="layer-dot objects"></i>Interactive objects</span><input data-layer="objects" type="checkbox" checked></label>
         <label class="toggle-row"><span><i class="layer-dot tokens"></i>Token layer</span><input data-layer="tokens" type="checkbox" checked></label>
         <label class="toggle-row"><span><i class="layer-dot grid"></i>Grid overlay</span><input data-layer="grid" type="checkbox" checked></label>
+        <label class="toggle-row"><span><i class="layer-dot lighting"></i>Lighting preview</span><input data-layer="lighting" type="checkbox"></label>
+        <label class="control-label" for="ambient-darkness">Ambient darkness <output id="darkness-output">85%</output></label>
+        <input id="ambient-darkness" type="range" min="0" max="100" value="85">
+        <div class="field-row">
+          <label>Vision
+            <select id="vision-type">
+              <option value="normal">Normal</option>
+              <option value="darkvision">Darkvision</option>
+              <option value="thermal">Thermal</option>
+              <option value="blinded">Blinded</option>
+            </select>
+          </label>
+          <label>Range (squares)
+            <input id="vision-range" type="number" min="1" max="30" value="6">
+          </label>
+        </div>
       </section>
 
       <section>
