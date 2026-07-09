@@ -18,6 +18,7 @@
       <button data-view="notes">Notes</button>
       <button data-view="compendium">Compendium</button>
       <button data-view="books">Books</button>
+      <button data-view="toolkit">Toolkit</button>
     </nav>
     <div class="session-status"><span></span> Local session</div>
   </header>
@@ -297,6 +298,50 @@
         <span>Select a book from the library. Files stay on this machine.</span>
       </div>
       <iframe id="book-frame" title="SW5e sourcebook reader" hidden></iframe>
+    </section>
+  </main>
+
+  <main id="toolkit-view" class="toolkit-workspace" hidden>
+    <section class="generator-column">
+      <header class="toolkit-heading"><div><small>PROCEDURAL</small><h1>NPC Generator</h1></div><button id="generate-npc" class="primary-button">Generate</button></header>
+      <div id="npc-output" class="npc-output"></div>
+      <div class="generator-controls">
+        <label>Species<select id="npc-species"><option value="">Any species</option><option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option><option>Rodian</option><option>Chiss</option></select></label>
+        <label>Role<select id="npc-role"><option value="">Any role</option><option>Smuggler</option><option>Bounty Hunter</option><option>Officer</option><option>Mechanic</option><option>Informant</option><option>Force Adept</option></select></label>
+      </div>
+      <section class="generated-details">
+        <h2>Attributes</h2>
+        <div id="npc-attributes" class="attribute-strip"></div>
+        <h2>Hook</h2>
+        <p id="npc-hook"></p>
+      </section>
+    </section>
+    <section class="generator-column middle">
+      <header class="toolkit-heading"><div><small>ENCOUNTER</small><h1>Loot & Opposition</h1></div></header>
+      <div class="toolkit-form-row">
+        <label>Target CR<input id="toolkit-cr" type="number" min="0" max="30" value="5"></label>
+        <label>Party size<input id="toolkit-party-size" type="number" min="1" max="10" value="4"></label>
+      </div>
+      <div class="dual-actions">
+        <button id="generate-loot" class="primary-button">Generate loot</button>
+        <button id="generate-encounter" class="secondary-button">Build encounter</button>
+      </div>
+      <div id="loot-output" class="toolkit-output"></div>
+      <div class="section-heading encounter-tool-heading"><h2>Suggested opposition</h2><button id="send-encounter" class="text-button" disabled>Add to tracker</button></div>
+      <div id="encounter-output" class="encounter-output"></div>
+    </section>
+    <section class="generator-column">
+      <header class="toolkit-heading"><div><small>ATMOSPHERE</small><h1>Scene Flavor</h1></div><button id="generate-flavor" class="primary-button">Generate</button></header>
+      <div class="generator-controls">
+        <label>Scene<select id="flavor-scene"><option value="cantina">Cantina</option><option value="location">Location</option><option value="hazard">Hazard</option><option value="starship">Starship</option></select></label>
+        <label>Tone<select id="flavor-tone"><option value="tense">Tense</option><option value="mysterious">Mysterious</option><option value="lively">Lively</option><option value="grim">Grim</option></select></label>
+      </div>
+      <blockquote id="flavor-output" class="flavor-output"></blockquote>
+      <button id="flavor-to-note" class="secondary-button">Save as campaign note</button>
+      <section class="quick-prompts">
+        <div class="section-heading"><h2>Session sparks</h2><span>Local tables</span></div>
+        <p id="session-spark"></p>
+      </section>
     </section>
   </main>
 

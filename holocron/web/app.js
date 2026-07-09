@@ -792,6 +792,7 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
   document.querySelector("#characters-view").hidden = view !== "characters";
   document.querySelector("#compendium-view").hidden = view !== "compendium";
   document.querySelector("#books-view").hidden = view !== "books";
+  document.querySelector("#toolkit-view").hidden = view !== "toolkit";
   document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item === button));
   if (view === "battlemap") resizeCanvas();
 }));
@@ -1115,3 +1116,136 @@ document.querySelector("#book-list").addEventListener("click", (event) => {
 });
 
 loadBooks();
+
+const npcNames = {
+  Human: ["Mara Venn", "Cal Jorren", "Tessa Rook", "Dain Ordo"],
+  Zabrak: ["Vesh Korr", "Sira Drenn", "Keth Marr", "Ralo Vex"],
+  Duros: ["Noro Daal", "Bane Ceto", "Luro Senn", "Dree Vanto"],
+  "Twi'lek": ["Nima Vao", "Kora Syndulla", "Tann Ryl", "Veya Numa"],
+  Wookiee: ["Rrakkorr", "Chevraaka", "Tarfful", "Kallabow"],
+  Rodian: ["Greevo", "Neesh Ko", "Varko", "Seln Vee"],
+  Chiss: ["Ar'alani", "Kres'ten", "Mitth'oro", "Vurawn"],
+};
+const npcRoles = ["Smuggler", "Bounty Hunter", "Officer", "Mechanic", "Informant", "Force Adept"];
+const npcQuirks = [
+  "Never sits with their back to a door.",
+  "Collects obsolete navigation chips.",
+  "Speaks to droids more politely than organics.",
+  "Owes a dangerous favor to the Exchange.",
+  "Recognizes one of the heroes from an old bounty.",
+  "Refuses to draw a weapon inside a starship.",
+];
+const npcHooks = [
+  "Has the access code the party needs, but wants a rival's ledger erased first.",
+  "Carries a damaged holorecording that implicates a local official.",
+  "Is being followed by a probe droid and does not know it.",
+  "Can arrange transport through a blockade for a personal concession.",
+  "Knows where the missing shipment landed, but the site is occupied.",
+];
+const lootMods = ["hair-trigger assembly", "balanced hilt", "enhanced power cell", "reinforced plating", "stealth field module", "targeting optic"];
+const consumables = ["premium medpac", "adrenal stim", "fragmentation grenade", "repair kit", "shield generator charge", "antitoxin"];
+const flavorParts = {
+  cantina: [
+    "A cracked jizz-box pushes a tired rhythm through the room while sabacc cards snap against a stained table.",
+    "Blue smoke hangs beneath the ceiling fans, cut by the red blink of a bounty puck changing hands.",
+    "The bartender polishes the same glass as three armed crews pretend not to watch the entrance.",
+  ],
+  location: [
+    "Wind drives metallic dust through the abandoned concourse, ringing softly against shuttered kiosks.",
+    "Faded Republic markings show beneath newer gang sigils, each layer telling a different occupation.",
+    "The corridor lights wake one by one ahead of you, although the facility should have no power.",
+  ],
+  hazard: [
+    "The deck bucks as a ruptured conduit spits white arcs across the only clear route.",
+    "A low warning tone accelerates while the air takes on the sharp taste of ozone.",
+    "Hairline fractures race across the viewport, each vibration widening the black lines.",
+  ],
+  starship: [
+    "The hyperdrive settles into an uneven growl, and every loose panel begins to hum in sympathy.",
+    "Cold starlight spills across the cockpit as the navicomputer rejects another route.",
+    "Somewhere beyond the bulkhead, a maintenance droid starts screaming in binary.",
+  ],
+};
+const flavorTone = {
+  tense: "Nobody speaks above a murmur; every sudden movement draws a hand toward a holster.",
+  mysterious: "A detail refuses to fit, as though someone carefully edited this place after the fact.",
+  lively: "Voices overlap in a dozen languages, turning the space into a restless current of opportunity.",
+  grim: "Everything useful has already been stripped away, leaving only stains and old promises.",
+};
+let generatedEncounter = [];
+
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function generateNpc() {
+  const species = document.querySelector("#npc-species").value || randomItem(Object.keys(npcNames));
+  const role = document.querySelector("#npc-role").value || randomItem(npcRoles);
+  const name = randomItem(npcNames[species]);
+  const attributes = ["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((label) => ({
+    label, value: 8 + Math.floor(Math.random() * 11),
+  }));
+  document.querySelector("#npc-output").innerHTML = `
+    <div class="npc-portrait">${initials(name)}</div>
+    <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(randomItem(npcQuirks))}</p></div>`;
+  document.querySelector("#npc-attributes").innerHTML = attributes.map((attribute) =>
+    `<span>${attribute.label}<strong>${attribute.value}</strong></span>`
+  ).join("");
+  document.querySelector("#npc-hook").textContent = randomItem(npcHooks);
+}
+
+function generateLoot() {
+  const cr = Math.max(0, Number(document.querySelector("#toolkit-cr").value) || 0);
+  const credits = Math.round((150 + cr * 275 + Math.random() * 400) / 10) * 10;
+  const modCount = Math.max(1, Math.ceil(cr / 7));
+  const mods = Array.from({ length: modCount }, () => randomItem(lootMods));
+  document.querySelector("#loot-output").innerHTML = `
+    <div class="loot-line"><span>Credits</span><strong>${credits.toLocaleString()} cr</strong></div>
+    <div class="loot-line"><span>Modifications</span><strong>${escapeHtml(mods.join(", "))}</strong></div>
+    <div class="loot-line"><span>Consumables</span><strong>${1 + Math.floor(cr / 4)}× ${escapeHtml(randomItem(consumables))}</strong></div>
+    <div class="loot-line"><span>Salvage grade</span><strong>${cr < 5 ? "Standard" : cr < 12 ? "Prototype" : "Military restricted"}</strong></div>`;
+}
+
+async function generateEncounter() {
+  const targetCr = Math.max(0, Number(document.querySelector("#toolkit-cr").value) || 0);
+  const partySize = Math.max(1, Number(document.querySelector("#toolkit-party-size").value) || 1);
+  try {
+    const response = await fetch("/api/compendium/creatures?limit=200");
+    const payload = await response.json();
+    const candidates = payload.items.filter((item) => Number(item.cr) <= Math.max(1, targetCr));
+    const count = Math.max(1, Math.min(6, Math.ceil(partySize / 2)));
+    generatedEncounter = Array.from({ length: count }, () => randomItem(candidates));
+    document.querySelector("#encounter-output").innerHTML = generatedEncounter.map((item) => `
+      <div class="encounter-suggestion"><strong>${escapeHtml(item.name)}</strong><span>CR ${escapeHtml(item.cr)} · HP ${item.hp}</span></div>`
+    ).join("");
+    document.querySelector("#send-encounter").disabled = false;
+  } catch {
+    document.querySelector("#encounter-output").innerHTML = '<p class="loading-line">Bestiary unavailable.</p>';
+  }
+}
+
+function generateFlavor() {
+  const scene = document.querySelector("#flavor-scene").value;
+  const tone = document.querySelector("#flavor-tone").value;
+  document.querySelector("#flavor-output").textContent = `${randomItem(flavorParts[scene])} ${flavorTone[tone]}`;
+  document.querySelector("#session-spark").textContent = randomItem(npcHooks);
+}
+
+document.querySelector("#generate-npc").addEventListener("click", generateNpc);
+document.querySelector("#generate-loot").addEventListener("click", generateLoot);
+document.querySelector("#generate-encounter").addEventListener("click", generateEncounter);
+document.querySelector("#generate-flavor").addEventListener("click", generateFlavor);
+document.querySelector("#send-encounter").addEventListener("click", () => {
+  generatedEncounter.forEach((creature) => addCombatant(creature));
+  document.querySelector('[data-view="battlemap"]').click();
+});
+document.querySelector("#flavor-to-note").addEventListener("click", () => {
+  const flavor = document.querySelector("#flavor-output").textContent.trim();
+  if (!flavor) return;
+  createNote(`Scene flavor · ${noteTimestamp()}`, `# Scene flavor\n\n${flavor}`);
+  document.querySelector('[data-view="notes"]').click();
+});
+
+generateNpc();
+generateLoot();
+generateFlavor();

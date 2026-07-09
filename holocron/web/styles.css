@@ -459,6 +459,34 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .reader-empty { display: grid; place-items: center; align-content: center; gap: 5px; color: var(--muted); }
 .reader-empty strong { color: var(--text); }
 .reader-empty span { font-size: 10px; }
+.toolkit-workspace { display: grid; grid-template-columns: 1fr 1fr 1fr; height: calc(100vh - 58px); background: var(--bg); }
+.generator-column { overflow-y: auto; padding: 22px; border-right: 1px solid var(--line); }
+.generator-column:last-child { border-right: 0; }
+.generator-column.middle { background: #0d1115; }
+.toolkit-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.toolkit-heading small { color: var(--accent); font-size: 8px; }
+.toolkit-heading h1 { margin: 2px 0 0; font-size: 18px; }
+.toolkit-heading .primary-button { min-width: 82px; padding: 0 10px; }
+.generator-controls, .toolkit-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.npc-output { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: 14px; min-height: 100px; margin-bottom: 14px; padding-block: 12px; border-block: 1px solid var(--line); }
+.npc-portrait { display: grid; place-items: center; width: 72px; height: 72px; border: 1px solid var(--accent); border-radius: 50%; background: radial-gradient(circle at 40% 30%, #3d5559, #182023 65%); color: var(--accent); font-size: 22px; font-weight: 800; }
+.npc-output h2 { font-size: 17px; }.npc-output p { margin: 3px 0; color: var(--muted); font-size: 10px; }
+.generated-details { margin-top: 20px; }.generated-details h2 { margin: 14px 0 7px; }
+.generated-details p { color: #bbc3ca; font-size: 11px; line-height: 1.6; }
+.attribute-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.attribute-strip span { padding: 7px 2px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); font-size: 8px; text-align: center; }
+.attribute-strip strong { display: block; color: var(--text); font-size: 12px; }
+.dual-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 10px 0 18px; }
+.toolkit-output { min-height: 140px; padding: 12px 0; border-block: 1px solid var(--line); }
+.loot-line { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; color: var(--muted); font-size: 10px; }
+.loot-line strong { color: var(--text); text-align: right; }
+.encounter-tool-heading { margin: 18px 0 8px; }
+.encounter-output { display: grid; gap: 5px; }
+.encounter-suggestion { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; border-left: 2px solid #6e3338; background: var(--panel-raised); }
+.encounter-suggestion strong { font-size: 10px; }.encounter-suggestion span { color: var(--muted); font-size: 9px; }
+.flavor-output { min-height: 190px; margin: 16px 0 10px; padding: 20px; border: 0; border-left: 2px solid var(--accent); background: #10171a; color: #d1d7dc; font: 14px/1.7 Georgia, serif; }
+.quick-prompts { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
+.quick-prompts p { color: var(--muted); font-size: 11px; line-height: 1.6; }
 
 @media (max-width: 1100px) {
   .workspace { grid-template-columns: 220px minmax(400px, 1fr) 260px; }
@@ -466,5 +494,6 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
   .characters-workspace { grid-template-columns: 170px minmax(540px, 1fr) 230px; }
   .compendium-workspace { grid-template-columns: 180px minmax(460px, 1fr) 280px; }
   .books-workspace { grid-template-columns: 220px minmax(560px, 1fr); }
+  .toolkit-workspace { grid-template-columns: 1fr 1fr 1fr; }
   .mode-tabs { gap: 12px; }
 }
