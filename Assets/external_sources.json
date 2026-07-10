@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "reddit-star-wars-maps",
+      "kind": "subreddit",
+      "asset_type": "maps",
+      "title": "r/Star_Wars_Maps",
+      "author": "multiple Reddit authors",
+      "source_url": "https://www.reddit.com/r/Star_Wars_Maps/",
+      "feed_url": "https://old.reddit.com/r/Star_Wars_Maps/.rss",
+      "import_policy": "catalog_only",
+      "attribution_note": "Track each map post URL and author before importing. Do not strip creator watermarks or repost without permission."
+    },
+    {
+      "id": "kualan-clone-wars-tokens-1",
+      "kind": "zip_pack",
+      "asset_type": "tokens",
+      "title": "Clone Wars Tokens 1",
+      "author": "Kualan",
+      "source_url": "https://www.reddit.com/r/swrpg/comments/g20fgl/stuck_in_quarantine_but_still_want_to_fight_the/",
+      "download_url": "https://www.dropbox.com/s/nt8wjd8cxqwwriu/Clone%20Wars%20Tokens%201.zip?dl=1",
+      "mirror_urls": [
+        "https://drive.google.com/open?id=16uY96ttkR04JJA6v52No2xq_W2U_V1Eb"
+      ],
+      "attribution_note": "Fan token pack shared by Kualan for online Star Wars RPG play. Keep author and Reddit source attached in manifests."
+    },
+    {
+      "id": "kualan-clone-wars-tokens-2",
+      "kind": "zip_pack",
+      "asset_type": "tokens",
+      "title": "Clone Wars Tokens 2",
+      "author": "Kualan",
+      "source_url": "https://www.reddit.com/r/swrpg/comments/g3mtvb/the_clone_wars_rage_on_heres_a_second_token_pack/",
+      "download_url": "https://www.dropbox.com/s/gwby30lo4a6vgka/Clone%20Wars%20Tokens%202.zip?dl=1",
+      "mirror_urls": [
+        "https://drive.google.com/open?id=1xYeJds236If_i6MM__rAC3pZIKaBYitD"
+      ],
+      "attribution_note": "Fan token pack shared by Kualan for online Star Wars RPG play. Keep author and Reddit source attached in manifests."
+    },
+    {
+      "id": "kualan-clone-wars-tokens-3",
+      "kind": "zip_pack",
+      "asset_type": "tokens",
+      "title": "Clone Wars Tokens 3 - Army Builder",
+      "author": "Kualan",
+      "source_url": "https://www.reddit.com/r/swrpg/comments/g4h3x2/325_tokens_are_ready_with_a_million_more_well_on/",
+      "download_url": "https://www.dropbox.com/s/jkl6ct13cigyqbd/Clone%20Wars%20Tokens%203.zip?dl=1",
+      "mirror_urls": [
+        "https://drive.google.com/open?id=12aA1ndC5cXWgPmebsEYSttvLKong9F9w"
+      ],
+      "attribution_note": "Fan token pack shared by Kualan for online Star Wars RPG play. Keep author and Reddit source attached in manifests."
+    },
+    {
+      "id": "kualan-clone-wars-tokens-4",
+      "kind": "zip_pack",
+      "asset_type": "tokens",
+      "title": "Clone Wars Tokens 4",
+      "author": "Kualan",
+      "source_url": "https://www.dropbox.com/scl/fi/k8qhifipmkn08noud7229/Clone-Wars-Tokens-4.zip?rlkey=trm0zo023x99af1e53k4ipnir&e=1&dl=0",
+      "download_url": "https://www.dropbox.com/scl/fi/k8qhifipmkn08noud7229/Clone-Wars-Tokens-4.zip?rlkey=trm0zo023x99af1e53k4ipnir&e=1&dl=1",
+      "mirror_urls": [],
+      "attribution_note": "Fan token pack source supplied by project owner. Keep author/source metadata attached in manifests."
+    }
+  ]
+}

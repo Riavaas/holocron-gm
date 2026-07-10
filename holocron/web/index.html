@@ -179,8 +179,12 @@
         <div id="combat-log" class="combat-log"></div>
       </section>
       <section class="quick-add">
-        <div class="section-heading"><h2>Bestiary</h2><span id="bestiary-count">Local</span></div>
+        <div class="section-heading"><h2>Assets</h2><span id="bestiary-count">Local</span></div>
         <div class="bestiary-filters">
+          <select id="asset-library-mode" aria-label="Asset library">
+            <option value="creatures">Bestiary</option>
+            <option value="tokens">Token packs</option>
+          </select>
           <input id="bestiary-search" type="search" placeholder="Search creature, faction…">
           <select id="bestiary-cr" aria-label="Challenge rating">
             <option value="">All CR</option>

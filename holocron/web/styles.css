@@ -209,6 +209,7 @@ input:focus, select:focus { border-color: var(--accent); }
 .combatant-token, .library-token {
   display: grid;
   place-items: center;
+  overflow: hidden;
   border-radius: 50%;
   background: #343b44;
   color: white;
@@ -217,6 +218,8 @@ input:focus, select:focus { border-color: var(--accent); }
 .combatant-token { width: 28px; height: 28px; font-size: 11px; }
 .combatant-token.enemy, .library-token.enemy { background: #6e3338; }
 .combatant-token.player, .library-token.player { background: #26615b; }
+.combatant-token.has-image, .library-token.has-image { background: #11161b; }
+.combatant-token img, .library-token img { width: 100%; height: 100%; object-fit: cover; }
 .combatant-info { min-width: 0; }
 .combatant-info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .combatant-info span { color: var(--muted); font-size: 10px; }
@@ -270,7 +273,7 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 .secondary-button { border-color: var(--line); background: var(--panel-raised); color: var(--muted); }
 .quick-add { padding: 16px; }
-.bestiary-filters { display: grid; grid-template-columns: 1fr 72px; gap: 6px; margin-bottom: 10px; }
+.bestiary-filters { display: grid; grid-template-columns: 86px 1fr 72px; gap: 6px; margin-bottom: 10px; }
 .bestiary-filters input, .bestiary-filters select { margin: 0; }
 .token-library { display: grid; gap: 5px; }
 .library-entry {

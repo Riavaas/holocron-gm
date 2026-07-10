@@ -14,6 +14,7 @@ data/*.sqlite
 data/*.db
 data/extracted/
 data/campaigns/
+data/external_downloads/
 
 *.tmp
 *.cache

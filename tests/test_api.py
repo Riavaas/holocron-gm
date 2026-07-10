@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from holocron.api.main import app
+from holocron.assets import images as image_assets
 from holocron.ingest.pipeline import ingest_books
 
 
@@ -30,6 +31,92 @@ def test_dashboard_static_assets_are_served():
 
     assert response.status_code == 200
     assert "measurementResult" in response.text
+
+
+def test_pdf_image_manifest_api(tmp_path, monkeypatch):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        """{
+  "images": [
+    {
+      "id": "scum-and-villainy-p135-01",
+      "book": "Scum and Villainy",
+      "book_slug": "scum-and-villainy",
+      "source_file": "SW5e - Scum and Villainy - 20191105.pdf",
+      "page": 135,
+      "area": 120000,
+      "path": "pdf_images/scum-and-villainy/scum-and-villainy-p135-01.jpg",
+      "url": "/assets/pdf_images/scum-and-villainy/scum-and-villainy-p135-01.jpg"
+    }
+  ]
+}
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(image_assets, "MANIFEST_PATH", manifest)
+    image_assets._load_manifest_cached.cache_clear()
+    client = TestClient(app)
+
+    response = client.get("/api/assets/images", params={"book": "scum-and-villainy", "page": 135})
+    summary = client.get("/api/assets/images/summary")
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["id"] == "scum-and-villainy-p135-01"
+    assert summary.json()["books"]["scum-and-villainy"] == 1
+
+
+def test_external_asset_catalog_api(tmp_path, monkeypatch):
+    sources = tmp_path / "external_sources.json"
+    manifest = tmp_path / "external_manifest.json"
+    sources.write_text(
+        """{
+  "sources": [
+    {
+      "id": "test-pack",
+      "kind": "zip_pack",
+      "asset_type": "tokens",
+      "title": "Test Pack",
+      "author": "Creator",
+      "source_url": "https://example.test/source"
+    }
+  ]
+}
+""",
+        encoding="utf-8",
+    )
+    manifest.write_text(
+        """{
+  "assets": [
+    {
+      "id": "test-pack-0001",
+      "source_id": "test-pack",
+      "asset_type": "tokens",
+      "name": "Clone Trooper",
+      "author": "Creator",
+      "path": "external/test-pack/0001-clone-trooper.png",
+      "url": "/assets/external/test-pack/0001-clone-trooper.png"
+    }
+  ]
+}
+""",
+        encoding="utf-8",
+    )
+    from holocron.assets import external as external_assets
+
+    monkeypatch.setattr(external_assets, "EXTERNAL_SOURCES_PATH", sources)
+    monkeypatch.setattr(external_assets, "EXTERNAL_MANIFEST_PATH", manifest)
+    external_assets._load_json_cached.cache_clear()
+    client = TestClient(app)
+
+    source_response = client.get("/api/assets/external-sources")
+    asset_response = client.get("/api/assets/external", params={"asset_type": "tokens", "q": "clone"})
+    summary_response = client.get("/api/assets/external/summary")
+
+    assert source_response.status_code == 200
+    assert source_response.json()["items"][0]["author"] == "Creator"
+    assert asset_response.status_code == 200
+    assert asset_response.json()["items"][0]["name"] == "Clone Trooper"
+    assert summary_response.json()["assets"] == 1
 
 
 def test_compendium_creatures_can_be_filtered():

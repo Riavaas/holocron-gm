@@ -78,6 +78,21 @@ function escapeHtml(value) {
   })[character]);
 }
 
+const tokenImageCache = new Map();
+
+function imageUrlFor(item) {
+  return item?.imageUrl || item?.primary_image?.url || item?.url || "";
+}
+
+function tokenMarkup(item, className) {
+  const url = imageUrlFor(item);
+  const type = escapeHtml(item?.type || "");
+  if (url) {
+    return `<span class="${className} ${type} has-image"><img src="${escapeHtml(url)}" alt=""></span>`;
+  }
+  return `<span class="${className} ${type}">${initials(item?.name || "?")}</span>`;
+}
+
 function sessionSnapshot() {
   const clean = { ...state };
   delete clean.image;
@@ -188,14 +203,35 @@ function initials(name) {
   return name.split(/\s+/).slice(0, 2).map((word) => word[0]).join("").toUpperCase();
 }
 
+function loadTokenImage(url) {
+  if (!url) return null;
+  if (tokenImageCache.has(url)) return tokenImageCache.get(url);
+  const image = new Image();
+  image.onload = draw;
+  image.src = url;
+  tokenImageCache.set(url, image);
+  return image;
+}
+
 function drawToken(token) {
   if (isPlayerView && !tokenVisibleToPlayer(token)) return;
   const point = screenPoint(token);
   const radius = Math.max(13, state.gridSize * state.zoom * .38);
   ctx.beginPath();
   ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
-  ctx.fillStyle = tokenColor(token.type);
-  ctx.fill();
+  const portrait = loadTokenImage(token.imageUrl);
+  if (portrait?.complete && portrait.naturalWidth) {
+    ctx.save();
+    ctx.clip();
+    const side = Math.min(portrait.naturalWidth, portrait.naturalHeight);
+    const sx = (portrait.naturalWidth - side) / 2;
+    const sy = (portrait.naturalHeight - side) / 2;
+    ctx.drawImage(portrait, sx, sy, side, side, point.x - radius, point.y - radius, radius * 2, radius * 2);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = tokenColor(token.type);
+    ctx.fill();
+  }
   ctx.strokeStyle = token.selected ? "#fff" : "#b8c0c7";
   ctx.lineWidth = token.selected ? 3 : 1.5;
   ctx.stroke();
@@ -212,7 +248,7 @@ function drawToken(token) {
   ctx.font = `700 ${Math.max(9, radius * .55)}px system-ui`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(initials(token.name), point.x, point.y);
+  if (!portrait?.complete || !portrait.naturalWidth) ctx.fillText(initials(token.name), point.x, point.y);
 }
 
 function playerVisionToken() {
@@ -527,6 +563,7 @@ function addCombatant(source, point = null) {
     attackBonus: 3 + Math.ceil(cr / 2),
     saveDc: 10 + Math.ceil(cr / 2),
     damage: `${Math.max(1, Math.ceil(cr / 3))}d8+${Math.max(1, Math.ceil(cr / 2))}`,
+    imageUrl: imageUrlFor(source),
   };
   state.combatants.push(combatant);
   if (point) state.tokens.push({
@@ -535,6 +572,7 @@ function addCombatant(source, point = null) {
     characterId: source.characterId || null,
     name: combatant.name,
     type: combatant.type,
+    imageUrl: combatant.imageUrl,
   });
   persist();
   renderInitiative();
@@ -548,7 +586,7 @@ function renderInitiative() {
   } else {
     list.innerHTML = state.combatants.map((item, index) => `
       <li class="combatant ${index === state.activeTurn ? "active" : ""} ${item.id === state.selectedCombatantId ? "selected" : ""}" data-id="${item.id}">
-        <span class="combatant-token ${item.type}">${initials(item.name)}</span>
+        ${tokenMarkup(item, "combatant-token")}
         <span class="combatant-info"><strong>${escapeHtml(item.name)}</strong><span>INIT ${item.initiative} · AC ${item.ac}${item.conditions?.length ? ` · ${item.conditions.length} FX` : ""}</span></span>
         <span class="hp-control">
           <button data-hp="-1" title="Reduce HP">−</button>
@@ -618,26 +656,32 @@ function renderLibrary(items = tokenPresets) {
   state.creatureCache = items;
   document.querySelector("#token-library").innerHTML = items.map((item, index) => `
     <div class="library-entry" draggable="true" data-creature="${index}" title="Drag ${escapeHtml(item.name)} to the map">
-      <span class="library-token ${item.type}">${initials(item.name)}</span>
+      ${tokenMarkup(item, "library-token")}
       <span class="library-entry-info"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type || "creature")}</span></span>
       <span>CR ${item.cr ?? "—"}</span>
     </div>`).join("");
 }
 
 async function loadBestiary() {
+  const mode = document.querySelector("#asset-library-mode").value;
   const search = document.querySelector("#bestiary-search").value.trim();
   const cr = document.querySelector("#bestiary-cr").value;
-  const params = new URLSearchParams({ limit: "30" });
+  const params = new URLSearchParams({ limit: mode === "tokens" ? "60" : "30" });
+  const crSelect = document.querySelector("#bestiary-cr");
+  crSelect.disabled = mode === "tokens";
+  document.querySelector("#bestiary-search").placeholder = mode === "tokens" ? "Search token, faction…" : "Search creature, faction…";
   if (search) params.set("q", search);
-  if (cr) params.set("cr", cr);
+  if (mode === "creatures" && cr) params.set("cr", cr);
   try {
-    const response = await fetch(`/api/compendium/creatures?${params}`);
-    if (!response.ok) throw new Error("Bestiary unavailable");
+    const response = await fetch(mode === "tokens" ? `/api/assets/external?asset_type=tokens&${params}` : `/api/compendium/creatures?${params}`);
+    if (!response.ok) throw new Error("Asset library unavailable");
     const payload = await response.json();
-    renderLibrary(payload.items);
-    document.querySelector("#bestiary-count").textContent = `${payload.total} creatures`;
-    const crSelect = document.querySelector("#bestiary-cr");
-    if (crSelect.options.length === 1) {
+    const items = mode === "tokens"
+      ? payload.items.map((item) => ({ ...item, type: "enemy", imageUrl: item.url, cr: null, hp: 10, ac: 12, actions: ["Attack"] }))
+      : payload.items;
+    renderLibrary(items);
+    document.querySelector("#bestiary-count").textContent = `${payload.total} ${mode === "tokens" ? "tokens" : "creatures"}`;
+    if (mode === "creatures" && crSelect.options.length === 1) {
       for (const value of payload.filters.challenge_ratings) {
         crSelect.add(new Option(`CR ${value}`, value));
       }
@@ -819,6 +863,7 @@ document.querySelector("#bestiary-search").addEventListener("input", () => {
   clearTimeout(bestiaryTimer);
   bestiaryTimer = setTimeout(loadBestiary, 180);
 });
+document.querySelector("#asset-library-mode").addEventListener("change", loadBestiary);
 document.querySelector("#bestiary-cr").addEventListener("change", loadBestiary);
 
 const dialog = document.querySelector("#combatant-dialog");

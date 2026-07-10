@@ -8,6 +8,14 @@ It reads local files from `Books/`, extracts searchable chunks, stores them in S
 
 Current coverage includes Player Handbook starter Introduction material, core session rules from chapters 7-9, conditions, Force/Tech casting, equipment overview pages, individual Force/Tech power cards, Chapter 13 maneuver cards, and a 225-card Scum and Villainy creature/statblock compendium.
 
+Local PDF art is extracted into web-ready assets. Scum and Villainy art is
+linked to the bestiary by source page, so creature search results and dropped
+map tokens can show portraits when art is available.
+
+Curated community asset sources are cataloged separately. The current catalog
+tracks `r/Star_Wars_Maps` for map discovery and Kualan's Clone Wars token packs
+for importable online-play tokens.
+
 ## Portable Books And Assets
 
 This private repo is set up for Git LFS so source PDFs and visual assets can move between machines.
@@ -98,6 +106,34 @@ Difference:
 - `Assets/`: images, portraits, maps, and tokens. Images are portable through Git LFS.
 - `Compendium/`: concise markdown summaries, rule cards, indexes, citations, and navigation.
 
+## Extract PDF Images
+
+Generate web-ready images from local PDFs:
+
+```bash
+python3 scripts/extract_pdf_images.py --force
+```
+
+This writes JPEGs and `Assets/pdf_images/manifest.json`. The API serves files
+from `/assets/...` and exposes the catalog through `/api/assets/images`. Scum
+and Villainy creature cards use `source_file` + `page_start` to attach
+`primary_image` metadata automatically.
+
+## Import External Assets
+
+Curated external sources live in `Assets/external_sources.json`.
+
+```bash
+python3 scripts/import_external_assets.py --list --check
+python3 scripts/import_external_assets.py --download --analyze
+python3 scripts/import_external_assets.py --extract
+```
+
+Downloaded zip files are ignored under `data/external_downloads/`. Extracted
+images are written to `Assets/external/` with attribution metadata in
+`Assets/external/manifest.json`. The GM dashboard's Assets panel can switch
+between the compendium bestiary and imported token packs.
+
 ## Index Books
 
 ```bash
@@ -178,6 +214,11 @@ curl -X POST "http://127.0.0.1:8000/api/rules/ask" \
 - `GET|PUT|DELETE /api/campaigns/{campaign_id}`
 - `GET /api/campaigns/{campaign_id}/export`
 - `POST /api/campaigns/actions/import`
+- `GET /api/assets/images?book=...&page=...`
+- `GET /api/assets/images/summary`
+- `GET /api/assets/external-sources`
+- `GET /api/assets/external?asset_type=tokens&q=...`
+- `GET /api/assets/external/summary`
 - `GET /api/rules/search?q=...&limit=10`
 - `GET /api/rules/chunk/{chunk_id}`
 - `POST /api/rules/ask`

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+ASSETS_DIR = PROJECT_ROOT / "Assets"
 BOOKS_DIR = PROJECT_ROOT / "Books"
 COMPENDIUM_DIR = PROJECT_ROOT / "Compendium"
 DATA_DIR = PROJECT_ROOT / "data"

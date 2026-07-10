@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -8,6 +9,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BOOKS_DIR = PROJECT_ROOT / "Books"
 ASSETS_DIR = PROJECT_ROOT / "Assets"
 DB_PATH = PROJECT_ROOT / "data" / "holocron.sqlite"
+PDF_IMAGE_MANIFEST = ASSETS_DIR / "pdf_images" / "manifest.json"
+EXTERNAL_ASSET_MANIFEST = ASSETS_DIR / "external" / "manifest.json"
 
 EXPECTED_PDFS = [
     "SW5e - Player's Handbook-avec compression.pdf",
@@ -84,6 +87,27 @@ def main() -> int:
     if pointer_assets:
         print("NEED git lfs pull for assets: " + ", ".join(pointer_assets[:10]))
         exit_code = 1
+
+    if PDF_IMAGE_MANIFEST.exists():
+        try:
+            payload = json.loads(PDF_IMAGE_MANIFEST.read_text(encoding="utf-8"))
+            print(f"OK PDF image manifest found ({len(payload.get('images', []))} images)")
+        except json.JSONDecodeError:
+            print(f"NEED rebuild invalid PDF image manifest: {PDF_IMAGE_MANIFEST.relative_to(PROJECT_ROOT)}")
+            exit_code = 1
+    else:
+        print("NEED PDF image manifest: python3 scripts/extract_pdf_images.py --force")
+        exit_code = 1
+
+    if EXTERNAL_ASSET_MANIFEST.exists():
+        try:
+            payload = json.loads(EXTERNAL_ASSET_MANIFEST.read_text(encoding="utf-8"))
+            print(f"OK external asset manifest found ({len(payload.get('assets', []))} assets)")
+        except json.JSONDecodeError:
+            print(f"NEED rebuild invalid external asset manifest: {EXTERNAL_ASSET_MANIFEST.relative_to(PROJECT_ROOT)}")
+            exit_code = 1
+    else:
+        print("INFO external asset manifest missing; run scripts/import_external_assets.py --extract to import curated packs")
 
     if DB_PATH.exists():
         print(f"OK database found: {DB_PATH.relative_to(PROJECT_ROOT)}")

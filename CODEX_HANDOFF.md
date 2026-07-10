@@ -23,6 +23,9 @@ Initial Holocron GM rules encyclopedia is implemented.
 - Player Handbook Force and Tech power cards generated with metadata for future UI lookup.
 - Player Handbook Chapter 13 maneuver cards generated with metadata for future UI/combat tracker lookup.
 - Scum and Villainy creature/statblock compendium expanded to all 225 detected creature cards and encounter indexes.
+- Local PDF art extracted to `Assets/pdf_images/` with a manifest; Scum and Villainy bestiary images link automatically by source file/page.
+- Curated external asset sources cataloged in `Assets/external_sources.json`, including `r/Star_Wars_Maps` and Kualan Clone Wars token packs.
+- Kualan token packs can be checked/downloaded/analyzed/extracted with `scripts/import_external_assets.py`; extracted tokens are served through `/api/assets/external`.
 - QA tooling available for power and maneuver cards.
 - Creature metadata QA exists for future encounter builder work.
 - Ingestion now indexes both `Books/` and `Compendium/`.
@@ -47,6 +50,9 @@ Build compendium:
 python3 scripts/build_compendium.py --book player-handbook
 python3 scripts/build_compendium.py --book player-handbook --chapter 13 --section maneuvers --maneuvers
 python3 scripts/build_compendium.py --book scum-and-villainy --creatures
+python3 scripts/extract_pdf_images.py --force
+python3 scripts/import_external_assets.py --list --check
+python3 scripts/import_external_assets.py --extract
 ```
 
 ## Tests
@@ -60,6 +66,8 @@ pytest
 - Improve PDF section detection.
 - Review maneuver card metadata quality, then expand selected equipment tables without copying full text.
 - Continue improving creature metadata heuristics, especially environment, faction, and combat role.
+- Improve image-to-creature matching beyond page-level mapping when a page contains multiple figures.
+- Add richer map discovery/import from individual `r/Star_Wars_Maps` posts while preserving per-post author attribution.
 - Add OCR option for scanned pages.
 - Add campaign note CRUD.
 - Add UI GM dashboard.

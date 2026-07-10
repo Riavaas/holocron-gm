@@ -4,6 +4,7 @@ import ast
 import re
 from pathlib import Path
 
+from holocron.assets.images import images_for_source, primary_image_for_source
 from holocron.core.paths import COMPENDIUM_DIR
 
 CREATURES_DIR = COMPENDIUM_DIR / "scum-and-villainy" / "creatures"
@@ -49,24 +50,31 @@ def load_creatures(root: Path = CREATURES_DIR) -> list[dict[str, object]]:
         data = _frontmatter(path)
         if not data.get("creature_name"):
             continue
-        creatures.append(
-            {
-                "slug": path.relative_to(root).with_suffix("").as_posix(),
-                "name": data["creature_name"],
-                "type": data.get("creature_type", "unknown"),
-                "size": data.get("size", "Medium"),
-                "cr": str(data.get("challenge_rating", "0")),
-                "ac": _first_integer(data.get("armor_class"), 10),
-                "hp": _first_integer(data.get("hit_points"), 1),
-                "speed": data.get("speed", ""),
-                "factions": data.get("faction", []),
-                "environments": data.get("environment", []),
-                "roles": data.get("role", []),
-                "actions": data.get("actions", []),
-                "source": data.get("source", ""),
-                "page": data.get("page_start"),
-            }
-        )
+        source_file = data.get("source_file")
+        page_start = data.get("page_start")
+        primary_image = primary_image_for_source(source_file, page_start)
+        image_matches = images_for_source(source_file, page_start)
+        creature = {
+            "slug": path.relative_to(root).with_suffix("").as_posix(),
+            "name": data["creature_name"],
+            "type": data.get("creature_type", "unknown"),
+            "size": data.get("size", "Medium"),
+            "cr": str(data.get("challenge_rating", "0")),
+            "ac": _first_integer(data.get("armor_class"), 10),
+            "hp": _first_integer(data.get("hit_points"), 1),
+            "speed": data.get("speed", ""),
+            "factions": data.get("faction", []),
+            "environments": data.get("environment", []),
+            "roles": data.get("role", []),
+            "actions": data.get("actions", []),
+            "source": data.get("source", ""),
+            "source_file": source_file,
+            "page": page_start,
+        }
+        if primary_image:
+            creature["primary_image"] = primary_image
+            creature["images"] = image_matches
+        creatures.append(creature)
     return sorted(creatures, key=lambda creature: str(creature["name"]).lower())
 
 

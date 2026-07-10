@@ -22,6 +22,16 @@ Maneuver cards are available under `Compendium/player-handbook/maneuvers/`. Each
 
 Scum and Villainy creature/statblock compendium under `Compendium/scum-and-villainy/` contains all 225 detected statblocks. Creature cards include metadata for future encounter builder and combat tracker features: type, size, CR, XP, AC, HP, speed, abilities, saves, skills, defenses, senses, languages, traits, actions, reactions, legendary actions, environment, faction, and role.
 
+Local PDF art is extracted under `Assets/pdf_images/` with
+`Assets/pdf_images/manifest.json`. Creature API responses include
+`primary_image` and `images` when a source page has extracted Scum and Villainy
+art.
+
+Community assets are cataloged separately in `Assets/external_sources.json`.
+Imported token packs live under `Assets/external/` with
+`Assets/external/manifest.json`; each asset keeps source URL, author, and
+attribution note.
+
 Metadata QA exists at:
 
 - `scripts/qa_power_cards.py`, which writes `reports/power_cards_qa.md`.
@@ -35,6 +45,11 @@ Some cards can carry `needs_review`; use the cited source page and `/api/rules/s
 - `GET /health`
 - `POST /api/ingest`
 - `GET /api/sources`
+- `GET /api/assets/images?book=...&page=...`
+- `GET /api/assets/images/summary`
+- `GET /api/assets/external-sources`
+- `GET /api/assets/external?asset_type=tokens&q=...`
+- `GET /api/assets/external/summary`
 - `GET /api/rules/search?q=...&limit=10`
 - `GET /api/rules/chunk/{chunk_id}`
 - `POST /api/rules/ask`
