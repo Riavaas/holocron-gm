@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import ast
 import re
+from functools import lru_cache
 from pathlib import Path
 
+from holocron.assets import external as external_assets
+from holocron.assets import images as image_assets
 from holocron.assets.images import images_for_source, primary_image_for_source
 from holocron.assets.tokens import best_token_for_creature
 from holocron.core.paths import COMPENDIUM_DIR
@@ -42,10 +45,35 @@ def _first_integer(value: object, default: int = 0) -> int:
     return int(match.group()) if match else default
 
 
-def load_creatures(root: Path = CREATURES_DIR) -> list[dict[str, object]]:
+def _path_modified_ns(path: Path) -> int:
+    return path.stat().st_mtime_ns if path.exists() else 0
+
+
+def _creature_signature(root: Path) -> tuple[int, int, int, int]:
+    if not root.exists():
+        return (
+            0,
+            0,
+            _path_modified_ns(external_assets.EXTERNAL_MANIFEST_PATH),
+            _path_modified_ns(image_assets.MANIFEST_PATH),
+        )
+    markdown_files = list(root.rglob("*.md"))
+    latest_creature_mtime = max((_path_modified_ns(path) for path in markdown_files), default=0)
+    return (
+        len(markdown_files),
+        latest_creature_mtime,
+        _path_modified_ns(external_assets.EXTERNAL_MANIFEST_PATH),
+        _path_modified_ns(image_assets.MANIFEST_PATH),
+    )
+
+
+@lru_cache(maxsize=8)
+def _load_creatures_cached(root_key: str, signature: tuple[int, int, int, int]) -> tuple[dict[str, object], ...]:
+    del signature
+    root = Path(root_key)
     creatures: list[dict[str, object]] = []
     if not root.exists():
-        return creatures
+        return ()
 
     for path in root.rglob("*.md"):
         data = _frontmatter(path)
@@ -127,7 +155,12 @@ def load_creatures(root: Path = CREATURES_DIR) -> list[dict[str, object]]:
                 "source_id": matched_token.get("source_id"),
             }
         creatures.append(creature)
-    return sorted(creatures, key=lambda creature: str(creature["name"]).lower())
+    return tuple(sorted(creatures, key=lambda creature: str(creature["name"]).lower()))
+
+
+def load_creatures(root: Path = CREATURES_DIR) -> list[dict[str, object]]:
+    root_path = root.resolve()
+    return list(_load_creatures_cached(str(root_path), _creature_signature(root_path)))
 
 
 def filter_creatures(

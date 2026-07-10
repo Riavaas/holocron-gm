@@ -71,6 +71,15 @@ def meaningful_tokens(value: object) -> set[str]:
     return {token for token in name_tokens(value) if token not in STOP_WORDS}
 
 
+@lru_cache(maxsize=4096)
+def _asset_name_profile(asset_name: str) -> tuple[str, str, frozenset[str], bool]:
+    asset_compact = compact_name(asset_name)
+    asset_compact_loose = compact_name(asset_name, drop_stop_words=True)
+    asset_tokens = frozenset(meaningful_tokens(asset_name))
+    asset_has_digits = bool(DIGIT_PATTERN.search(asset_compact))
+    return asset_compact, asset_compact_loose, asset_tokens, asset_has_digits
+
+
 def _candidate_aliases(name: object) -> set[str]:
     spaced = " ".join(name_tokens(name))
     aliases = set(ALIASES.get(spaced, set()))
@@ -79,30 +88,38 @@ def _candidate_aliases(name: object) -> set[str]:
     return {alias for alias in aliases if alias}
 
 
+def _creature_match_profile(creature: dict[str, object]) -> tuple[str, set[str], set[str], bool]:
+    creature_name = str(creature.get("name") or creature.get("creature_name") or "")
+    aliases = _candidate_aliases(creature_name)
+    tokens = meaningful_tokens(creature_name)
+    has_digits = bool(DIGIT_PATTERN.search(compact_name(creature_name)))
+    return creature_name, aliases, tokens, has_digits
+
+
 @lru_cache(maxsize=1)
 def token_assets() -> tuple[dict[str, object], ...]:
     return tuple(asset for asset in load_external_manifest() if asset.get("asset_type") == "tokens")
 
 
-def score_token_match(creature: dict[str, object], asset: dict[str, object]) -> tuple[int, str]:
-    creature_name = str(creature.get("name") or creature.get("creature_name") or "")
+def _score_token_match_profile(
+    creature: dict[str, object],
+    creature_profile: tuple[str, set[str], set[str], bool],
+    asset: dict[str, object],
+) -> tuple[int, str]:
+    creature_name, creature_aliases, creature_tokens, creature_has_digits = creature_profile
     asset_name = str(asset.get("name") or "")
-    creature_aliases = _candidate_aliases(creature_name)
-    creature_tokens = meaningful_tokens(creature_name)
-    asset_compact = compact_name(asset_name)
-    asset_compact_loose = compact_name(asset_name, drop_stop_words=True)
+    asset_compact, asset_compact_loose, asset_tokens, asset_has_digits = _asset_name_profile(asset_name)
 
     if asset_compact in creature_aliases or asset_compact_loose in creature_aliases:
         return 100, "name"
 
     partial_aliases = {alias for alias in creature_aliases if len(alias) >= 8 and len(creature_tokens) >= 2}
-    asset_has_unshared_digits = bool(DIGIT_PATTERN.search(asset_compact)) and not bool(DIGIT_PATTERN.search(compact_name(creature_name)))
+    asset_has_unshared_digits = asset_has_digits and not creature_has_digits
     if not asset_has_unshared_digits and any(
         alias and (alias in asset_compact or asset_compact in alias) for alias in partial_aliases
     ):
         return 86, "partial-name"
 
-    asset_tokens = meaningful_tokens(asset_name)
     if not creature_tokens or not asset_tokens:
         return 0, "none"
 
@@ -116,6 +133,10 @@ def score_token_match(creature: dict[str, object], asset: dict[str, object]) -> 
     return min(score, 82), "token-overlap"
 
 
+def score_token_match(creature: dict[str, object], asset: dict[str, object]) -> tuple[int, str]:
+    return _score_token_match_profile(creature, _creature_match_profile(creature), asset)
+
+
 def best_token_for_creature(
     creature: dict[str, object],
     assets: Iterable[dict[str, object]] | None = None,
@@ -123,11 +144,12 @@ def best_token_for_creature(
     minimum_score: int = 72,
 ) -> dict[str, object] | None:
     candidates = assets if assets is not None else token_assets()
+    creature_profile = _creature_match_profile(creature)
     best: tuple[int, str, dict[str, object]] | None = None
     for asset in candidates:
         if asset.get("asset_type") != "tokens":
             continue
-        score, reason = score_token_match(creature, asset)
+        score, reason = _score_token_match_profile(creature, creature_profile, asset)
         if best is None or score > best[0]:
             best = (score, reason, asset)
 

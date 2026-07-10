@@ -1272,7 +1272,12 @@ document.querySelector("#bestiary-search").addEventListener("input", () => {
   clearTimeout(bestiaryTimer);
   bestiaryTimer = setTimeout(loadBestiary, 180);
 });
-document.querySelector("#asset-library-mode").addEventListener("change", loadBestiary);
+document.querySelector("#asset-library-mode").addEventListener("change", () => {
+  clearTimeout(bestiaryTimer);
+  document.querySelector("#bestiary-search").value = "";
+  document.querySelector("#bestiary-cr").value = "";
+  loadBestiary();
+});
 document.querySelector("#bestiary-cr").addEventListener("change", loadBestiary);
 
 const dialog = document.querySelector("#combatant-dialog");
