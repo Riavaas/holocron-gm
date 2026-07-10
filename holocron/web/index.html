@@ -30,6 +30,8 @@
     </div>
     <div class="session-status"><span></span><span id="campaign-save-status">Saved</span></div>
     <a class="icon-button player-view-link" href="/player" target="_blank" title="Open player view">P</a>
+    <button id="toggle-window-layout" class="icon-button" title="Toggle window layout">▣</button>
+    <button id="reset-window-layout" class="icon-button" title="Reset window layout">⌖</button>
     <button id="assistant-toggle" class="icon-button assistant-toggle" title="Open AI assistant">AI</button>
   </header>
 
@@ -168,6 +170,7 @@
           <select id="combat-target" aria-label="Combat target"></select>
           <div id="combat-actions" class="combat-actions"></div>
         </div>
+        <div id="stat-block" class="stat-block"></div>
         <output id="roll-result" class="roll-result" hidden></output>
       </section>
       <section class="encounter-actions">

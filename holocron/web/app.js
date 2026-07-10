@@ -35,6 +35,13 @@ const defaults = {
   selectedCombatantId: null,
   combatLog: [],
   round: 1,
+  panelLayout: {
+    mode: "anchored",
+    panels: {
+      left: { anchor: "left", x: 12, y: 12, width: 280, height: 720 },
+      right: { anchor: "right", x: 0, y: 12, width: 340, height: 720 },
+    },
+  },
 };
 
 const saved = JSON.parse(localStorage.getItem("holocron.session") || "null");
@@ -48,6 +55,14 @@ state.creatureCache = [];
 state.pendingNotePin = null;
 state.assetFilterMode = null;
 state.imageBookFilters = null;
+state.panelLayout = {
+  ...defaults.panelLayout,
+  ...(state.panelLayout || {}),
+  panels: {
+    ...defaults.panelLayout.panels,
+    ...(state.panelLayout?.panels || {}),
+  },
+};
 
 if (isPlayerView) document.body.classList.add("player-mode");
 
@@ -83,7 +98,7 @@ function escapeHtml(value) {
 const tokenImageCache = new Map();
 
 function imageUrlFor(item) {
-  return item?.imageUrl || item?.primary_image?.url || item?.url || "";
+  return item?.imageUrl || item?.matched_token?.url || item?.primary_image?.url || item?.url || "";
 }
 
 function tokenMarkup(item, className) {
@@ -573,10 +588,17 @@ function combatActionProfile(name, cr = 1) {
 function addCombatant(source, point = null) {
   const cr = Number(source.cr) || 1;
   const actionNames = source.actions?.length ? source.actions.slice(0, 8) : ["Attack"];
+  const defenses = {
+    vulnerabilities: source.damage_vulnerabilities || source.stat_block?.damage_vulnerabilities || [],
+    resistances: source.damage_resistances || source.stat_block?.damage_resistances || [],
+    immunities: source.damage_immunities || source.stat_block?.damage_immunities || [],
+    conditionImmunities: source.condition_immunities || source.stat_block?.condition_immunities || [],
+  };
   const combatant = {
     id: crypto.randomUUID(),
     name: source.name,
     type: source.type || "enemy",
+    sourceSlug: source.slug || null,
     hp: Number(source.hp || 10),
     maxHp: Number(source.hp || 10),
     ac: Number(source.ac || 12),
@@ -588,6 +610,14 @@ function addCombatant(source, point = null) {
     saveDc: 10 + Math.ceil(cr / 2),
     damage: `${Math.max(1, Math.ceil(cr / 3))}d8+${Math.max(1, Math.ceil(cr / 2))}`,
     imageUrl: imageUrlFor(source),
+    matchedToken: source.matched_token || null,
+    statBlock: source.stat_block || null,
+    traits: source.traits || source.stat_block?.traits || [],
+    reactions: source.reactions || source.stat_block?.reactions || [],
+    legendaryActions: source.legendary_actions || source.stat_block?.legendary_actions || [],
+    senses: source.senses || source.stat_block?.senses || [],
+    languages: source.languages || source.stat_block?.languages || [],
+    defenses,
   };
   state.combatants.push(combatant);
   if (point) state.tokens.push({
@@ -601,6 +631,155 @@ function addCombatant(source, point = null) {
   persist();
   renderInitiative();
   draw();
+}
+
+function panelElement(panelId) {
+  return document.querySelector(panelId === "left" ? ".left-panel" : ".right-panel");
+}
+
+function panelLayout(panelId) {
+  state.panelLayout.panels[panelId] ||= { ...defaults.panelLayout.panels[panelId] };
+  return state.panelLayout.panels[panelId];
+}
+
+function clampPanel(panel, rect) {
+  const width = Number(panel.width || 300);
+  const height = Math.min(Number(panel.height || 620), Math.max(260, rect.height - 24));
+  panel.width = Math.max(240, Math.min(width, rect.width - 24));
+  panel.height = Math.max(260, height);
+  panel.x = Math.max(8, Math.min(Number(panel.x || 8), rect.width - panel.width - 8));
+  panel.y = Math.max(8, Math.min(Number(panel.y || 8), rect.height - panel.height - 8));
+}
+
+function placeAnchoredPanel(panelId, panel, rect) {
+  if (panel.anchor === "left") {
+    panel.x = 12;
+    panel.y = 12;
+    panel.height = rect.height - 24;
+  } else if (panel.anchor === "right") {
+    panel.width ||= panelId === "left" ? 280 : 330;
+    panel.x = rect.width - panel.width - 12;
+    panel.y = 12;
+    panel.height = rect.height - 24;
+  } else if (panel.anchor === "bottom") {
+    panel.width ||= Math.min(rect.width - 24, panelId === "left" ? 420 : 520);
+    panel.x = panelId === "left" ? 12 : rect.width - panel.width - 12;
+    panel.y = rect.height - panel.height - 12;
+  }
+}
+
+function anchorPanel(panelId, anchor) {
+  const workspace = document.querySelector("#battlemap-view");
+  const rect = workspace.getBoundingClientRect();
+  const panel = panelLayout(panelId);
+  panel.anchor = anchor;
+  if (anchor === "left") {
+    panel.width = panelId === "left" ? 280 : 330;
+    panel.height = rect.height - 24;
+    panel.x = 12;
+    panel.y = 12;
+  } else if (anchor === "right") {
+    panel.width = panelId === "left" ? 280 : 330;
+    panel.height = rect.height - 24;
+    panel.x = rect.width - panel.width - 12;
+    panel.y = 12;
+  } else if (anchor === "bottom") {
+    panel.width = Math.min(rect.width - 24, panelId === "left" ? 420 : 520);
+    panel.height = Math.min(360, rect.height - 24);
+    panel.x = panelId === "left" ? 12 : rect.width - panel.width - 12;
+    panel.y = rect.height - panel.height - 12;
+  }
+  clampPanel(panel, rect);
+  applyPanelLayout();
+  persist();
+}
+
+function applyPanelLayout() {
+  const workspace = document.querySelector("#battlemap-view");
+  const floating = state.panelLayout.mode === "floating";
+  workspace.classList.toggle("window-layout", floating);
+  document.querySelector("#toggle-window-layout")?.classList.toggle("active", floating);
+  for (const panelId of ["left", "right"]) {
+    const element = panelElement(panelId);
+    if (!element) continue;
+    const panel = panelLayout(panelId);
+    if (!floating) {
+      element.removeAttribute("style");
+      continue;
+    }
+    const rect = workspace.getBoundingClientRect();
+    placeAnchoredPanel(panelId, panel, rect);
+    clampPanel(panel, rect);
+    element.style.left = `${panel.x}px`;
+    element.style.top = `${panel.y}px`;
+    element.style.width = `${panel.width}px`;
+    element.style.height = `${panel.height}px`;
+  }
+  resizeCanvas();
+}
+
+function installPanelChrome() {
+  if (isPlayerView) return;
+  const labels = { left: "Map tools", right: "Encounter" };
+  for (const panelId of ["left", "right"]) {
+    const element = panelElement(panelId);
+    if (!element || element.querySelector(".panel-window-bar")) continue;
+    const bar = document.createElement("div");
+    bar.className = "panel-window-bar";
+    bar.dataset.panelDrag = panelId;
+    bar.innerHTML = `
+      <strong>${labels[panelId]}</strong>
+      <span>
+        <button data-panel-anchor="${panelId}:left" title="Anchor left">L</button>
+        <button data-panel-anchor="${panelId}:right" title="Anchor right">R</button>
+        <button data-panel-anchor="${panelId}:bottom" title="Anchor bottom">B</button>
+      </span>`;
+    element.prepend(bar);
+  }
+}
+
+function setupPanelLayoutControls() {
+  if (isPlayerView) return;
+  installPanelChrome();
+  document.querySelector("#toggle-window-layout").addEventListener("click", () => {
+    state.panelLayout.mode = state.panelLayout.mode === "floating" ? "anchored" : "floating";
+    applyPanelLayout();
+    persist();
+  });
+  document.querySelector("#reset-window-layout").addEventListener("click", () => {
+    state.panelLayout = JSON.parse(JSON.stringify(defaults.panelLayout));
+    applyPanelLayout();
+    persist();
+  });
+  document.querySelector("#battlemap-view").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-panel-anchor]");
+    if (!button) return;
+    const [panelId, anchor] = button.dataset.panelAnchor.split(":");
+    state.panelLayout.mode = "floating";
+    anchorPanel(panelId, anchor);
+  });
+  document.querySelector("#battlemap-view").addEventListener("pointerdown", (event) => {
+    const bar = event.target.closest("[data-panel-drag]");
+    if (!bar || event.target.closest("button") || state.panelLayout.mode !== "floating") return;
+    const panelId = bar.dataset.panelDrag;
+    const panel = panelLayout(panelId);
+    const start = { x: event.clientX, y: event.clientY, panelX: panel.x, panelY: panel.y };
+    bar.setPointerCapture(event.pointerId);
+    panel.anchor = "free";
+    const move = (moveEvent) => {
+      panel.x = start.panelX + moveEvent.clientX - start.x;
+      panel.y = start.panelY + moveEvent.clientY - start.y;
+      applyPanelLayout();
+    };
+    const up = () => {
+      document.removeEventListener("pointermove", move);
+      document.removeEventListener("pointerup", up);
+      persist();
+    };
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up, { once: true });
+  });
+  applyPanelLayout();
 }
 
 function addMapAsset(source, point = mapCenterPoint()) {
@@ -657,6 +836,53 @@ function selectedCombatant() {
   return state.combatants.find((item) => item.id === state.selectedCombatantId);
 }
 
+function listText(value) {
+  if (Array.isArray(value) && value.length) return value.join(", ");
+  if (value && typeof value === "object") return Object.entries(value).map(([key, item]) => `${key.toUpperCase()} ${item}`).join(", ");
+  return value ? String(value) : "—";
+}
+
+function renderStatBlock(combatant) {
+  const block = combatant.statBlock;
+  const defenses = combatant.defenses || {};
+  if (!block) {
+    return `
+      <div class="stat-block-empty">
+        <strong>${escapeHtml(combatant.name)}</strong>
+        <span>AC ${combatant.ac} · HP ${combatant.maxHp} · quick combat profile</span>
+      </div>`;
+  }
+  const actionList = (block.actions || combatant.actions || []).slice(0, 8);
+  const traitList = (block.traits || combatant.traits || []).slice(0, 6);
+  const reactionList = (block.reactions || combatant.reactions || []).slice(0, 4);
+  return `
+    <div class="stat-block-header">
+      <strong>${escapeHtml(combatant.name)}</strong>
+      <span>${escapeHtml(block.size || "")} ${escapeHtml(block.type || combatant.type || "")}${block.alignment ? `, ${escapeHtml(block.alignment)}` : ""}</span>
+    </div>
+    <div class="stat-grid">
+      <span><b>AC</b>${escapeHtml(block.armor_class || combatant.ac)}</span>
+      <span><b>HP</b>${escapeHtml(block.hit_points || combatant.maxHp)}</span>
+      <span><b>CR</b>${escapeHtml(block.challenge_rating || "—")}</span>
+      <span><b>Speed</b>${escapeHtml(block.speed || "—")}</span>
+    </div>
+    <div class="stat-line"><b>Abilities</b><span>${escapeHtml(listText(block.abilities))}</span></div>
+    <div class="stat-line"><b>Saves</b><span>${escapeHtml(listText(block.saving_throws))}</span></div>
+    <div class="stat-line"><b>Skills</b><span>${escapeHtml(listText(block.skills))}</span></div>
+    <div class="stat-line"><b>Senses</b><span>${escapeHtml(listText(block.senses || combatant.senses))}</span></div>
+    <div class="stat-line"><b>Languages</b><span>${escapeHtml(listText(block.languages || combatant.languages))}</span></div>
+    <div class="stat-line"><b>Defenses</b><span>${escapeHtml([
+      defenses.vulnerabilities?.length ? `Vuln ${listText(defenses.vulnerabilities)}` : "",
+      defenses.resistances?.length ? `Res ${listText(defenses.resistances)}` : "",
+      defenses.immunities?.length ? `Imm ${listText(defenses.immunities)}` : "",
+      defenses.conditionImmunities?.length ? `Cond ${listText(defenses.conditionImmunities)}` : "",
+    ].filter(Boolean).join(" · ") || "—")}</span></div>
+    ${traitList.length ? `<div class="stat-line"><b>Traits</b><span>${escapeHtml(listText(traitList))}</span></div>` : ""}
+    ${actionList.length ? `<div class="stat-line"><b>Actions</b><span>${escapeHtml(listText(actionList))}</span></div>` : ""}
+    ${reactionList.length ? `<div class="stat-line"><b>Reactions</b><span>${escapeHtml(listText(reactionList))}</span></div>` : ""}
+  `;
+}
+
 function renderCombatantInspector() {
   const inspector = document.querySelector("#combatant-inspector");
   const combatant = selectedCombatant();
@@ -680,6 +906,7 @@ function renderCombatantInspector() {
     const detail = action.kind === "save" ? `${action.save} DC ${action.dc}` : `+${action.bonus} · ${action.damage}`;
     return `<button class="combat-action" data-action-index="${index}" ${blocked || !targets.length ? "disabled" : ""}>${escapeHtml(action.name)} · ${detail}</button>`;
   }).join("");
+  document.querySelector("#stat-block").innerHTML = renderStatBlock(combatant);
 }
 
 function rollDice(expression) {
@@ -1131,6 +1358,8 @@ document.querySelector("#clear-encounter").addEventListener("click", () => {
 });
 
 window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize", applyPanelLayout);
+setupPanelLayoutControls();
 loadBestiary();
 renderInitiative();
 resizeCanvas();

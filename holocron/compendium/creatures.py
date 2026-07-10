@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 from holocron.assets.images import images_for_source, primary_image_for_source
+from holocron.assets.tokens import best_token_for_creature
 from holocron.core.paths import COMPENDIUM_DIR
 
 CREATURES_DIR = COMPENDIUM_DIR / "scum-and-villainy" / "creatures"
@@ -54,19 +55,61 @@ def load_creatures(root: Path = CREATURES_DIR) -> list[dict[str, object]]:
         page_start = data.get("page_start")
         primary_image = primary_image_for_source(source_file, page_start)
         image_matches = images_for_source(source_file, page_start)
+        stat_block = {
+            "size": data.get("size", "Medium"),
+            "type": data.get("creature_type", "unknown"),
+            "alignment": data.get("alignment", ""),
+            "challenge_rating": str(data.get("challenge_rating", "0")),
+            "xp": data.get("xp", ""),
+            "armor_class": data.get("armor_class", ""),
+            "hit_points": data.get("hit_points", ""),
+            "speed": data.get("speed", ""),
+            "abilities": data.get("abilities", {}),
+            "saving_throws": data.get("saving_throws", []),
+            "skills": data.get("skills", []),
+            "damage_vulnerabilities": data.get("damage_vulnerabilities", []),
+            "damage_resistances": data.get("damage_resistances", []),
+            "damage_immunities": data.get("damage_immunities", []),
+            "condition_immunities": data.get("condition_immunities", []),
+            "senses": data.get("senses", []),
+            "languages": data.get("languages", []),
+            "traits": data.get("traits", []),
+            "actions": data.get("actions", []),
+            "reactions": data.get("reactions", []),
+            "legendary_actions": data.get("legendary_actions", []),
+            "lair_actions": data.get("lair_actions", []),
+            "regional_effects": data.get("regional_effects", []),
+            "source_file": source_file,
+            "page": page_start,
+        }
         creature = {
             "slug": path.relative_to(root).with_suffix("").as_posix(),
             "name": data["creature_name"],
             "type": data.get("creature_type", "unknown"),
             "size": data.get("size", "Medium"),
+            "alignment": data.get("alignment", ""),
             "cr": str(data.get("challenge_rating", "0")),
+            "xp": data.get("xp", ""),
             "ac": _first_integer(data.get("armor_class"), 10),
             "hp": _first_integer(data.get("hit_points"), 1),
             "speed": data.get("speed", ""),
+            "abilities": data.get("abilities", {}),
+            "saving_throws": data.get("saving_throws", []),
+            "skills": data.get("skills", []),
+            "damage_vulnerabilities": data.get("damage_vulnerabilities", []),
+            "damage_resistances": data.get("damage_resistances", []),
+            "damage_immunities": data.get("damage_immunities", []),
+            "condition_immunities": data.get("condition_immunities", []),
+            "senses": data.get("senses", []),
+            "languages": data.get("languages", []),
+            "traits": data.get("traits", []),
             "factions": data.get("faction", []),
             "environments": data.get("environment", []),
             "roles": data.get("role", []),
             "actions": data.get("actions", []),
+            "reactions": data.get("reactions", []),
+            "legendary_actions": data.get("legendary_actions", []),
+            "stat_block": stat_block,
             "source": data.get("source", ""),
             "source_file": source_file,
             "page": page_start,
@@ -74,6 +117,15 @@ def load_creatures(root: Path = CREATURES_DIR) -> list[dict[str, object]]:
         if primary_image:
             creature["primary_image"] = primary_image
             creature["images"] = image_matches
+        matched_token = best_token_for_creature(creature)
+        if matched_token:
+            creature["matched_token"] = matched_token
+            creature["asset_match"] = {
+                "kind": "external_token",
+                "score": matched_token["match_score"],
+                "reason": matched_token["match_reason"],
+                "source_id": matched_token.get("source_id"),
+            }
         creatures.append(creature)
     return sorted(creatures, key=lambda creature: str(creature["name"]).lower())
 
