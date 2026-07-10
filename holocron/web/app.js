@@ -59,17 +59,17 @@ const tokenPresets = [
 ];
 
 const conditionRules = {
-  blinded: { color: "#9aa6b2", rule: "Cannot see; attacks have disadvantage and incoming attacks have advantage." },
-  frightened: { color: "#a875d2", rule: "Disadvantage on checks and attacks while the source of fear is visible." },
-  grappled: { color: "#e3a24e", rule: "Speed becomes 0." },
-  incapacitated: { color: "#ef6464", rule: "Cannot take actions or reactions." },
-  poisoned: { color: "#74bd62", rule: "Disadvantage on attack rolls and ability checks." },
-  prone: { color: "#d68a55", rule: "Crawl movement; attacks affected by attacker distance." },
-  restrained: { color: "#d9b05f", rule: "Speed 0; attacks have disadvantage; incoming attacks have advantage." },
-  shocked: { color: "#58b8e8", rule: "Cannot take reactions; limited action economy." },
-  slowed: { color: "#6ca8cb", rule: "Movement and action economy are reduced." },
-  stunned: { color: "#f07878", rule: "Incapacitated, cannot move, automatically fails STR and DEX saves." },
-  unconscious: { color: "#7c8490", rule: "Incapacitated, prone, cannot move or speak, unaware." },
+  blinded: { color: "#757575", rule: "Cannot see; attacks have disadvantage and incoming attacks have advantage." },
+  frightened: { color: "#6d4c41", rule: "Disadvantage on checks and attacks while the source of fear is visible." },
+  grappled: { color: "#9e9d24", rule: "Speed becomes 0." },
+  incapacitated: { color: "#c40f0f", rule: "Cannot take actions or reactions." },
+  poisoned: { color: "#558b2f", rule: "Disadvantage on attack rolls and ability checks." },
+  prone: { color: "#795548", rule: "Crawl movement; attacks affected by attacker distance." },
+  restrained: { color: "#827717", rule: "Speed 0; attacks have disadvantage; incoming attacks have advantage." },
+  shocked: { color: "#0d99cc", rule: "Cannot take reactions; limited action economy." },
+  slowed: { color: "#607d8b", rule: "Movement and action economy are reduced." },
+  stunned: { color: "#d32f2f", rule: "Incapacitated, cannot move, automatically fails STR and DEX saves." },
+  unconscious: { color: "#424242", rule: "Incapacitated, prone, cannot move or speak, unaware." },
 };
 
 function escapeHtml(value) {
@@ -196,7 +196,10 @@ function drawGrid(width, height) {
 }
 
 function tokenColor(type) {
-  return type === "enemy" ? "#a64b53" : type === "player" ? "#35a99a" : "#78848e";
+  if (type === "enemy") return "#c40f0f";
+  if (type === "player") return "#0d99cc";
+  if (type === "asset") return "#9e9e9e";
+  return "#757575";
 }
 
 function initials(name) {
@@ -293,7 +296,7 @@ function drawDoors() {
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
     ctx.lineTo(b.x, b.y);
-    ctx.strokeStyle = door.open ? "#35d0ba" : "#e1ad4f";
+    ctx.strokeStyle = door.open ? "#0d99cc" : "#9e9d24";
     ctx.lineWidth = 7;
     ctx.stroke();
     ctx.fillStyle = "#0b0d10";
@@ -390,14 +393,14 @@ function drawMeasurement() {
   const start = screenPoint(state.measurement.start);
   const end = screenPoint(state.measurement.end);
   ctx.setLineDash([7, 5]);
-  ctx.strokeStyle = "#35d0ba";
+  ctx.strokeStyle = "#c40f0f";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(start.x, start.y);
   ctx.lineTo(end.x, end.y);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle = "#35d0ba";
+  ctx.fillStyle = "#c40f0f";
   for (const point of [start, end]) {
     ctx.beginPath();
     ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
@@ -418,7 +421,7 @@ function drawPings() {
     const progress = (now - ping.created) / 1500;
     ctx.beginPath();
     ctx.arc(point.x, point.y, 12 + progress * 35, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(53, 208, 186, ${1 - progress})`;
+    ctx.strokeStyle = `rgba(196, 15, 15, ${1 - progress})`;
     ctx.lineWidth = 3;
     ctx.stroke();
   }
@@ -431,13 +434,13 @@ function drawNotePins() {
     ctx.save();
     ctx.translate(point.x, point.y);
     ctx.rotate(Math.PI / 4);
-    ctx.fillStyle = "#171d21";
-    ctx.strokeStyle = "#a875d2";
+    ctx.fillStyle = "#1e1e1e";
+    ctx.strokeStyle = "#afc6d6";
     ctx.lineWidth = 2;
     ctx.fillRect(-8, -8, 16, 16);
     ctx.strokeRect(-8, -8, 16, 16);
     ctx.restore();
-    ctx.fillStyle = "#d6b9ef";
+    ctx.fillStyle = "#fff";
     ctx.font = "700 9px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -445,10 +448,22 @@ function drawNotePins() {
   }
 }
 
+function updateMapEmptyState() {
+  emptyState.hidden = Boolean(
+    state.image
+    || state.tokens.length
+    || state.walls.length
+    || state.doors.length
+    || state.notePins.length
+    || state.pings.length,
+  );
+}
+
 function draw() {
   const width = shell.clientWidth;
   const height = shell.clientHeight;
   ctx.clearRect(0, 0, width, height);
+  updateMapEmptyState();
   drawBackdrop(width, height);
   if (state.image && state.layers.background) {
     ctx.save();
@@ -579,6 +594,27 @@ function addCombatant(source, point = null) {
   draw();
 }
 
+function addMapAsset(source, point = mapCenterPoint()) {
+  if (!source || !imageUrlFor(source)) return;
+  state.tokens.push({
+    ...point,
+    id: crypto.randomUUID(),
+    name: source.name || "Map asset",
+    type: "asset",
+    imageUrl: imageUrlFor(source),
+  });
+  persist();
+  draw();
+}
+
+function addLibraryItem(source, point = mapCenterPoint()) {
+  if (source?.assetKind === "pdf-image") {
+    addMapAsset(source, point);
+    return;
+  }
+  addCombatant(source, point);
+}
+
 function renderInitiative() {
   const list = document.querySelector("#initiative-list");
   if (!state.combatants.length) {
@@ -652,13 +688,23 @@ function renderCombatLog() {
   ).join("") || '<p class="initiative-empty">No rolls yet.</p>';
 }
 
+function librarySubtitle(item) {
+  if (item.assetKind === "pdf-image") return item.detail || "PDF art";
+  return item.type || "creature";
+}
+
+function libraryBadge(item) {
+  if (item.assetKind === "pdf-image") return `p.${item.page ?? "?"}`;
+  return `CR ${item.cr ?? "—"}`;
+}
+
 function renderLibrary(items = tokenPresets) {
   state.creatureCache = items;
   document.querySelector("#token-library").innerHTML = items.map((item, index) => `
     <div class="library-entry" draggable="true" tabindex="0" data-creature="${index}" title="Drag or double-click ${escapeHtml(item.name)} to add it to the map">
       ${tokenMarkup(item, "library-token")}
-      <span class="library-entry-info"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type || "creature")}</span></span>
-      <span>CR ${item.cr ?? "—"}</span>
+      <span class="library-entry-info"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(librarySubtitle(item))}</span></span>
+      <span>${escapeHtml(libraryBadge(item))}</span>
     </div>`).join("");
 }
 
@@ -673,21 +719,35 @@ async function loadBestiary() {
   const mode = document.querySelector("#asset-library-mode").value;
   const search = document.querySelector("#bestiary-search").value.trim();
   const cr = document.querySelector("#bestiary-cr").value;
-  const params = new URLSearchParams({ limit: mode === "tokens" ? "60" : "30" });
+  const params = new URLSearchParams({ limit: mode === "tokens" ? "60" : mode === "images" ? "40" : "30" });
   const crSelect = document.querySelector("#bestiary-cr");
-  crSelect.disabled = mode === "tokens";
-  document.querySelector("#bestiary-search").placeholder = mode === "tokens" ? "Search token, faction…" : "Search creature, faction…";
+  crSelect.disabled = mode !== "creatures";
+  document.querySelector("#bestiary-search").placeholder = mode === "tokens" ? "Search token, faction…" : mode === "images" ? "Search book, page, source…" : "Search creature, faction…";
   if (search) params.set("q", search);
   if (mode === "creatures" && cr) params.set("cr", cr);
   try {
-    const response = await fetch(mode === "tokens" ? `/api/assets/external?asset_type=tokens&${params}` : `/api/compendium/creatures?${params}`);
+    const endpoint = mode === "tokens"
+      ? `/api/assets/external?asset_type=tokens&${params}`
+      : mode === "images"
+        ? `/api/assets/images?${params}`
+        : `/api/compendium/creatures?${params}`;
+    const response = await fetch(endpoint);
     if (!response.ok) throw new Error("Asset library unavailable");
     const payload = await response.json();
     const items = mode === "tokens"
       ? payload.items.map((item) => ({ ...item, type: "enemy", imageUrl: item.url, cr: null, hp: 10, ac: 12, actions: ["Attack"] }))
-      : payload.items;
+      : mode === "images"
+        ? payload.items.map((item) => ({
+          ...item,
+          assetKind: "pdf-image",
+          name: `${item.book || "PDF art"} · image ${item.image_index || 1}`,
+          type: "asset",
+          imageUrl: item.url,
+          detail: `${item.source_file || item.book || "Source"} · page ${item.page}`,
+        }))
+        : payload.items;
     renderLibrary(items);
-    document.querySelector("#bestiary-count").textContent = `${payload.total} ${mode === "tokens" ? "tokens" : "creatures"}`;
+    document.querySelector("#bestiary-count").textContent = `${payload.total} ${mode === "tokens" ? "tokens" : mode === "images" ? "images" : "creatures"}`;
     if (mode === "creatures" && crSelect.options.length === 1) {
       for (const value of payload.filters.challenge_ratings) {
         crSelect.add(new Option(`CR ${value}`, value));
@@ -861,20 +921,20 @@ document.querySelector("#token-library").addEventListener("dragstart", (event) =
 document.querySelector("#token-library").addEventListener("dblclick", (event) => {
   const entry = event.target.closest("[data-creature]");
   if (!entry) return;
-  addCombatant(state.creatureCache[Number(entry.dataset.creature)], mapCenterPoint());
+  addLibraryItem(state.creatureCache[Number(entry.dataset.creature)], mapCenterPoint());
 });
 document.querySelector("#token-library").addEventListener("keydown", (event) => {
   if (!["Enter", " "].includes(event.key)) return;
   const entry = event.target.closest("[data-creature]");
   if (!entry) return;
   event.preventDefault();
-  addCombatant(state.creatureCache[Number(entry.dataset.creature)], mapCenterPoint());
+  addLibraryItem(state.creatureCache[Number(entry.dataset.creature)], mapCenterPoint());
 });
 canvas.addEventListener("dragover", (event) => event.preventDefault());
 canvas.addEventListener("drop", (event) => {
   event.preventDefault();
   const index = event.dataTransfer.getData("application/holocron-token");
-  if (index !== "") addCombatant(state.creatureCache[Number(index)], worldPoint(event));
+  if (index !== "") addLibraryItem(state.creatureCache[Number(index)], worldPoint(event));
 });
 
 let bestiaryTimer;
@@ -1261,10 +1321,10 @@ const defaultCharacter = {
   species: "Human",
   baseAc: 10,
   resources: {
-    hp: { label: "HP", value: 36, max: 42, color: "#e36969" },
-    force: { label: "Force", value: 12, max: 16, color: "#58b8e8" },
-    tech: { label: "Tech", value: 8, max: 10, color: "#e1ad4f" },
-    hitDice: { label: "Hit Dice", value: 5, max: 7, color: "#8e79c6" },
+    hp: { label: "HP", value: 36, max: 42, color: "#c40f0f" },
+    force: { label: "Force", value: 12, max: 16, color: "#0d99cc" },
+    tech: { label: "Tech", value: 8, max: 10, color: "#9e9d24" },
+    hitDice: { label: "Hit Dice", value: 5, max: 7, color: "#757575" },
   },
   alignment: 0,
   passiveInsight: 14,
@@ -1981,7 +2041,7 @@ async function loadCampaign(campaignId) {
   else {
     state.image = null;
     state.imageUrl = null;
-    emptyState.hidden = false;
+    updateMapEmptyState();
   }
   document.querySelector("#campaign-select").value = campaign.id;
   document.querySelector("#export-campaign").href = `/api/campaigns/${campaign.id}/export`;

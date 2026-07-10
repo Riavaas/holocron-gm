@@ -6,13 +6,13 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 2, .1, 100);
 camera.position.set(0, 1.5, 6);
-scene.add(new THREE.HemisphereLight(0x9be8dc, 0x111820, 2.2));
+scene.add(new THREE.HemisphereLight(0xafc6d6, 0x424242, 2.1));
 const keyLight = new THREE.DirectionalLight(0xffffff, 3);
 keyLight.position.set(3, 4, 5);
 scene.add(keyLight);
 const ground = new THREE.Mesh(
   new THREE.CircleGeometry(2.4, 48),
-  new THREE.MeshStandardMaterial({ color: 0x10171b, roughness: .85 }),
+  new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: .9 }),
 );
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -1.25;
@@ -33,7 +33,7 @@ function setDie(sides) {
   if (die) scene.remove(die);
   die = new THREE.Mesh(
     geometryFor(sides),
-    new THREE.MeshStandardMaterial({ color: 0x35d0ba, metalness: .65, roughness: .22, flatShading: true }),
+    new THREE.MeshStandardMaterial({ color: 0xc40f0f, metalness: .5, roughness: .28, flatShading: true }),
   );
   die.userData.sides = sides;
   die.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
