@@ -119,6 +119,40 @@ def test_external_asset_catalog_api(tmp_path, monkeypatch):
     assert summary_response.json()["assets"] == 1
 
 
+def test_external_resource_backlog_api(tmp_path, monkeypatch):
+    backlog = tmp_path / "external_resource_backlog.md"
+    backlog.write_text(
+        """# External Resource Backlog
+
+## Feature Requests
+
+| Item | Desired use | Status |
+| --- | --- | --- |
+| Species-based name generator | Generate NPC names using species-specific patterns inside Holocron GM. | Planned |
+
+## Maps and Galaxy Tools
+
+| Resource | Link | Intended use | Status |
+| --- | --- | --- | --- |
+| Star Wars Galaxy Map | <http://www.swgalaxymap.com/> | Galaxy navigation/location reference. | To review |
+""",
+        encoding="utf-8",
+    )
+    from holocron.assets import resource_backlog
+
+    monkeypatch.setattr(resource_backlog, "RESOURCE_BACKLOG_PATH", backlog)
+    client = TestClient(app)
+
+    response = client.get("/api/assets/resource-backlog", params={"q": "galaxy"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["items"][0]["url"] == "http://www.swgalaxymap.com/"
+    assert body["items"][0]["category"] == "Maps and Galaxy Tools"
+    assert body["features"][0]["item"] == "Species-based name generator"
+    assert body["statuses"]["To review"] == 1
+
+
 def test_compendium_creatures_can_be_filtered():
     client = TestClient(app)
 

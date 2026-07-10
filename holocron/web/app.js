@@ -2033,6 +2033,23 @@ const npcNames = {
   Rodian: ["Greevo", "Neesh Ko", "Varko", "Seln Vee"],
   Chiss: ["Ar'alani", "Kres'ten", "Mitth'oro", "Vurawn"],
 };
+const speciesNamePatterns = {
+  Human: { given: ["Mar", "Cal", "Tess", "Dain", "Korr", "Jessa", "Talon"], family: ["Venn", "Jorren", "Rook", "Ordo", "Vale", "Kestis"] },
+  Zabrak: { given: ["Vesh", "Sira", "Keth", "Ralo", "Maul", "Eeth"], family: ["Korr", "Drenn", "Marr", "Vex", "Dath", "Irid"] },
+  Duros: { given: ["Noro", "Bane", "Luro", "Dree", "Cad", "Shriv"], family: ["Daal", "Ceto", "Senn", "Vanto", "Tuun"] },
+  "Twi'lek": { given: ["Nima", "Kora", "Tann", "Veya", "Lyn", "Oola"], family: ["Vao", "Syndulla", "Ryl", "Numa", "Taa"] },
+  Wookiee: { chunks: ["rrak", "chev", "tar", "ful", "kalla", "bow", "warr", "kro", "bacca"] },
+  Rodian: { given: ["Gree", "Neesh", "Var", "Seln", "Gre", "Wald"], family: ["vo", "Ko", "ko", "Vee", "Nata", "Dosh"] },
+  Chiss: { core: ["Aral", "Kres", "Mitth", "Vur", "Thraw", "Sev"], suffix: ["ani", "ten", "oro", "awn", "uru", "res"] },
+  Bothan: { given: ["Borsk", "Karka", "Trae", "Vri", "Nial", "Sian"], family: ["Fey'lya", "Kre'fey", "Soth", "Ba'tra", "Gor"] },
+  "Mon Calamari": { given: ["Ack", "Ibt", "Meen", "Perit", "Gial", "Radd"], family: ["bar", "isam", "Koth", "Aqua", "Noss"] },
+  Nautolan: { given: ["Kit", "Nahd", "Taro", "Vool", "Noss", "Plo"], family: ["Fisto", "Vebb", "Takka", "Ruun", "Kaal"] },
+  Mirialan: { given: ["Lumin", "Barr", "Viss", "Sora", "Mira", "Kira"], family: ["ara", "iss", "Tann", "Offee", "Unduli"] },
+  Togruta: { given: ["Ahsoka", "Shaak", "Roshti", "Kalti", "Aru", "Tano"], family: ["Tano", "Ti", "Venn", "Mon", "Ree"] },
+  Trandoshan: { given: ["Boss", "Garn", "Ssk", "Krul", "Dosh", "Nak"], family: ["k", "trand", "orr", "Score", "Bossk"] },
+  Weequay: { given: ["Hondo", "Sora", "Quay", "Tasu", "Vrek", "Nys"], family: ["Ohnaka", "Bulq", "Keth", "Nara", "Hask"] },
+  Ithorian: { given: ["Momaw", "Tendau", "Roron", "Fandom", "Bol", "Orr"], family: ["Nadon", "Bendin", "Corobb", "Ree", "Thuun"] },
+};
 const npcRoles = ["Smuggler", "Bounty Hunter", "Officer", "Mechanic", "Informant", "Force Adept"];
 const npcQuirks = [
   "Never sits with their back to a door.",
@@ -2085,10 +2102,22 @@ function randomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function generateSpeciesName(species) {
+  const pattern = speciesNamePatterns[species];
+  if (!pattern) return randomItem(npcNames[species] || npcNames.Human);
+  if (pattern.chunks) {
+    const first = randomItem(pattern.chunks);
+    const second = randomItem(pattern.chunks.filter((chunk) => chunk !== first));
+    return `${first}${second}`.replace(/^./, (letter) => letter.toUpperCase());
+  }
+  if (pattern.core) return `${randomItem(pattern.core)}'${randomItem(pattern.suffix)}`;
+  return `${randomItem(pattern.given)} ${randomItem(pattern.family)}`;
+}
+
 function generateNpc() {
-  const species = document.querySelector("#npc-species").value || randomItem(Object.keys(npcNames));
+  const species = document.querySelector("#npc-species").value || randomItem(Object.keys(speciesNamePatterns));
   const role = document.querySelector("#npc-role").value || randomItem(npcRoles);
-  const name = randomItem(npcNames[species]);
+  const name = Math.random() < 0.35 && npcNames[species] ? randomItem(npcNames[species]) : generateSpeciesName(species);
   const attributes = ["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((label) => ({
     label, value: 8 + Math.floor(Math.random() * 11),
   }));
@@ -2100,6 +2129,38 @@ function generateNpc() {
     `<span>${attribute.label}<strong>${attribute.value}</strong></span>`
   ).join("");
   document.querySelector("#npc-hook").textContent = randomItem(npcHooks);
+}
+
+let externalResources = [];
+
+function renderExternalResources() {
+  const search = document.querySelector("#external-resource-search").value.trim().toLowerCase();
+  const status = document.querySelector("#external-resource-status").value;
+  const matches = externalResources.filter((item) => {
+    const haystack = `${item.resource} ${item.category} ${item.intended_use} ${item.status} ${item.url}`.toLowerCase();
+    return (!status || item.status === status) && (!search || haystack.includes(search));
+  });
+  document.querySelector("#external-resource-count").textContent = `${matches.length}/${externalResources.length}`;
+  document.querySelector("#external-resource-list").innerHTML = matches.slice(0, 24).map((item) => `
+    <a class="external-resource-entry ${item.status === "Imported locally" ? "imported" : ""}" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">
+      <strong>${escapeHtml(item.resource)}</strong>
+      <span>${escapeHtml(item.category)} · ${escapeHtml(item.status)}</span>
+      <small>${escapeHtml(item.intended_use)}</small>
+    </a>
+  `).join("") || '<p class="loading-line">No matching resource.</p>';
+}
+
+async function loadExternalResources() {
+  try {
+    const response = await fetch("/api/assets/resource-backlog?limit=1000");
+    if (!response.ok) throw new Error("Resource backlog unavailable");
+    const payload = await response.json();
+    externalResources = payload.items;
+    renderExternalResources();
+  } catch {
+    document.querySelector("#external-resource-count").textContent = "Unavailable";
+    document.querySelector("#external-resource-list").innerHTML = '<p class="loading-line">Resource backlog unavailable.</p>';
+  }
 }
 
 function drawNpcPortrait(species, name) {
@@ -2175,6 +2236,8 @@ document.querySelector("#generate-npc").addEventListener("click", generateNpc);
 document.querySelector("#generate-loot").addEventListener("click", generateLoot);
 document.querySelector("#generate-encounter").addEventListener("click", generateEncounter);
 document.querySelector("#generate-flavor").addEventListener("click", generateFlavor);
+document.querySelector("#external-resource-search").addEventListener("input", renderExternalResources);
+document.querySelector("#external-resource-status").addEventListener("change", renderExternalResources);
 document.querySelector("#send-encounter").addEventListener("click", () => {
   generatedEncounter.forEach((creature) => addCombatant(creature));
   document.querySelector('[data-view="battlemap"]').click();
@@ -2189,6 +2252,7 @@ document.querySelector("#flavor-to-note").addEventListener("click", () => {
 generateNpc();
 generateLoot();
 generateFlavor();
+loadExternalResources();
 
 function playSoundEffect(type) {
   const audio = new AudioContext();

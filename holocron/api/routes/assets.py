@@ -2,6 +2,7 @@ from fastapi import APIRouter, Query
 
 from holocron.assets.external import external_summary, load_external_manifest, load_external_sources
 from holocron.assets.images import filter_images, load_image_manifest
+from holocron.assets import resource_backlog as resource_backlog_assets
 
 router = APIRouter()
 
@@ -58,3 +59,29 @@ def external_assets(
 @router.get("/external/summary")
 def external_assets_summary() -> dict[str, object]:
     return external_summary()
+
+
+@router.get("/resource-backlog")
+def resource_backlog(
+    status: str | None = None,
+    category: str | None = None,
+    q: str = "",
+    limit: int = Query(200, ge=1, le=1000),
+) -> dict[str, object]:
+    payload = resource_backlog_assets.load_resource_backlog()
+    query = q.strip().lower()
+    matches = []
+    for item in payload["items"]:
+        if status and item["status"] != status:
+            continue
+        if category and item["category"] != category:
+            continue
+        haystack = " ".join(str(item.get(key, "")) for key in ("resource", "category", "intended_use", "status", "url")).lower()
+        if query and query not in haystack:
+            continue
+        matches.append(item)
+    return {
+        **payload,
+        "items": matches[:limit],
+        "filtered_total": len(matches),
+    }

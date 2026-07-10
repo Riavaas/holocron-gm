@@ -356,7 +356,7 @@
       <header class="toolkit-heading"><div><small>PROCEDURAL</small><h1>NPC Generator</h1></div><button id="generate-npc" class="primary-button">Generate</button></header>
       <div id="npc-output" class="npc-output"></div>
       <div class="generator-controls">
-        <label>Species<select id="npc-species"><option value="">Any species</option><option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option><option>Rodian</option><option>Chiss</option></select></label>
+        <label>Species<select id="npc-species"><option value="">Any species</option><option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option><option>Rodian</option><option>Chiss</option><option>Bothan</option><option>Mon Calamari</option><option>Nautolan</option><option>Mirialan</option><option>Togruta</option><option>Trandoshan</option><option>Weequay</option><option>Ithorian</option></select></label>
         <label>Role<select id="npc-role"><option value="">Any role</option><option>Smuggler</option><option>Bounty Hunter</option><option>Officer</option><option>Mechanic</option><option>Informant</option><option>Force Adept</option></select></label>
       </div>
       <section class="generated-details">
@@ -403,6 +403,19 @@
           <button data-sound="blaster">Blaster</button><button data-sound="saber">Lightsaber</button>
           <button data-sound="alarm">Alarm</button><button data-sound="door">Blast door</button>
         </div>
+      </section>
+      <section class="resource-backlog">
+        <div class="section-heading"><h2>External resources</h2><span id="external-resource-count">Loading</span></div>
+        <div class="resource-filters">
+          <input id="external-resource-search" type="search" placeholder="Search links, maps, tokens…">
+          <select id="external-resource-status" aria-label="Resource status">
+            <option value="">All</option>
+            <option>To review</option>
+            <option>To import</option>
+            <option>Imported locally</option>
+          </select>
+        </div>
+        <div id="external-resource-list" class="external-resource-list"></div>
       </section>
     </section>
   </main>
@@ -472,7 +485,7 @@
       </div>
     </form>
   </aside>
-  <script src="/static/app.js?v=20260710-ux-v5"></script>
+  <script src="/static/app.js?v=20260710-resources-v6"></script>
   <script type="module" src="/static/dice.js?v=20260710-assets-v4"></script>
 </body>
 </html>
