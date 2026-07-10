@@ -28,15 +28,27 @@ STOP_WORDS = {
     "young",
 }
 ALIASES = {
+    "000 series protocol droid": {"c3po"},
+    "3po series protocol droid": {"c3po"},
+    "bb series astromech droid": {"astromech2"},
     "destroyer droid": {"droideka"},
+    "drk 1 tracker droid": {"assassinprobedroid"},
     "dwarf spider droid": {"dwarfspiderdroid", "spiderdroid"},
+    "c1 series astromech droid": {"astromech1"},
+    "gh 7 medical analysis unit": {"gh7droid"},
     "b1 battle droid": {"b1droid"},
     "b1 x battle droid": {"b1droid"},
     "b2 super battle droid": {"b2droid", "b2superbattledroid"},
     "b2 ha super battle droid": {"b2hadroid"},
     "bx commando droid": {"bxcommandodroid"},
+    "bx 5c commando droid": {"bxcommandodroid"},
+    "jk 13 security droid": {"droidsecurity"},
     "pistoeka sabotage droid": {"buzzdroid"},
+    "r2 series astromech droid": {"r2d2"},
+    "sith probe droid": {"assassinprobedroid"},
     "tusken raider": {"tuskenraider"},
+    "viper probe droid": {"assassinprobedroid"},
+    "z 58 series security droid": {"droidsecurity"},
 }
 
 

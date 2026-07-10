@@ -611,6 +611,7 @@ function addCombatant(source, point = null) {
     damage: `${Math.max(1, Math.ceil(cr / 3))}d8+${Math.max(1, Math.ceil(cr / 2))}`,
     imageUrl: imageUrlFor(source),
     matchedToken: source.matched_token || null,
+    assetMatch: source.asset_match || null,
     statBlock: source.stat_block || null,
     traits: source.traits || source.stat_block?.traits || [],
     reactions: source.reactions || source.stat_block?.reactions || [],
@@ -881,8 +882,13 @@ function renderStatBlock(combatant) {
   const actionList = (block.actions || combatant.actions || []).slice(0, 8);
   const traitList = (block.traits || combatant.traits || []).slice(0, 6);
   const reactionList = (block.reactions || combatant.reactions || []).slice(0, 4);
+  const tokenDetails = [
+    combatant.matchedToken?.name,
+    combatant.assetMatch?.reason,
+    combatant.assetMatch?.score,
+  ].filter(Boolean);
   const tokenSource = combatant.matchedToken?.name
-    ? `<div class="stat-source">Token asset: ${escapeHtml(combatant.matchedToken.name)}</div>`
+    ? `<div class="stat-source">Token asset: ${escapeHtml(tokenDetails.join(" · "))}</div>`
     : "";
   return `
     <div class="stat-block-header">

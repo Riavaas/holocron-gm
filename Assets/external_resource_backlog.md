@@ -8,7 +8,7 @@ Some links may require manual access, account permissions, or creator/license re
 
 | Item | Desired use | Status |
 | --- | --- | --- |
-| Species-based name generator | Generate NPC names using species-specific patterns inside Holocron GM. | Planned |
+| Species-based name generator | Generate NPC names using species-specific patterns inside Holocron GM. | Implemented |
 
 ## Adventures, Rules, Supplements, and GM References
 
