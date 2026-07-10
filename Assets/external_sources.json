@@ -61,6 +61,17 @@
       "download_url": "https://www.dropbox.com/scl/fi/k8qhifipmkn08noud7229/Clone-Wars-Tokens-4.zip?rlkey=trm0zo023x99af1e53k4ipnir&e=1&dl=1",
       "mirror_urls": [],
       "attribution_note": "Fan token pack source supplied by project owner. Keep author/source metadata attached in manifests."
+    },
+    {
+      "id": "kualan-clone-wars-tokens-5",
+      "kind": "zip_pack",
+      "asset_type": "tokens",
+      "title": "Clone Wars Tokens 5",
+      "author": "Kualan",
+      "source_url": "https://www.dropbox.com/scl/fi/7xjbbozn6dj8lit5wu0rz/Clone-Wars-Tokens-5.zip?rlkey=rkt9r8gm1wux6zvlk0ag5po3p&e=2&dl=0",
+      "download_url": "https://www.dropbox.com/scl/fi/7xjbbozn6dj8lit5wu0rz/Clone-Wars-Tokens-5.zip?rlkey=rkt9r8gm1wux6zvlk0ag5po3p&e=2&dl=1",
+      "mirror_urls": [],
+      "attribution_note": "Fan token pack source supplied by project owner. Keep author/source metadata attached in manifests."
     }
   ]
 }

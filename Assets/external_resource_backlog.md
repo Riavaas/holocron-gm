@@ -57,7 +57,7 @@ Some links may require manual access, account permissions, or creator/license re
 | Clone Wars Tokens 2 | <https://www.dropbox.com/scl/fi/uj4zisu1zkys2t1wta44p/Clone-Wars-Tokens-2.zip?rlkey=ahnr3sgjzl7bdjgsp7n2pp9ag&e=3&dl=0> | Token asset pack. | Imported locally |
 | Clone Wars Tokens 3 | <https://www.dropbox.com/scl/fi/hb5ol5rquqaq4as6yvuko/Clone-Wars-Tokens-3.zip?rlkey=88td1b6m2qp5ifrcw8rih3sa4&e=3&dl=0> | Token asset pack. | Imported locally |
 | Clone Wars Tokens 4 | <https://www.dropbox.com/scl/fi/k8qhifipmkn08noud7229/Clone-Wars-Tokens-4.zip?rlkey=trm0zo023x99af1e53k4ipnir&e=2&dl=0> | Token asset pack. | Imported locally |
-| Clone Wars Tokens 5 | <https://www.dropbox.com/scl/fi/7xjbbozn6dj8lit5wu0rz/Clone-Wars-Tokens-5.zip?rlkey=rkt9r8gm1wux6zvlk0ag5po3p&e=2&dl=0> | Token asset pack. | To import |
+| Clone Wars Tokens 5 | <https://www.dropbox.com/scl/fi/7xjbbozn6dj8lit5wu0rz/Clone-Wars-Tokens-5.zip?rlkey=rkt9r8gm1wux6zvlk0ag5po3p&e=2&dl=0> | Token asset pack. | Imported locally |
 
 ## Audio and Media
 
