@@ -334,6 +334,7 @@ input:focus, select:focus { border-color: var(--accent); }
 .stat-grid b, .stat-line b { color: var(--text); font-size: 9px; text-transform: uppercase; }
 .stat-line { display: grid; gap: 2px; min-width: 0; }
 .stat-line span { line-height: 1.35; overflow-wrap: anywhere; }
+.stat-source { padding-top: 2px; color: var(--accent); font-size: 9px; }
 .roll-result {
   display: block;
   margin-top: 8px;
@@ -379,7 +380,7 @@ input:focus, select:focus { border-color: var(--accent); }
 .library-entry-info strong { display: block; overflow: hidden; color: var(--text); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .library-entry-info span, .library-entry-badge { font-size: 9px; }
 .library-entry-actions { display: flex; align-items: center; gap: 5px; }
-.library-entry-map {
+.library-entry-add, .library-entry-map {
   display: grid;
   place-items: center;
   width: 24px;
@@ -391,7 +392,8 @@ input:focus, select:focus { border-color: var(--accent); }
   color: var(--accent);
   cursor: pointer;
 }
-.library-entry-map:hover { border-color: var(--accent); background: var(--accent-soft); }
+.library-entry-add { border-color: var(--accent); background: var(--accent-soft); }
+.library-entry-add:hover, .library-entry-map:hover { border-color: var(--accent); background: var(--accent-soft); }
 .library-token { width: 36px; height: 36px; font-size: 12px; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line-strong); }
 dialog { width: 340px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); }
 dialog::backdrop { background: rgba(0,0,0,.7); }

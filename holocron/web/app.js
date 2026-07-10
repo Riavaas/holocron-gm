@@ -620,6 +620,7 @@ function addCombatant(source, point = null) {
     defenses,
   };
   state.combatants.push(combatant);
+  state.selectedCombatantId = combatant.id;
   if (point) state.tokens.push({
     ...point,
     combatantId: combatant.id,
@@ -627,6 +628,10 @@ function addCombatant(source, point = null) {
     name: combatant.name,
     type: combatant.type,
     imageUrl: combatant.imageUrl,
+    selected: true,
+  });
+  state.tokens.forEach((token) => {
+    if (token.combatantId !== combatant.id) token.selected = false;
   });
   persist();
   renderInitiative();
@@ -741,6 +746,27 @@ function installPanelChrome() {
 function setupPanelLayoutControls() {
   if (isPlayerView) return;
   installPanelChrome();
+  let resizeTimer;
+  const resizeObserver = new ResizeObserver((entries) => {
+    if (state.panelLayout.mode !== "floating") return;
+    const workspaceRect = document.querySelector("#battlemap-view").getBoundingClientRect();
+    for (const entry of entries) {
+      const panelId = entry.target.classList.contains("left-panel") ? "left" : "right";
+      const panel = panelLayout(panelId);
+      const rect = entry.target.getBoundingClientRect();
+      panel.width = Math.round(rect.width);
+      panel.height = Math.round(rect.height);
+      panel.x = Math.round(rect.left - workspaceRect.left);
+      panel.y = Math.round(rect.top - workspaceRect.top);
+    }
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      localStorage.setItem("holocron.session", JSON.stringify(sessionSnapshot()));
+      scheduleCampaignSave();
+    }, 250);
+  });
+  resizeObserver.observe(panelElement("left"));
+  resizeObserver.observe(panelElement("right"));
   document.querySelector("#toggle-window-layout").addEventListener("click", () => {
     state.panelLayout.mode = state.panelLayout.mode === "floating" ? "anchored" : "floating";
     applyPanelLayout();
@@ -855,6 +881,9 @@ function renderStatBlock(combatant) {
   const actionList = (block.actions || combatant.actions || []).slice(0, 8);
   const traitList = (block.traits || combatant.traits || []).slice(0, 6);
   const reactionList = (block.reactions || combatant.reactions || []).slice(0, 4);
+  const tokenSource = combatant.matchedToken?.name
+    ? `<div class="stat-source">Token asset: ${escapeHtml(combatant.matchedToken.name)}</div>`
+    : "";
   return `
     <div class="stat-block-header">
       <strong>${escapeHtml(combatant.name)}</strong>
@@ -880,6 +909,7 @@ function renderStatBlock(combatant) {
     ${traitList.length ? `<div class="stat-line"><b>Traits</b><span>${escapeHtml(listText(traitList))}</span></div>` : ""}
     ${actionList.length ? `<div class="stat-line"><b>Actions</b><span>${escapeHtml(listText(actionList))}</span></div>` : ""}
     ${reactionList.length ? `<div class="stat-line"><b>Reactions</b><span>${escapeHtml(listText(reactionList))}</span></div>` : ""}
+    ${tokenSource}
   `;
 }
 
@@ -934,7 +964,7 @@ function renderCombatLog() {
 
 function librarySubtitle(item) {
   if (item.assetKind === "pdf-image") return item.detail || "PDF art";
-  return item.type || "creature";
+  return item.matched_token ? `${item.type || "creature"} · token mapped` : item.type || "creature";
 }
 
 function libraryBadge(item) {
@@ -944,8 +974,9 @@ function libraryBadge(item) {
 
 function libraryActions(item, index) {
   const badge = `<span class="library-entry-badge">${escapeHtml(libraryBadge(item))}</span>`;
-  if (item.assetKind !== "pdf-image") return badge;
-  return `<span class="library-entry-actions">${badge}<button class="library-entry-map" data-map-background="${index}" title="Use as map background" aria-label="Use as map background">▣</button></span>`;
+  const addButton = `<button class="library-entry-add" data-add-creature="${index}" title="Add to encounter" aria-label="Add to encounter">＋</button>`;
+  if (item.assetKind !== "pdf-image") return `<span class="library-entry-actions">${badge}${addButton}</span>`;
+  return `<span class="library-entry-actions">${badge}${addButton}<button class="library-entry-map" data-map-background="${index}" title="Use as map background" aria-label="Use as map background">▣</button></span>`;
 }
 
 function renderLibrary(items = tokenPresets) {
@@ -1197,6 +1228,13 @@ document.querySelector("#token-library").addEventListener("dragstart", (event) =
   if (entry) event.dataTransfer.setData("application/holocron-token", entry.dataset.creature);
 });
 document.querySelector("#token-library").addEventListener("click", (event) => {
+  const addButton = event.target.closest("[data-add-creature]");
+  if (addButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    addLibraryItem(state.creatureCache[Number(addButton.dataset.addCreature)], mapCenterPoint());
+    return;
+  }
   const button = event.target.closest("[data-map-background]");
   if (!button) return;
   event.preventDefault();
@@ -1204,7 +1242,7 @@ document.querySelector("#token-library").addEventListener("click", (event) => {
   setMapBackgroundFromLibrary(state.creatureCache[Number(button.dataset.mapBackground)]);
 });
 document.querySelector("#token-library").addEventListener("dblclick", (event) => {
-  if (event.target.closest("[data-map-background]")) return;
+  if (event.target.closest("[data-map-background], [data-add-creature]")) return;
   const entry = event.target.closest("[data-creature]");
   if (!entry) return;
   addLibraryItem(state.creatureCache[Number(entry.dataset.creature)], mapCenterPoint());
