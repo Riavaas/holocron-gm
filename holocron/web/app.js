@@ -655,11 +655,18 @@ function renderCombatLog() {
 function renderLibrary(items = tokenPresets) {
   state.creatureCache = items;
   document.querySelector("#token-library").innerHTML = items.map((item, index) => `
-    <div class="library-entry" draggable="true" data-creature="${index}" title="Drag ${escapeHtml(item.name)} to the map">
+    <div class="library-entry" draggable="true" tabindex="0" data-creature="${index}" title="Drag or double-click ${escapeHtml(item.name)} to add it to the map">
       ${tokenMarkup(item, "library-token")}
       <span class="library-entry-info"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.type || "creature")}</span></span>
       <span>CR ${item.cr ?? "—"}</span>
     </div>`).join("");
+}
+
+function mapCenterPoint() {
+  return {
+    x: (shell.clientWidth / 2 - state.offset.x) / state.zoom,
+    y: (shell.clientHeight / 2 - state.offset.y) / state.zoom,
+  };
 }
 
 async function loadBestiary() {
@@ -850,6 +857,18 @@ document.querySelector("#clear-measurement").addEventListener("click", () => {
 document.querySelector("#token-library").addEventListener("dragstart", (event) => {
   const entry = event.target.closest("[data-creature]");
   if (entry) event.dataTransfer.setData("application/holocron-token", entry.dataset.creature);
+});
+document.querySelector("#token-library").addEventListener("dblclick", (event) => {
+  const entry = event.target.closest("[data-creature]");
+  if (!entry) return;
+  addCombatant(state.creatureCache[Number(entry.dataset.creature)], mapCenterPoint());
+});
+document.querySelector("#token-library").addEventListener("keydown", (event) => {
+  if (!["Enter", " "].includes(event.key)) return;
+  const entry = event.target.closest("[data-creature]");
+  if (!entry) return;
+  event.preventDefault();
+  addCombatant(state.creatureCache[Number(entry.dataset.creature)], mapCenterPoint());
 });
 canvas.addEventListener("dragover", (event) => event.preventDefault());
 canvas.addEventListener("drop", (event) => {
