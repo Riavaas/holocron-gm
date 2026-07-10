@@ -46,6 +46,8 @@ state.measurement = null;
 state.draggedToken = null;
 state.creatureCache = [];
 state.pendingNotePin = null;
+state.assetFilterMode = null;
+state.imageBookFilters = null;
 
 if (isPlayerView) document.body.classList.add("player-mode");
 
@@ -102,6 +104,8 @@ function sessionSnapshot() {
   delete clean.draggedToken;
   delete clean.creatureCache;
   delete clean.pendingNotePin;
+  delete clean.assetFilterMode;
+  delete clean.imageBookFilters;
   return clean;
 }
 
@@ -170,7 +174,7 @@ function drawBackdrop(width, height) {
   gradient.addColorStop(1, "#080b0e");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
-  ctx.fillStyle = "rgba(53, 208, 186, .05)";
+  ctx.fillStyle = "rgba(175, 198, 214, .08)";
   for (let x = 0; x < width; x += 240) {
     ctx.fillRect(x, 0, 1, height);
   }
@@ -512,14 +516,8 @@ function loadMap(file) {
   const image = new Image();
   image.onload = () => {
     state.image = image;
-    const fit = Math.min(shell.clientWidth / image.width, shell.clientHeight / image.height);
-    state.zoom = Math.min(1, fit);
-    state.offset = {
-      x: (shell.clientWidth - image.width * state.zoom) / 2,
-      y: (shell.clientHeight - image.height * state.zoom) / 2,
-    };
+    fitMapImage(image);
     emptyState.hidden = true;
-    updateZoom();
     draw();
   };
   image.src = state.imageUrl;
@@ -535,12 +533,23 @@ function loadMap(file) {
   }
 }
 
-function loadMapFromUrl(url) {
+function fitMapImage(image) {
+  const fit = Math.min(shell.clientWidth / image.width, shell.clientHeight / image.height);
+  state.zoom = Math.min(1, fit);
+  state.offset = {
+    x: (shell.clientWidth - image.width * state.zoom) / 2,
+    y: (shell.clientHeight - image.height * state.zoom) / 2,
+  };
+  updateZoom();
+}
+
+function loadMapFromUrl(url, options = {}) {
   if (!url || state.imageUrl === url) return;
   const image = new Image();
   image.onload = () => {
     state.image = image;
     state.imageUrl = url;
+    if (options.fit) fitMapImage(image);
     emptyState.hidden = true;
     draw();
   };
@@ -605,6 +614,14 @@ function addMapAsset(source, point = mapCenterPoint()) {
   });
   persist();
   draw();
+}
+
+function setMapBackgroundFromLibrary(source) {
+  const url = imageUrlFor(source);
+  if (!url) return;
+  state.mapImageUrl = url;
+  loadMapFromUrl(url, { fit: true });
+  persist();
 }
 
 function addLibraryItem(source, point = mapCenterPoint()) {
@@ -698,13 +715,19 @@ function libraryBadge(item) {
   return `CR ${item.cr ?? "—"}`;
 }
 
+function libraryActions(item, index) {
+  const badge = `<span class="library-entry-badge">${escapeHtml(libraryBadge(item))}</span>`;
+  if (item.assetKind !== "pdf-image") return badge;
+  return `<span class="library-entry-actions">${badge}<button class="library-entry-map" data-map-background="${index}" title="Use as map background" aria-label="Use as map background">▣</button></span>`;
+}
+
 function renderLibrary(items = tokenPresets) {
   state.creatureCache = items;
   document.querySelector("#token-library").innerHTML = items.map((item, index) => `
     <div class="library-entry" draggable="true" tabindex="0" data-creature="${index}" title="Drag or double-click ${escapeHtml(item.name)} to add it to the map">
       ${tokenMarkup(item, "library-token")}
       <span class="library-entry-info"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(librarySubtitle(item))}</span></span>
-      <span>${escapeHtml(libraryBadge(item))}</span>
+      ${libraryActions(item, index)}
     </div>`).join("");
 }
 
@@ -715,16 +738,48 @@ function mapCenterPoint() {
   };
 }
 
+async function configureAssetFilter(mode, payload = null) {
+  const filter = document.querySelector("#bestiary-cr");
+  if (state.assetFilterMode !== mode) {
+    state.assetFilterMode = mode;
+    filter.innerHTML = mode === "creatures"
+      ? '<option value="">All CR</option>'
+      : mode === "images"
+        ? '<option value="">All books</option>'
+        : '<option value="">All</option>';
+    filter.value = "";
+  }
+  filter.disabled = mode === "tokens";
+  filter.setAttribute("aria-label", mode === "images" ? "PDF book" : "Challenge rating");
+  if (mode === "images" && !state.imageBookFilters) {
+    const response = await fetch("/api/assets/images/summary");
+    const summary = response.ok ? await response.json() : { books: {} };
+    state.imageBookFilters = Object.entries(summary.books || {})
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([slug, count]) => ({ slug, count }));
+  }
+  if (mode === "images" && filter.options.length === 1) {
+    for (const item of state.imageBookFilters || []) {
+      filter.add(new Option(`${item.slug} (${item.count})`, item.slug));
+    }
+  }
+  if (mode === "creatures" && payload?.filters?.challenge_ratings && filter.options.length === 1) {
+    for (const value of payload.filters.challenge_ratings) {
+      filter.add(new Option(`CR ${value}`, value));
+    }
+  }
+}
+
 async function loadBestiary() {
   const mode = document.querySelector("#asset-library-mode").value;
   const search = document.querySelector("#bestiary-search").value.trim();
-  const cr = document.querySelector("#bestiary-cr").value;
   const params = new URLSearchParams({ limit: mode === "tokens" ? "60" : mode === "images" ? "40" : "30" });
-  const crSelect = document.querySelector("#bestiary-cr");
-  crSelect.disabled = mode !== "creatures";
+  await configureAssetFilter(mode);
+  const filterValue = document.querySelector("#bestiary-cr").value;
   document.querySelector("#bestiary-search").placeholder = mode === "tokens" ? "Search token, faction…" : mode === "images" ? "Search book, page, source…" : "Search creature, faction…";
   if (search) params.set("q", search);
-  if (mode === "creatures" && cr) params.set("cr", cr);
+  if (mode === "creatures" && filterValue) params.set("cr", filterValue);
+  if (mode === "images" && filterValue) params.set("book", filterValue);
   try {
     const endpoint = mode === "tokens"
       ? `/api/assets/external?asset_type=tokens&${params}`
@@ -746,13 +801,9 @@ async function loadBestiary() {
           detail: `${item.source_file || item.book || "Source"} · page ${item.page}`,
         }))
         : payload.items;
+    await configureAssetFilter(mode, payload);
     renderLibrary(items);
     document.querySelector("#bestiary-count").textContent = `${payload.total} ${mode === "tokens" ? "tokens" : mode === "images" ? "images" : "creatures"}`;
-    if (mode === "creatures" && crSelect.options.length === 1) {
-      for (const value of payload.filters.challenge_ratings) {
-        crSelect.add(new Option(`CR ${value}`, value));
-      }
-    }
   } catch {
     renderLibrary();
     document.querySelector("#bestiary-count").textContent = "Offline presets";
@@ -918,7 +969,15 @@ document.querySelector("#token-library").addEventListener("dragstart", (event) =
   const entry = event.target.closest("[data-creature]");
   if (entry) event.dataTransfer.setData("application/holocron-token", entry.dataset.creature);
 });
+document.querySelector("#token-library").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-map-background]");
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  setMapBackgroundFromLibrary(state.creatureCache[Number(button.dataset.mapBackground)]);
+});
 document.querySelector("#token-library").addEventListener("dblclick", (event) => {
+  if (event.target.closest("[data-map-background]")) return;
   const entry = event.target.closest("[data-creature]");
   if (!entry) return;
   addLibraryItem(state.creatureCache[Number(entry.dataset.creature)], mapCenterPoint());
