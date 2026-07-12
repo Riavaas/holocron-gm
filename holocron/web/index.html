@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Holocron GM</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20260712-audit-v4">
+  <link rel="stylesheet" href="/static/styles.css?v=20260712-audit-v5">
 </head>
 <body>
   <header class="topbar">
@@ -292,7 +292,7 @@
         <div class="section-heading"><h2>GM private</h2><span>Hidden from player view</span></div>
         <label>Passive insight<input id="passive-insight" type="number" min="0"></label>
         <label>GM notes <span title="Only the GM dashboard sees this note.">ⓘ</span><textarea id="gm-hooks" rows="8"></textarea></label>
-        <div class="field-row"><input id="player-note-password" type="password" placeholder="Player note password"><button id="seal-player-note" class="secondary-button" type="button">Seal</button></div>
+        <div class="secret-note-actions"><input id="player-note-password" type="password" placeholder="Player note password"><button id="seal-player-note" class="secondary-button" type="button">Seal</button><button id="unlock-player-note" class="secondary-button" type="button">Unlock</button></div>
         <button id="clear-player-note-seal" class="text-button" type="button">GM unseal/reset</button>
       </section>
     </aside>
@@ -340,6 +340,12 @@
         <input id="compendium-search" type="search" placeholder="Search every indexed SW5e source…" autocomplete="off">
         <button id="run-compendium-search" class="primary-button">Search</button>
       </header>
+      <div class="equipment-filters" id="equipment-filters" hidden>
+        <select id="compendium-item-category" aria-label="Equipment category"><option value="">All categories</option></select>
+        <select id="compendium-item-kind" aria-label="Equipment kind"><option value="">All kinds</option><option value="equipment">Equipment</option><option value="enhanced">Enhanced</option></select>
+        <button id="equipment-prev" class="secondary-button" type="button">Prev</button>
+        <button id="equipment-next" class="secondary-button" type="button">Next</button>
+      </div>
       <div class="results-summary"><span id="results-count">Ready</span><span>Local source citations</span></div>
       <div id="compendium-results" class="compendium-results"></div>
     </section>
@@ -603,7 +609,7 @@
       </div>
     </form>
   </aside>
-  <script src="/static/app.js?v=20260712-audit-v10"></script>
+  <script src="/static/app.js?v=20260712-audit-v11"></script>
   <script type="module" src="/static/dice.js?v=20260712-audit-v3"></script>
 </body>
 </html>

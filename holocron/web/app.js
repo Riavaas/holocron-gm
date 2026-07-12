@@ -48,6 +48,7 @@ const defaults = {
   soundPlaylist: [],
   activeTrackId: null,
   quests: [],
+  activeQuestId: null,
   assetLibraryView: "normal",
 };
 
@@ -1179,13 +1180,17 @@ function updateZoom() {
 }
 
 function ensureQuestState() {
-  if (state.quests?.length) return;
+  if (state.quests?.length) {
+    state.activeQuestId ||= state.quests[0].id;
+    return;
+  }
   state.quests = [{
     id: "episode-3",
     title: "Episode 3: Untitled Operation",
     folders: ["NPC", "Loot", "Encounters detail", "Main Quest", "Side quests", "Activities", "Random Events", "Locations", "Points of interest"],
     files: [],
   }];
+  state.activeQuestId = state.quests[0].id;
 }
 
 document.querySelector("#grid-size").value = state.gridSize;
@@ -2189,6 +2194,8 @@ function renderCharacters() {
   document.querySelector("#shared-character-note").value = character.sharedNote;
   document.querySelector("#player-secret-note").value = character.playerSecretSealed ? "[sealed]" : character.playerSecretNote;
   document.querySelector("#player-secret-note").disabled = Boolean(character.playerSecretSealed);
+  document.querySelector("#seal-player-note").disabled = Boolean(character.playerSecretSealed);
+  document.querySelector("#unlock-player-note").disabled = !character.playerSecretSealed;
 }
 
 function characterFromPregen(pregen) {
@@ -2311,6 +2318,30 @@ document.querySelector("#seal-player-note").addEventListener("click", () => {
   saveCharacters();
   renderCharacters();
 });
+document.querySelector("#unlock-player-note").addEventListener("click", () => {
+  const character = currentCharacter();
+  const passwordInput = document.querySelector("#player-note-password");
+  const password = passwordInput.value;
+  if (!character || !password || !character.playerSecretSealed) return;
+  try {
+    const decoded = decodeURIComponent(escape(atob(character.playerSecretSealed)));
+    const [storedPassword, ...noteParts] = decoded.split(":");
+    if (storedPassword !== password) {
+      passwordInput.value = "";
+      passwordInput.placeholder = "Wrong password";
+      return;
+    }
+    character.playerSecretNote = noteParts.join(":");
+    character.playerSecretSealed = "";
+    passwordInput.value = "";
+    passwordInput.placeholder = "Player note password";
+    saveCharacters();
+    renderCharacters();
+  } catch {
+    passwordInput.value = "";
+    passwordInput.placeholder = "Seal unreadable";
+  }
+});
 document.querySelector("#clear-player-note-seal").addEventListener("click", () => {
   const character = currentCharacter();
   if (!character) return;
@@ -2368,6 +2399,7 @@ let itemCatalogCache = [];
 let itemCatalogTimer;
 let compendiumItemCache = [];
 let activeDetailItem = null;
+const equipmentBrowser = { offset: 0, limit: 48, total: 0, categoriesLoaded: false };
 
 function inferredItemSlot(item) {
   const category = String(item.category || "").toLowerCase();
@@ -2536,6 +2568,8 @@ async function searchCompendium(query) {
   if (!query) return;
   input.value = query;
   const results = document.querySelector("#compendium-results");
+  document.querySelector("#equipment-filters").hidden = true;
+  results.classList.remove("equipment-card-grid");
   results.innerHTML = '<p class="loading-line">Searching local index…</p>';
   document.querySelector("#results-count").textContent = "Searching";
   try {
@@ -2595,9 +2629,14 @@ function openItemDetail(item) {
 
 async function renderEquipmentCompendium() {
   const input = document.querySelector("#compendium-search");
-  const params = new URLSearchParams({ limit: "80" });
+  const category = document.querySelector("#compendium-item-category").value;
+  const kind = document.querySelector("#compendium-item-kind").value;
+  const params = new URLSearchParams({ limit: String(equipmentBrowser.limit), offset: String(equipmentBrowser.offset) });
   if (input.value.trim()) params.set("q", input.value.trim());
+  if (category) params.set("category", category);
+  if (kind) params.set("kind", kind);
   const results = document.querySelector("#compendium-results");
+  document.querySelector("#equipment-filters").hidden = false;
   results.classList.add("equipment-card-grid");
   results.innerHTML = '<p class="loading-line">Loading SW5e equipment cards...</p>';
   document.querySelector("#results-count").textContent = "Loading equipment";
@@ -2605,8 +2644,18 @@ async function renderEquipmentCompendium() {
     const response = await fetch(`/api/catalog/items?${params}`);
     if (!response.ok) throw new Error("Catalog unavailable");
     const payload = await response.json();
+    equipmentBrowser.total = payload.total;
     compendiumItemCache = payload.items;
-    document.querySelector("#results-count").textContent = `${payload.total} equipment result${payload.total === 1 ? "" : "s"}`;
+    if (!equipmentBrowser.categoriesLoaded) {
+      const select = document.querySelector("#compendium-item-category");
+      for (const value of payload.categories) select.add(new Option(value, value));
+      equipmentBrowser.categoriesLoaded = true;
+    }
+    const start = payload.total ? equipmentBrowser.offset + 1 : 0;
+    const end = Math.min(equipmentBrowser.offset + payload.items.length, payload.total);
+    document.querySelector("#results-count").textContent = `${start}-${end} of ${payload.total} equipment result${payload.total === 1 ? "" : "s"}`;
+    document.querySelector("#equipment-prev").disabled = equipmentBrowser.offset <= 0;
+    document.querySelector("#equipment-next").disabled = equipmentBrowser.offset + equipmentBrowser.limit >= payload.total;
     results.innerHTML = payload.items.map((item, index) => {
       const properties = (item.properties || []).map(itemPropertyLabel).filter(Boolean);
       const detail = [item.category, item.rarity, item.damage, item.armor_class].filter(Boolean).join(" · ");
@@ -2627,12 +2676,18 @@ async function renderEquipmentCompendium() {
 }
 
 document.querySelector("#run-compendium-search").addEventListener("click", () => {
-  if (document.querySelector(".compendium-preset.active")?.dataset.compendiumMode === "equipment") renderEquipmentCompendium();
+  if (document.querySelector(".compendium-preset.active")?.dataset.compendiumMode === "equipment") {
+    equipmentBrowser.offset = 0;
+    renderEquipmentCompendium();
+  }
   else searchCompendium();
 });
 document.querySelector("#compendium-search").addEventListener("keydown", (event) => {
   if (event.key !== "Enter") return;
-  if (document.querySelector(".compendium-preset.active")?.dataset.compendiumMode === "equipment") renderEquipmentCompendium();
+  if (document.querySelector(".compendium-preset.active")?.dataset.compendiumMode === "equipment") {
+    equipmentBrowser.offset = 0;
+    renderEquipmentCompendium();
+  }
   else searchCompendium();
 });
 document.querySelector(".compendium-nav").addEventListener("click", (event) => {
@@ -2642,10 +2697,28 @@ document.querySelector(".compendium-nav").addEventListener("click", (event) => {
   if (!target) return;
   document.querySelectorAll(".compendium-preset").forEach((item) => item.classList.toggle("active", item === target));
   if (modePreset?.dataset.compendiumMode === "equipment") {
+    equipmentBrowser.offset = 0;
     renderEquipmentCompendium();
     return;
   }
   searchCompendium(preset.dataset.query);
+});
+document.querySelector("#compendium-item-category").addEventListener("change", () => {
+  equipmentBrowser.offset = 0;
+  renderEquipmentCompendium();
+});
+document.querySelector("#compendium-item-kind").addEventListener("change", () => {
+  equipmentBrowser.offset = 0;
+  renderEquipmentCompendium();
+});
+document.querySelector("#equipment-prev").addEventListener("click", () => {
+  equipmentBrowser.offset = Math.max(0, equipmentBrowser.offset - equipmentBrowser.limit);
+  renderEquipmentCompendium();
+});
+document.querySelector("#equipment-next").addEventListener("click", () => {
+  const lastPage = Math.max(0, Math.floor((equipmentBrowser.total - 1) / equipmentBrowser.limit) * equipmentBrowser.limit);
+  equipmentBrowser.offset = Math.min(lastPage, equipmentBrowser.offset + equipmentBrowser.limit);
+  renderEquipmentCompendium();
 });
 document.querySelector("#compendium-results").addEventListener("click", (event) => {
   const property = event.target.closest("[data-property-search]");
@@ -3282,6 +3355,9 @@ function renderSoundAmbiance() {
   document.querySelector("#youtube-playlist").innerHTML = state.soundPlaylist.map((track) => `
     <article class="playlist-track ${track.id === state.activeTrackId ? "active" : ""}">
       <button data-play-track="${track.id}"><strong>${escapeHtml(track.title)}</strong><span>YouTube</span></button>
+      <button class="icon-button" data-move-track="${track.id}" data-direction="-1" title="Move up">↑</button>
+      <button class="icon-button" data-move-track="${track.id}" data-direction="1" title="Move down">↓</button>
+      <button class="icon-button" data-rename-track="${track.id}" title="Rename track">T</button>
       <button class="icon-button" data-remove-track="${track.id}" title="Remove track">×</button>
     </article>`).join("") || '<p class="loading-line">Add curated music links when ready.</p>';
   persist();
@@ -3307,27 +3383,45 @@ document.querySelector("#add-youtube-track").addEventListener("click", () => doc
 document.querySelector("#youtube-playlist").addEventListener("click", (event) => {
   const play = event.target.closest("[data-play-track]");
   const remove = event.target.closest("[data-remove-track]");
+  const rename = event.target.closest("[data-rename-track]");
+  const move = event.target.closest("[data-move-track]");
   if (play) state.activeTrackId = play.dataset.playTrack;
   if (remove) {
     state.soundPlaylist = state.soundPlaylist.filter((track) => track.id !== remove.dataset.removeTrack);
     if (state.activeTrackId === remove.dataset.removeTrack) state.activeTrackId = state.soundPlaylist[0]?.id || null;
   }
-  if (play || remove) renderSoundAmbiance();
+  if (rename) {
+    const track = state.soundPlaylist.find((item) => item.id === rename.dataset.renameTrack);
+    const nextTitle = track ? prompt("Playlist name", track.title) : "";
+    if (track && nextTitle) track.title = nextTitle.trim();
+  }
+  if (move) {
+    const index = state.soundPlaylist.findIndex((track) => track.id === move.dataset.moveTrack);
+    const direction = Number(move.dataset.direction);
+    const nextIndex = index + direction;
+    if (index >= 0 && nextIndex >= 0 && nextIndex < state.soundPlaylist.length) {
+      const [track] = state.soundPlaylist.splice(index, 1);
+      state.soundPlaylist.splice(nextIndex, 0, track);
+    }
+  }
+  if (play || remove || rename || move) renderSoundAmbiance();
 });
 
 function renderQuests() {
   ensureQuestState();
-  const active = state.quests[0];
+  const active = state.quests.find((quest) => quest.id === state.activeQuestId) || state.quests[0];
+  state.activeQuestId = active?.id || null;
   document.querySelector("#quest-active-title").textContent = active?.title || "Episode workspace";
   document.querySelector("#quest-list").innerHTML = state.quests.map((quest) => `
     <article class="quest-entry">
-      <button data-quest-id="${quest.id}"><strong>${escapeHtml(quest.title)}</strong><span>${quest.folders.length} folders · ${quest.files.length} files</span></button>
+      <button data-quest-id="${quest.id}" class="${quest.id === state.activeQuestId ? "active" : ""}"><strong>${escapeHtml(quest.title)}</strong><span>${quest.folders.length} folders · ${quest.files.length} files</span></button>
       <div>${quest.folders.map((folder) => `<button data-open-quest-folder="${quest.id}:${escapeHtml(folder)}">${escapeHtml(folder)}</button>`).join("")}</div>
     </article>`).join("");
   document.querySelector("#quest-file-windows").innerHTML = active.files.map((file) => `
-    <article class="quest-file-window">
-      <header><strong>${escapeHtml(file.title)}</strong><button class="icon-button" data-close-quest-file="${file.id}">×</button></header>
-      <div class="note-preview">${markdownToHtml(file.content)}</div>
+    <article class="quest-file-window" data-quest-file="${file.id}">
+      <header><input data-quest-title="${file.id}" value="${escapeHtml(file.title)}"><button class="icon-button" data-close-quest-file="${file.id}">×</button></header>
+      <textarea data-quest-content="${file.id}" spellcheck="true">${escapeHtml(file.content)}</textarea>
+      <div class="note-preview" data-quest-preview="${file.id}">${markdownToHtml(file.content)}</div>
     </article>`).join("") || '<p class="loading-line">Open a quest folder to create a working file window.</p>';
   persist();
 }
@@ -3344,11 +3438,18 @@ document.querySelector("#new-quest-episode").addEventListener("click", () => {
   renderQuests();
 });
 document.querySelector("#quest-list").addEventListener("click", (event) => {
+  const questButton = event.target.closest("[data-quest-id]");
+  if (questButton && !event.target.closest("[data-open-quest-folder]")) {
+    state.activeQuestId = questButton.dataset.questId;
+    renderQuests();
+    return;
+  }
   const folderButton = event.target.closest("[data-open-quest-folder]");
   if (!folderButton) return;
   const [questId, folder] = folderButton.dataset.openQuestFolder.split(":");
   const quest = state.quests.find((item) => item.id === questId);
   if (!quest) return;
+  state.activeQuestId = quest.id;
   quest.files.push({
     id: crypto.randomUUID(),
     title: `${folder} notes`,
@@ -3358,14 +3459,42 @@ document.querySelector("#quest-list").addEventListener("click", (event) => {
 });
 document.querySelector("#quest-file-windows").addEventListener("click", (event) => {
   const close = event.target.closest("[data-close-quest-file]");
-  if (!close) return;
-  const quest = state.quests[0];
-  quest.files = quest.files.filter((file) => file.id !== close.dataset.closeQuestFile);
+  if (close) {
+    const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
+    quest.files = quest.files.filter((file) => file.id !== close.dataset.closeQuestFile);
+    renderQuests();
+    return;
+  }
+  const wiki = event.target.closest("[data-wiki]");
+  if (wiki) {
+    document.querySelector('[data-view="compendium"]').click();
+    searchCompendium(wiki.dataset.wiki);
+  }
+});
+document.querySelector("#quest-file-windows").addEventListener("input", (event) => {
+  const titleInput = event.target.closest("[data-quest-title]");
+  const contentInput = event.target.closest("[data-quest-content]");
+  const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
+  if (!quest) return;
+  const fileId = titleInput?.dataset.questTitle || contentInput?.dataset.questContent;
+  const file = quest.files.find((item) => item.id === fileId);
+  if (!file) return;
+  if (titleInput) file.title = titleInput.value.trim() || "Untitled";
+  if (contentInput) {
+    file.content = contentInput.value;
+    const preview = document.querySelector(`[data-quest-preview="${file.id}"]`);
+    if (preview) preview.innerHTML = markdownToHtml(file.content);
+  }
+  persist();
+});
+document.querySelector("#quest-file-windows").addEventListener("focusout", (event) => {
+  if (!event.target.closest("[data-quest-title], [data-quest-content]")) return;
   renderQuests();
 });
 document.querySelector("#open-quest-file").addEventListener("click", () => {
   ensureQuestState();
-  state.quests[0].files.push({
+  const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
+  quest.files.push({
     id: crypto.randomUUID(),
     title: "New quest file",
     content: "# New quest file\n\n",
