@@ -51,6 +51,7 @@ const defaults = {
   quests: [],
   activeQuestId: null,
   assetLibraryView: "normal",
+  assetLibraryPosition: null,
 };
 
 const saved = JSON.parse(localStorage.getItem("holocron.session") || "null");
@@ -862,6 +863,11 @@ function setupPanelLayoutControls() {
       persist();
       return;
     }
+    const assetButton = event.target.closest("[data-open-asset-library]");
+    if (assetButton) {
+      openAssetLibrary();
+      return;
+    }
     const button = event.target.closest("[data-panel-anchor]");
     if (!button) return;
     const [panelId, anchor] = button.dataset.panelAnchor.split(":");
@@ -896,12 +902,14 @@ function renderPanelLauncher() {
   const launcher = document.querySelector("#panel-launcher");
   const menu = document.querySelector("#panel-launcher-menu");
   if (!launcher || !menu) return;
-  const labels = { left: "Map tools", right: "Encounter" };
+  const labels = { left: "Map tools", right: "Encounter", assets: "Asset Library" };
   const hidden = state.panelLayout.hidden || [];
-  launcher.classList.toggle("has-hidden", hidden.length > 0);
-  menu.innerHTML = ["left", "right"].map((panelId) => {
-    const active = !hidden.includes(panelId);
-    return `<button data-panel-restore="${panelId}" class="${active ? "active" : ""}" ${active ? "disabled" : ""}><strong>${labels[panelId]}</strong><span>${active ? "in use" : "hidden"}</span></button>`;
+  const assetsOpen = document.querySelector("#bestiary-dialog")?.open;
+  launcher.classList.toggle("has-hidden", hidden.length > 0 || !assetsOpen);
+  menu.innerHTML = ["left", "right", "assets"].map((panelId) => {
+    const active = panelId === "assets" ? assetsOpen : !hidden.includes(panelId);
+    const restoreAttr = panelId === "assets" ? "data-open-asset-library" : `data-panel-restore="${panelId}"`;
+    return `<button ${restoreAttr} class="${active ? "active" : ""}" ${active ? "disabled" : ""}><strong>${labels[panelId]}</strong><span>${active ? "in use" : "hidden"}</span></button>`;
   }).join("");
 }
 
@@ -1569,14 +1577,73 @@ function applyAssetLibraryView() {
   const dialog = document.querySelector("#bestiary-dialog");
   dialog.classList.toggle("compact-view", state.assetLibraryView === "compact");
   dialog.classList.toggle("minimized-view", state.assetLibraryView === "minimized");
+  document.querySelectorAll("[data-library-view]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.libraryView === state.assetLibraryView);
+  });
+}
+
+function applyAssetLibraryPosition() {
+  const dialog = document.querySelector("#bestiary-dialog");
+  if (!state.assetLibraryPosition) return;
+  const position = state.assetLibraryPosition;
+  const width = dialog.offsetWidth || Number(position.width) || 760;
+  const height = dialog.offsetHeight || Number(position.height) || 640;
+  const left = Math.max(12, Math.min(Number(position.left) || 32, window.innerWidth - width - 12));
+  const top = Math.max(70, Math.min(Number(position.top) || 76, window.innerHeight - height - 12));
+  dialog.style.left = `${left}px`;
+  dialog.style.top = `${top}px`;
+  dialog.style.right = "auto";
+  dialog.style.bottom = "auto";
+  dialog.style.margin = "0";
+}
+
+function rememberAssetLibraryPosition() {
+  const dialog = document.querySelector("#bestiary-dialog");
+  if (!dialog.open) return;
+  const rect = dialog.getBoundingClientRect();
+  state.assetLibraryPosition = {
+    left: Math.round(rect.left),
+    top: Math.round(rect.top),
+    width: Math.round(rect.width),
+    height: Math.round(rect.height),
+  };
+}
+
+function openAssetLibrary() {
+  const dialog = document.querySelector("#bestiary-dialog");
+  if (!dialog.open) dialog.show();
+  applyAssetLibraryView();
+  requestAnimationFrame(() => {
+    applyAssetLibraryPosition();
+    renderPanelLauncher();
+  });
+}
+
+function closeAssetLibrary() {
+  const dialog = document.querySelector("#bestiary-dialog");
+  rememberAssetLibraryPosition();
+  try {
+    if (dialog.open) dialog.close();
+  } catch {
+    dialog.removeAttribute("open");
+  }
+  if (dialog.open) dialog.removeAttribute("open");
+  persist();
+  renderPanelLauncher();
 }
 
 document.querySelector("#bestiary-dialog").addEventListener("click", (event) => {
+  if (event.target.closest("#close-bestiary")) {
+    closeAssetLibrary();
+    return;
+  }
   const view = event.target.closest("[data-library-view]");
   if (!view) return;
   state.assetLibraryView = view.dataset.libraryView;
   applyAssetLibraryView();
+  rememberAssetLibraryPosition();
   persist();
+  renderPanelLauncher();
 });
 
 document.querySelector("#bestiary-dialog").addEventListener("pointerdown", (event) => {
@@ -1589,9 +1656,13 @@ document.querySelector("#bestiary-dialog").addEventListener("pointerdown", (even
   const move = (moveEvent) => {
     dialog.style.left = `${start.left + moveEvent.clientX - start.x}px`;
     dialog.style.top = `${start.top + moveEvent.clientY - start.y}px`;
+    dialog.style.right = "auto";
+    dialog.style.bottom = "auto";
     dialog.style.margin = "0";
   };
   const up = () => {
+    rememberAssetLibraryPosition();
+    persist();
     document.removeEventListener("pointermove", move);
     document.removeEventListener("pointerup", up);
   };
@@ -1599,6 +1670,9 @@ document.querySelector("#bestiary-dialog").addEventListener("pointerdown", (even
   document.addEventListener("pointerup", up, { once: true });
 });
 applyAssetLibraryView();
+window.addEventListener("resize", () => {
+  if (document.querySelector("#bestiary-dialog")?.open) applyAssetLibraryPosition();
+});
 document.querySelector("#token-library").addEventListener("dblclick", (event) => {
   if (event.target.closest("[data-map-background], [data-add-creature]")) return;
   const entry = event.target.closest("[data-creature]");
@@ -1635,11 +1709,14 @@ document.querySelector("#bestiary-cr").addEventListener("change", loadBestiary);
 document.querySelector("#bestiary-type").addEventListener("change", loadBestiary);
 const bestiaryDialog = document.querySelector("#bestiary-dialog");
 document.querySelector("#open-bestiary").addEventListener("click", () => {
-  if (!bestiaryDialog.open) bestiaryDialog.show();
+  openAssetLibrary();
   loadBestiary();
   document.querySelector("#bestiary-search").focus();
 });
-document.querySelector("#close-bestiary").addEventListener("click", () => bestiaryDialog.close());
+document.querySelector("#close-bestiary").addEventListener("click", (event) => {
+  event.stopPropagation();
+  closeAssetLibrary();
+});
 
 let creatureDetailItem = null;
 function openCreatureDetail(item) {

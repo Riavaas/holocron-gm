@@ -861,10 +861,16 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 
 .dialog-view-controls { display: flex; gap: 4px; margin-left: auto; }
 .dialog-view-controls button { width: 26px; height: 26px; border: 1px solid var(--line); background: var(--panel-raised); color: var(--muted); cursor: pointer; }
+.dialog-view-controls button.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .bestiary-dialog.compact-view { width: min(720px, 86vw); height: min(560px, 82vh); }
 .bestiary-dialog.compact-view .bestiary-filters { grid-template-columns: 1fr 1fr; }
-.bestiary-dialog.minimized-view { width: 360px; height: 64px; overflow: hidden; }
+.bestiary-dialog.compact-view .token-library { grid-template-columns: 1fr; }
+.bestiary-dialog.compact-view .library-entry { grid-template-columns: 30px 1fr auto; padding: 4px; }
+.bestiary-dialog.compact-view .library-token { width: 30px; height: 30px; }
+.bestiary-dialog.minimized-view { width: 360px; height: 58px; overflow: hidden; resize: none; }
 .bestiary-dialog.minimized-view section > :not(header) { display: none; }
+.bestiary-dialog.minimized-view > section { display: block; padding: 10px; }
+.bestiary-dialog.minimized-view .dialog-heading { height: 38px; }
 
 @media (max-width: 1100px) {
   .workspace { grid-template-columns: 220px minmax(400px, 1fr) 260px; }
