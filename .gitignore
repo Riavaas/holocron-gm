@@ -15,6 +15,7 @@ data/*.db
 data/extracted/
 data/campaigns/
 data/external_downloads/
+data/sw5e_cache/
 
 *.tmp
 *.cache

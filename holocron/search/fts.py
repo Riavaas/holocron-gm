@@ -1,10 +1,19 @@
 import sqlite3
+import re
 
 from holocron.db.database import get_connection
 
 
-def _excerpt(content: str, max_chars: int = 420) -> str:
+def _excerpt(content: str, max_chars: int = 720) -> str:
     text = " ".join(content.split())
+    text = re.sub(r"\s+(?=#{1,6}\s)", "\n\n", text)
+    text = re.sub(
+        r"(#{2,3}\s+(?:Source|Summary|Key Rules|Search Tags|GM Notes|Quick Identity|Stat Summary|Actions|Traits|Defenses|When Used|Quick Rule|Quick Effect|Mechanical Effects|GM Use))\s+",
+        r"\1\n",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"\s+(?=\*\s+)", "\n", text)
     if len(text) <= max_chars:
         return text
     return text[: max_chars - 1].rstrip() + "..."

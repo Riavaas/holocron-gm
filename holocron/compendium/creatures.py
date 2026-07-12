@@ -14,6 +14,7 @@ from holocron.core.paths import COMPENDIUM_DIR
 CREATURES_DIR = COMPENDIUM_DIR / "scum-and-villainy" / "creatures"
 FRONTMATTER_PATTERN = re.compile(r"\A---\n(.*?)\n---", re.DOTALL)
 INTEGER_PATTERN = re.compile(r"\d+")
+CR_PREFIX_PATTERN = re.compile(r"^\s*(?:challenge\s+rating|cr)\s*:?\s*", re.IGNORECASE)
 
 
 def _parse_value(value: str) -> object:
@@ -43,6 +44,11 @@ def _frontmatter(path: Path) -> dict[str, object]:
 def _first_integer(value: object, default: int = 0) -> int:
     match = INTEGER_PATTERN.search(str(value))
     return int(match.group()) if match else default
+
+
+def _normalize_challenge_rating(value: object) -> str:
+    normalized = CR_PREFIX_PATTERN.sub("", str(value or "0")).strip()
+    return normalized or "0"
 
 
 def _path_modified_ns(path: Path) -> int:
@@ -87,7 +93,7 @@ def _load_creatures_cached(root_key: str, signature: tuple[int, int, int, int]) 
             "size": data.get("size", "Medium"),
             "type": data.get("creature_type", "unknown"),
             "alignment": data.get("alignment", ""),
-            "challenge_rating": str(data.get("challenge_rating", "0")),
+            "challenge_rating": _normalize_challenge_rating(data.get("challenge_rating", "0")),
             "xp": data.get("xp", ""),
             "armor_class": data.get("armor_class", ""),
             "hit_points": data.get("hit_points", ""),
@@ -116,7 +122,7 @@ def _load_creatures_cached(root_key: str, signature: tuple[int, int, int, int]) 
             "type": data.get("creature_type", "unknown"),
             "size": data.get("size", "Medium"),
             "alignment": data.get("alignment", ""),
-            "cr": str(data.get("challenge_rating", "0")),
+            "cr": _normalize_challenge_rating(data.get("challenge_rating", "0")),
             "xp": data.get("xp", ""),
             "ac": _first_integer(data.get("armor_class"), 10),
             "hp": _first_integer(data.get("hit_points"), 1),

@@ -175,6 +175,14 @@ Campaigns autosave to `data/campaigns/`. The top toolbar can create, switch,
 delete, export, and import complete campaign snapshots. Exports include the
 battlemap image and use the `.holocron.json` format.
 
+The battlemap supports snapped or free token placement, hand panning, optional
+grid rendering, and right-click fit/fill/focus actions. The asset browser opens
+as a floating window so creatures and tokens can still be dragged onto the map.
+
+The character inventory and toolkit loot generator use the public SW5e item API.
+The first request builds an ignored local cache under `data/sw5e_cache/`; later
+requests remain local until the catalog refresh endpoint is called.
+
 Optional OpenAI assistant:
 
 ```bash
@@ -219,6 +227,9 @@ curl -X POST "http://127.0.0.1:8000/api/rules/ask" \
 - `GET /api/assets/external-sources`
 - `GET /api/assets/external?asset_type=tokens&q=...`
 - `GET /api/assets/external/summary`
+- `GET /api/catalog/items?q=...&category=...`
+- `GET /api/catalog/items/loot?cr=5&count=4`
+- `POST /api/catalog/items/actions/refresh`
 - `GET /api/rules/search?q=...&limit=10`
 - `GET /api/rules/chunk/{chunk_id}`
 - `POST /api/rules/ask`

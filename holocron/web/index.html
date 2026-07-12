@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Holocron GM</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20260710-ux-v5">
+  <link rel="stylesheet" href="/static/styles.css?v=20260712-audit-v4">
 </head>
 <body>
   <header class="topbar">
@@ -19,6 +19,8 @@
       <button data-view="compendium">Compendium</button>
       <button data-view="books">Books</button>
       <button data-view="toolkit">Toolkit</button>
+      <button data-view="sound">Sound & Ambiance</button>
+      <button data-view="quests">Quests</button>
     </nav>
     <div class="campaign-controls">
       <select id="campaign-select" aria-label="Active campaign"></select>
@@ -75,6 +77,7 @@
           <option value="5">Fast pace · 5 mph</option>
           <option value="600">Speeder · 600 mph</option>
         </select>
+        <label class="toggle-row snap-toggle"><span>Snap tokens to grid</span><input id="snap-to-grid" type="checkbox" checked></label>
       </section>
 
       <section>
@@ -106,11 +109,13 @@
         <div class="section-heading"><h2>Tools</h2></div>
         <div class="tool-grid">
           <button class="tool active" data-tool="select" title="Select and move tokens"><b>↖</b>Select</button>
+          <button class="tool" data-tool="pan" title="Pan around the battlemap"><b>✥</b>Hand</button>
           <button class="tool" data-tool="measure" title="Measure map distance"><b>⌁</b>Measure</button>
           <button class="tool" data-tool="wall" title="Draw line-of-sight walls"><b>╱</b>Wall</button>
           <button class="tool" data-tool="ping" title="Place a map ping"><b>◎</b>Ping</button>
           <button class="tool" data-tool="note" title="Attach a private GM note"><b>⌑</b>Note pin</button>
           <button class="tool" data-tool="door" title="Draw an interactive door"><b>⊓</b>Door</button>
+          <button class="tool" data-tool="eraser" title="Erase drawings, doors, pins or tokens"><b>⌫</b>Eraser</button>
         </div>
       </section>
     </aside>
@@ -124,6 +129,14 @@
         <button id="clear-measurement" class="text-button">Clear marks</button>
       </div>
       <div id="measurement" class="measurement" hidden></div>
+      <div id="map-context-menu" class="map-context-menu" hidden>
+        <button data-map-action="fit">Fit entire map</button>
+        <button data-map-action="fill">Fill viewport</button>
+        <button data-map-action="center">Center at 100%</button>
+        <button data-map-action="grid">Toggle grid</button>
+        <button data-map-action="lock">Lock map image</button>
+        <button data-map-action="focus">Focus map</button>
+      </div>
       <div id="map-empty" class="map-empty">
         <div class="empty-beacon">◇</div>
         <strong>Battlemap ready</strong>
@@ -183,18 +196,7 @@
       </section>
       <section class="quick-add">
         <div class="section-heading"><h2>Assets</h2><span id="bestiary-count">Local</span></div>
-        <div class="bestiary-filters">
-          <select id="asset-library-mode" aria-label="Asset library">
-            <option value="creatures">Bestiary</option>
-            <option value="tokens">Token packs</option>
-            <option value="images">PDF art</option>
-          </select>
-          <input id="bestiary-search" type="search" placeholder="Search creature, faction…">
-          <select id="bestiary-cr" aria-label="Challenge rating">
-            <option value="">All CR</option>
-          </select>
-        </div>
-        <div id="token-library" class="token-library"></div>
+        <button id="open-bestiary" class="asset-library-launch secondary-button"><span>Browse creatures, tokens and maps</span><b>⌕</b></button>
       </section>
     </aside>
   </main>
@@ -215,15 +217,25 @@
 
   <main id="characters-view" class="characters-workspace" hidden>
     <aside class="character-roster">
-      <div class="notes-sidebar-header"><h2>Party</h2><button id="new-character" class="icon-button" title="New character">＋</button></div>
-      <div id="character-list"></div>
+      <div class="notes-sidebar-header"><h2>Stash & cargo</h2><button id="add-inventory-item" class="icon-button" title="Add item">＋</button></div>
+      <div id="character-stash" class="character-stash"></div>
     </aside>
     <section class="character-main">
       <header class="character-header">
         <div><small>ACTIVE CHARACTER</small><h1 id="character-name"></h1></div>
+        <select id="character-picker" aria-label="Character selection"></select>
+        <button id="new-character" class="icon-button" title="New character">＋</button>
         <label>Species
           <select id="character-species">
-            <option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option>
+            <option>Human</option><option>Zabrak</option><option>Duros</option><option>Twi'lek</option><option>Wookiee</option><option>Rodian</option><option>Chiss</option><option>Bothan</option><option>Togruta</option>
+          </select>
+        </label>
+        <label>Template
+          <select id="character-template">
+            <option value="human-male">Human male</option>
+            <option value="human-female">Human female</option>
+            <option value="zabrak-male">Zabrak male</option>
+            <option value="zabrak-female">Zabrak female</option>
           </select>
         </label>
         <div class="derived-stats"><span>AC <strong id="character-ac">10</strong></span><span>Attack <strong id="character-attack">+0</strong></span><span>Load <strong id="character-weight">0</strong> lb</span></div>
@@ -231,8 +243,9 @@
         <button id="delete-character" class="icon-button" title="Delete character">×</button>
       </header>
       <div class="paper-doll">
-        <div class="silhouette" aria-hidden="true">
-          <i class="body-head"></i><i class="body-torso"></i><i class="body-arm left"></i><i class="body-arm right"></i><i class="body-leg left"></i><i class="body-leg right"></i>
+        <div class="inventory-template" aria-hidden="true">
+          <img id="character-template-image" alt="">
+          <i data-body-fill="head"></i><i data-body-fill="chest"></i><i data-body-fill="hands"></i><i data-body-fill="legs"></i><i data-body-fill="mainHand"></i><i data-body-fill="offHand"></i>
         </div>
         <button class="equipment-slot head" data-slot="head"><small>HEAD</small><strong>Empty</strong></button>
         <button class="equipment-slot shoulders" data-slot="shoulders"><small>SHOULDERS</small><strong>Empty</strong></button>
@@ -246,9 +259,9 @@
         <button class="equipment-slot off-hand" data-slot="offHand"><small>OFF HAND</small><strong>Empty</strong></button>
         <button class="equipment-slot cybernetic" data-slot="cybernetic"><small>CYBERNETIC</small><strong>Empty</strong></button>
       </div>
-      <footer class="stash-shell">
-        <div class="section-heading"><h2>Stash & cargo</h2><button id="add-inventory-item" class="text-button">Add item</button></div>
-        <div id="character-stash" class="character-stash"></div>
+      <footer class="character-notes-shell">
+        <label>Shared player / GM note <span title="Visible to the player and GM for explicit agreements.">ⓘ</span><textarea id="shared-character-note" rows="3"></textarea></label>
+        <label>Player sealed note <span title="Encrypted locally with the player password. The GM can clear the seal if the player forgets it.">ⓘ</span><textarea id="player-secret-note" rows="3"></textarea></label>
       </footer>
     </section>
     <aside class="character-tracker">
@@ -269,7 +282,9 @@
       <section class="gm-private">
         <div class="section-heading"><h2>GM private</h2><span>Hidden from player view</span></div>
         <label>Passive insight<input id="passive-insight" type="number" min="0"></label>
-        <label>Backstory hooks<textarea id="gm-hooks" rows="8"></textarea></label>
+        <label>GM notes <span title="Only the GM dashboard sees this note.">ⓘ</span><textarea id="gm-hooks" rows="8"></textarea></label>
+        <div class="field-row"><input id="player-note-password" type="password" placeholder="Player note password"><button id="seal-player-note" class="secondary-button" type="button">Seal</button></div>
+        <button id="clear-player-note-seal" class="text-button" type="button">GM unseal/reset</button>
       </section>
     </aside>
   </main>
@@ -302,11 +317,11 @@
 
   <main id="compendium-view" class="compendium-workspace" hidden>
     <aside class="compendium-nav">
-      <div class="section-heading"><h2>SW5e Library</h2><span>Offline</span></div>
+      <div class="section-heading"><h2>SW5e Library</h2><span>Local</span></div>
       <button class="compendium-preset active" data-query="combat">Combat rules</button>
       <button class="compendium-preset" data-query="force power">Force powers</button>
       <button class="compendium-preset" data-query="tech power">Tech powers</button>
-      <button class="compendium-preset" data-query="weapon properties">Equipment</button>
+      <button class="compendium-preset" data-compendium-mode="equipment">Equipment</button>
       <button class="compendium-preset" data-query="condition">Conditions</button>
       <button class="compendium-preset" data-query="starship">Starships</button>
       <button class="compendium-preset" data-query="creature">Bestiary</button>
@@ -362,8 +377,11 @@
       <section class="generated-details">
         <h2>Attributes</h2>
         <div id="npc-attributes" class="attribute-strip"></div>
+        <h2>Combat profile</h2>
+        <div id="npc-combat-profile" class="npc-combat-profile"></div>
         <h2>Hook</h2>
         <p id="npc-hook"></p>
+        <button id="npc-to-encounter" class="secondary-button" type="button">Add NPC to encounter</button>
       </section>
     </section>
     <section class="generator-column middle">
@@ -372,37 +390,43 @@
         <label>Target CR<input id="toolkit-cr" type="number" min="0" max="30" value="5"></label>
         <label>Party size<input id="toolkit-party-size" type="number" min="1" max="10" value="4"></label>
       </div>
+      <div class="toolkit-form-row">
+        <label>Extra loot<select id="extra-loot-category"><option value="">None</option><option>Weapon</option><option>Armor</option><option>Adventuring Gear</option><option>Enhanced Item</option><option>Valuable</option></select></label>
+        <label>Max rarity<select id="extra-loot-rarity"><option>Unenhanced</option><option>Standard</option><option>Premium</option><option>Prototype</option><option>Advanced</option><option>Legendary</option><option>Artifact</option></select></label>
+      </div>
       <div class="dual-actions">
         <button id="generate-loot" class="primary-button">Generate loot</button>
         <button id="generate-encounter" class="secondary-button">Build encounter</button>
       </div>
       <div id="loot-output" class="toolkit-output"></div>
+      <section class="shopkeeper-tool">
+        <div class="section-heading"><h2>Shopkeeper</h2><button id="generate-shopkeeper" class="text-button">Generate wares</button></div>
+        <div class="toolkit-form-row">
+          <label>Settlement<select id="shop-size"><option value="outpost">Outpost</option><option value="village">Village</option><option value="town">Town</option><option value="city">City</option><option value="metropolis">Metropolis</option></select></label>
+          <label>Allegiance<select id="shop-allegiance"><option value="neutral">Neutral</option><option value="empire">Empire</option><option value="republic">Republic</option><option value="outlaws">Outlaws</option><option value="poor">Too poor & weak</option></select></label>
+        </div>
+        <label>Wealth<select id="shop-wealth"><option value="poor">Poor</option><option value="modest" selected>Modest</option><option value="wealthy">Wealthy</option><option value="black-market">Black market</option></select></label>
+        <div id="shopkeeper-output" class="toolkit-output compact"></div>
+      </section>
       <div class="section-heading encounter-tool-heading"><h2>Suggested opposition</h2><button id="send-encounter" class="text-button" disabled>Add to tracker</button></div>
       <div id="encounter-output" class="encounter-output"></div>
       <section class="dice-tool">
         <div class="section-heading"><h2>3D dice</h2><output id="dice-result">Ready</output></div>
-        <canvas id="dice-canvas"></canvas>
+        <div class="dice-stage"><canvas id="dice-canvas"></canvas><output id="dice-face-result" aria-live="polite">20</output></div>
         <div class="dice-buttons"><button data-die="6">D6</button><button data-die="8">D8</button><button data-die="12">D12</button><button data-die="20">D20</button></div>
       </section>
     </section>
     <section class="generator-column">
       <header class="toolkit-heading"><div><small>ATMOSPHERE</small><h1>Scene Flavor</h1></div><button id="generate-flavor" class="primary-button">Generate</button></header>
       <div class="generator-controls">
-        <label>Scene<select id="flavor-scene"><option value="cantina">Cantina</option><option value="location">Location</option><option value="hazard">Hazard</option><option value="starship">Starship</option></select></label>
-        <label>Tone<select id="flavor-tone"><option value="tense">Tense</option><option value="mysterious">Mysterious</option><option value="lively">Lively</option><option value="grim">Grim</option></select></label>
+        <label>Scene<select id="flavor-scene"><option value="cantina">Cantina</option><option value="location">Ruins</option><option value="hazard">Hazard</option><option value="starship">Starship</option><option value="temple">Ancient temple</option><option value="wilderness">Wilderness</option><option value="city">City district</option><option value="underworld">Underworld</option><option value="battlefield">Battlefield</option><option value="space">Deep space</option><option value="investigation">Investigation</option><option value="celebration">Celebration</option></select></label>
+        <label>Tone<select id="flavor-tone"><option value="tense">Tense</option><option value="mysterious">Mysterious</option><option value="lively">Lively</option><option value="grim">Grim</option><option value="serene">Serene</option><option value="ominous">Ominous</option><option value="hopeful">Hopeful</option><option value="chaotic">Chaotic</option></select></label>
       </div>
       <blockquote id="flavor-output" class="flavor-output"></blockquote>
       <button id="flavor-to-note" class="secondary-button">Save as campaign note</button>
       <section class="quick-prompts">
         <div class="section-heading"><h2>Session sparks</h2><span>Local tables</span></div>
         <p id="session-spark"></p>
-      </section>
-      <section class="soundboard">
-        <div class="section-heading"><h2>Soundboard</h2><span>Local output</span></div>
-        <div class="soundboard-grid">
-          <button data-sound="blaster">Blaster</button><button data-sound="saber">Lightsaber</button>
-          <button data-sound="alarm">Alarm</button><button data-sound="door">Blast door</button>
-        </div>
       </section>
       <section class="resource-backlog">
         <div class="section-heading"><h2>External resources</h2><span id="external-resource-count">Loading</span></div>
@@ -417,6 +441,40 @@
         </div>
         <div id="external-resource-list" class="external-resource-list"></div>
       </section>
+    </section>
+  </main>
+
+  <main id="sound-view" class="sound-workspace" hidden>
+    <section class="sound-column soundboard-panel">
+      <header class="toolkit-heading"><div><small>AUDIO</small><h1>Soundboard</h1></div><button id="stop-sounds" class="secondary-button" type="button">Stop</button></header>
+      <div class="soundboard-controls"><label>Volume<input id="soundboard-volume" type="range" min="0" max="100" value="55"></label><span>Realm of Darkness refs</span></div>
+      <div class="soundboard-grid">
+        <button data-sound="blaster">Blaster</button><button data-sound="saber">Lightsaber</button>
+        <button data-sound="alarm">Alarm</button><button data-sound="door">Blast door</button>
+        <button data-sound="hyperdrive">Hyperdrive</button><button data-sound="comms">Comms</button>
+        <button data-sound="storm">Ion storm</button><button data-sound="cantina">Cantina sting</button>
+      </div>
+      <div id="realm-sound-links" class="realm-sound-links"></div>
+    </section>
+    <section class="sound-column music-panel">
+      <header class="toolkit-heading"><div><small>AMBIANCE</small><h1>YouTube Player</h1></div><button id="add-youtube-track" class="primary-button" type="button">Add</button></header>
+      <div class="youtube-frame"><iframe id="youtube-player" title="Ambiance music player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <form id="youtube-form" class="youtube-form">
+        <input id="youtube-url" type="url" placeholder="Paste YouTube link">
+        <button class="secondary-button">Resolve title</button>
+      </form>
+      <div id="youtube-playlist" class="youtube-playlist"></div>
+    </section>
+  </main>
+
+  <main id="quests-view" class="quests-workspace" hidden>
+    <aside class="quest-tree">
+      <div class="notes-sidebar-header"><h2>Quests</h2><button id="new-quest-episode" class="icon-button" title="New episode">＋</button></div>
+      <div id="quest-list"></div>
+    </aside>
+    <section class="quest-windows">
+      <header class="pdf-toolbar"><div><small>EPISODE FILES</small><h2 id="quest-active-title">Episode workspace</h2></div><button id="open-quest-file" class="secondary-button" type="button">Open file</button></header>
+      <div id="quest-file-windows" class="quest-file-windows"></div>
     </section>
   </main>
 
@@ -452,6 +510,50 @@
       <button class="primary-button">Create character</button>
     </form>
   </dialog>
+  <dialog id="bestiary-dialog" class="bestiary-dialog">
+    <section>
+      <header class="dialog-heading" data-dialog-drag="bestiary-dialog">
+        <div><small>ASSET LIBRARY</small><h2>Bestiary & Maps</h2></div>
+        <span class="dialog-view-controls">
+          <button data-library-view="normal" type="button" title="Normal view">□</button>
+          <button data-library-view="compact" type="button" title="Compact view">▤</button>
+          <button data-library-view="minimized" type="button" title="Minimize">−</button>
+        </span>
+        <button id="close-bestiary" type="button" class="icon-button" aria-label="Close">×</button>
+      </header>
+      <div class="bestiary-filters">
+        <select id="asset-library-mode" aria-label="Asset library">
+          <option value="creatures">Bestiary</option>
+          <option value="tokens">Token packs</option>
+          <option value="images">PDF art</option>
+        </select>
+        <input id="bestiary-search" type="search" placeholder="Search creature, faction…">
+        <select id="bestiary-type" aria-label="Creature type"><option value="">All types</option></select>
+        <select id="bestiary-cr" aria-label="Challenge rating"><option value="">All CR</option></select>
+      </div>
+      <div class="library-summary"><span id="asset-library-summary">Choose filters to narrow the catalog.</span><span>Drag or double-click to deploy</span></div>
+      <div id="token-library" class="token-library"></div>
+    </section>
+  </dialog>
+  <dialog id="creature-detail-dialog" class="creature-detail-dialog">
+    <section>
+      <header class="dialog-heading"><div><small>BESTIARY ENTRY</small><h2 id="creature-detail-title"></h2></div><button type="button" class="icon-button" data-close-dialog="creature-detail-dialog" aria-label="Close">×</button></header>
+      <div id="creature-detail-content" class="creature-detail-content"></div>
+      <div class="creature-detail-actions"><button id="deploy-creature-detail" class="primary-button">Add to encounter</button></div>
+    </section>
+  </dialog>
+  <dialog id="item-library-dialog" class="item-library-dialog">
+    <section>
+      <header class="dialog-heading"><div><small>SW5E CATALOG</small><h2>Equipment Library</h2></div><button type="button" class="icon-button" data-close-dialog="item-library-dialog" aria-label="Close">×</button></header>
+      <div class="item-library-filters">
+        <input id="item-library-search" type="search" placeholder="Search weapons, armor, gear…">
+        <select id="item-library-category" aria-label="Item category"><option value="">All categories</option></select>
+        <button id="add-custom-item" class="secondary-button" type="button">Custom item</button>
+      </div>
+      <div id="item-library-summary" class="library-summary">Loading catalog…</div>
+      <div id="item-library-results" class="item-library-results"></div>
+    </section>
+  </dialog>
   <dialog id="inventory-dialog">
     <form id="inventory-form">
       <div class="dialog-heading"><h2>Add inventory item</h2><button type="button" class="icon-button" data-close-dialog="inventory-dialog">×</button></div>
@@ -485,7 +587,7 @@
       </div>
     </form>
   </aside>
-  <script src="/static/app.js?v=20260710-resources-v6"></script>
-  <script type="module" src="/static/dice.js?v=20260710-assets-v4"></script>
+  <script src="/static/app.js?v=20260712-audit-v8"></script>
+  <script type="module" src="/static/dice.js?v=20260712-audit-v3"></script>
 </body>
 </html>

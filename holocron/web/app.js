@@ -22,7 +22,9 @@ const defaults = {
   visionRange: 6,
   zoom: 1,
   offset: { x: 0, y: 0 },
+  mapLocked: false,
   tool: "select",
+  snapToGrid: true,
   layers: { background: true, objects: true, tokens: true, grid: true, lighting: false, fog: false },
   tokens: [],
   walls: [],
@@ -42,6 +44,10 @@ const defaults = {
       right: { anchor: "right", x: 0, y: 12, width: 340, height: 720 },
     },
   },
+  soundPlaylist: [],
+  activeTrackId: null,
+  quests: [],
+  assetLibraryView: "normal",
 };
 
 const saved = JSON.parse(localStorage.getItem("holocron.session") || "null");
@@ -53,6 +59,7 @@ state.measurement = null;
 state.draggedToken = null;
 state.creatureCache = [];
 state.pendingNotePin = null;
+state.panStart = null;
 state.assetFilterMode = null;
 state.imageBookFilters = null;
 state.panelLayout = {
@@ -119,6 +126,7 @@ function sessionSnapshot() {
   delete clean.draggedToken;
   delete clean.creatureCache;
   delete clean.pendingNotePin;
+  delete clean.panStart;
   delete clean.assetFilterMode;
   delete clean.imageBookFilters;
   return clean;
@@ -219,6 +227,14 @@ function tokenColor(type) {
   if (type === "player") return "#0d99cc";
   if (type === "asset") return "#9e9e9e";
   return "#757575";
+}
+
+function snapPoint(point) {
+  if (!state.snapToGrid) return { x: point.x, y: point.y };
+  return {
+    x: Math.round(point.x / state.gridSize) * state.gridSize + state.gridSize / 2,
+    y: Math.round(point.y / state.gridSize) * state.gridSize + state.gridSize / 2,
+  };
 }
 
 function initials(name) {
@@ -327,6 +343,8 @@ function drawDoors() {
 
 function drawPersistentFog(width, height) {
   if (!state.layers.fog) return;
+  const playerOrigin = isPlayerView ? playerVisionToken() : null;
+  if (isPlayerView && !playerOrigin) return;
   const ratio = window.devicePixelRatio || 1;
   const fog = document.createElement("canvas");
   fog.width = width * ratio;
@@ -336,7 +354,7 @@ function drawPersistentFog(width, height) {
   fogCtx.fillStyle = "rgba(0, 2, 5, .92)";
   fogCtx.fillRect(0, 0, width, height);
   fogCtx.globalCompositeOperation = "destination-out";
-  const visiblePoints = isPlayerView ? [playerVisionToken()].filter(Boolean) : state.explored;
+  const visiblePoints = isPlayerView ? [playerOrigin] : state.explored;
   for (const point of visiblePoints) {
     const screen = screenPoint(point);
     fogCtx.beginPath();
@@ -379,9 +397,11 @@ function visibilityPolygon(origin, radius) {
 function drawLighting(width, height) {
   if (!state.layers.lighting) return;
   const opacity = Math.max(0, Math.min(1, state.ambientDarkness / 100));
-  const visionToken = (isPlayerView ? playerVisionToken() : null)
-    || state.tokens.find((token) => token.selected)
-    || state.tokens.find((token) => token.combatantId === state.selectedCombatantId);
+  const visionToken = isPlayerView
+    ? playerVisionToken()
+    : state.tokens.find((token) => token.selected)
+      || state.tokens.find((token) => token.combatantId === state.selectedCombatantId);
+  if (isPlayerView && !visionToken) return;
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, width, height);
@@ -558,6 +578,27 @@ function fitMapImage(image) {
   updateZoom();
 }
 
+function fillMapImage(image = state.image) {
+  if (!image) return;
+  const fill = Math.max(shell.clientWidth / image.width, shell.clientHeight / image.height);
+  state.zoom = Math.min(3, Math.max(.25, fill));
+  state.offset = {
+    x: (shell.clientWidth - image.width * state.zoom) / 2,
+    y: (shell.clientHeight - image.height * state.zoom) / 2,
+  };
+  updateZoom();
+}
+
+function centerMapImage(image = state.image) {
+  if (!image) return;
+  state.zoom = 1;
+  state.offset = {
+    x: (shell.clientWidth - image.width) / 2,
+    y: (shell.clientHeight - image.height) / 2,
+  };
+  updateZoom();
+}
+
 function loadMapFromUrl(url, options = {}) {
   if (!url || state.imageUrl === url) return;
   const image = new Image();
@@ -623,7 +664,7 @@ function addCombatant(source, point = null) {
   state.combatants.push(combatant);
   state.selectedCombatantId = combatant.id;
   if (point) state.tokens.push({
-    ...point,
+    ...snapPoint(point),
     combatantId: combatant.id,
     characterId: source.characterId || null,
     name: combatant.name,
@@ -812,7 +853,7 @@ function setupPanelLayoutControls() {
 function addMapAsset(source, point = mapCenterPoint()) {
   if (!source || !imageUrlFor(source)) return;
   state.tokens.push({
-    ...point,
+    ...snapPoint(point),
     id: crypto.randomUUID(),
     name: source.name || "Map asset",
     type: "asset",
@@ -981,7 +1022,8 @@ function libraryBadge(item) {
 function libraryActions(item, index) {
   const badge = `<span class="library-entry-badge">${escapeHtml(libraryBadge(item))}</span>`;
   const addButton = `<button class="library-entry-add" data-add-creature="${index}" title="Add to encounter" aria-label="Add to encounter">＋</button>`;
-  if (item.assetKind !== "pdf-image") return `<span class="library-entry-actions">${badge}${addButton}</span>`;
+  const detailButton = `<button class="library-entry-map" data-open-creature="${index}" title="Open creature sheet" aria-label="Open creature sheet">ⓘ</button>`;
+  if (item.assetKind !== "pdf-image") return `<span class="library-entry-actions">${badge}${item.stat_block ? detailButton : ""}${addButton}</span>`;
   return `<span class="library-entry-actions">${badge}${addButton}<button class="library-entry-map" data-map-background="${index}" title="Use as map background" aria-label="Use as map background">▣</button></span>`;
 }
 
@@ -1004,6 +1046,7 @@ function mapCenterPoint() {
 
 async function configureAssetFilter(mode, payload = null) {
   const filter = document.querySelector("#bestiary-cr");
+  const typeFilter = document.querySelector("#bestiary-type");
   if (state.assetFilterMode !== mode) {
     state.assetFilterMode = mode;
     filter.innerHTML = mode === "creatures"
@@ -1012,8 +1055,11 @@ async function configureAssetFilter(mode, payload = null) {
         ? '<option value="">All books</option>'
         : '<option value="">All</option>';
     filter.value = "";
+    typeFilter.innerHTML = '<option value="">All types</option>';
+    typeFilter.value = "";
   }
   filter.disabled = mode === "tokens";
+  typeFilter.disabled = mode !== "creatures";
   filter.setAttribute("aria-label", mode === "images" ? "PDF book" : "Challenge rating");
   if (mode === "images" && !state.imageBookFilters) {
     const response = await fetch("/api/assets/images/summary");
@@ -1032,17 +1078,22 @@ async function configureAssetFilter(mode, payload = null) {
       filter.add(new Option(`CR ${value}`, value));
     }
   }
+  if (mode === "creatures" && payload?.filters?.types && typeFilter.options.length === 1) {
+    for (const value of payload.filters.types) typeFilter.add(new Option(value, value));
+  }
 }
 
 async function loadBestiary() {
   const mode = document.querySelector("#asset-library-mode").value;
   const search = document.querySelector("#bestiary-search").value.trim();
-  const params = new URLSearchParams({ limit: mode === "tokens" ? "60" : mode === "images" ? "40" : "30" });
+  const params = new URLSearchParams({ limit: mode === "images" ? "40" : "60" });
   await configureAssetFilter(mode);
   const filterValue = document.querySelector("#bestiary-cr").value;
+  const typeValue = document.querySelector("#bestiary-type").value;
   document.querySelector("#bestiary-search").placeholder = mode === "tokens" ? "Search token, faction…" : mode === "images" ? "Search book, page, source…" : "Search creature, faction…";
   if (search) params.set("q", search);
   if (mode === "creatures" && filterValue) params.set("cr", filterValue);
+  if (mode === "creatures" && typeValue) params.set("type", typeValue);
   if (mode === "images" && filterValue) params.set("book", filterValue);
   try {
     const endpoint = mode === "tokens"
@@ -1067,16 +1118,29 @@ async function loadBestiary() {
         : payload.items;
     await configureAssetFilter(mode, payload);
     renderLibrary(items);
-    document.querySelector("#bestiary-count").textContent = `${payload.total} ${mode === "tokens" ? "tokens" : mode === "images" ? "images" : "creatures"}`;
+    const label = `${payload.total} ${mode === "tokens" ? "tokens" : mode === "images" ? "images" : "creatures"}`;
+    document.querySelector("#bestiary-count").textContent = label;
+    document.querySelector("#asset-library-summary").textContent = `${label} · showing ${items.length}`;
   } catch {
     renderLibrary();
     document.querySelector("#bestiary-count").textContent = "Offline presets";
+    document.querySelector("#asset-library-summary").textContent = "Offline presets";
   }
 }
 
 function updateZoom() {
   document.querySelector("#zoom-output").textContent = `${Math.round(state.zoom * 100)}%`;
   persist();
+}
+
+function ensureQuestState() {
+  if (state.quests?.length) return;
+  state.quests = [{
+    id: "episode-3",
+    title: "Episode 3: Untitled Operation",
+    folders: ["NPC", "Loot", "Encounters detail", "Main Quest", "Side quests", "Activities", "Random Events", "Locations", "Points of interest"],
+    files: [],
+  }];
 }
 
 document.querySelector("#grid-size").value = state.gridSize;
@@ -1088,6 +1152,7 @@ document.querySelector("#ambient-darkness").value = state.ambientDarkness;
 document.querySelector("#darkness-output").textContent = `${state.ambientDarkness}%`;
 document.querySelector("#vision-type").value = state.visionType;
 document.querySelector("#vision-range").value = state.visionRange;
+document.querySelector("#snap-to-grid").checked = state.snapToGrid;
 document.querySelectorAll("[data-layer]").forEach((input) => { input.checked = state.layers[input.dataset.layer]; });
 
 document.querySelector("#map-file").addEventListener("change", (event) => loadMap(event.target.files[0]));
@@ -1115,6 +1180,10 @@ document.querySelector("#unit-value").addEventListener("input", (event) => {
 });
 document.querySelector("#unit-name").addEventListener("change", (event) => { state.unitName = event.target.value; persist(); draw(); });
 document.querySelector("#travel-speed").addEventListener("change", (event) => { state.travelSpeed = Number(event.target.value); persist(); draw(); });
+document.querySelector("#snap-to-grid").addEventListener("change", (event) => {
+  state.snapToGrid = event.target.checked;
+  persist();
+});
 document.querySelector("#ambient-darkness").addEventListener("input", (event) => {
   state.ambientDarkness = Number(event.target.value);
   document.querySelector("#darkness-output").textContent = `${state.ambientDarkness}%`;
@@ -1133,15 +1202,42 @@ document.querySelectorAll("[data-layer]").forEach((input) => input.addEventListe
   draw();
 }));
 
+function updateMapCursor() {
+  canvas.dataset.cursor = state.panStart ? "panning" : state.tool === "pan" ? "pan" : state.tool === "select" ? "select" : state.tool === "eraser" ? "erase" : "draw";
+}
+
 document.querySelectorAll("[data-tool]").forEach((button) => button.addEventListener("click", () => {
   state.tool = button.dataset.tool;
   document.querySelectorAll("[data-tool]").forEach((item) => item.classList.toggle("active", item === button));
+  updateMapCursor();
   persist();
 }));
 
+document.querySelectorAll("[data-tool]").forEach((button) => button.classList.toggle("active", button.dataset.tool === state.tool));
+updateMapCursor();
+
 canvas.addEventListener("pointerdown", (event) => {
+  document.querySelector("#map-context-menu").hidden = true;
+  if (!state.mapLocked && (state.tool === "pan" || event.button === 1)) {
+    state.panStart = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      offsetX: state.offset.x,
+      offsetY: state.offset.y,
+    };
+    canvas.setPointerCapture(event.pointerId);
+    updateMapCursor();
+    return;
+  }
   const point = worldPoint(event);
   state.pointer = point;
+  if (state.tool === "eraser") {
+    eraseMapElement(point);
+    state.pointer = null;
+    persist();
+    draw();
+    return;
+  }
   if (state.tool === "measure") state.measurement = { start: point, end: point };
   if (state.tool === "wall") state.measurement = { start: point, end: point, wall: true };
   if (state.tool === "door") state.measurement = { start: point, end: point, door: true };
@@ -1179,18 +1275,34 @@ canvas.addEventListener("pointerdown", (event) => {
 });
 
 canvas.addEventListener("pointermove", (event) => {
+  if (state.panStart) {
+    state.offset = {
+      x: state.panStart.offsetX + event.clientX - state.panStart.clientX,
+      y: state.panStart.offsetY + event.clientY - state.panStart.clientY,
+    };
+    draw();
+    return;
+  }
   if (!state.pointer) return;
   const point = worldPoint(event);
   if (state.measurement) state.measurement.end = point;
   if (state.draggedToken) {
-    state.draggedToken.x = Math.round(point.x / state.gridSize) * state.gridSize + state.gridSize / 2;
-    state.draggedToken.y = Math.round(point.y / state.gridSize) * state.gridSize + state.gridSize / 2;
+    const destination = snapPoint(point);
+    state.draggedToken.x = destination.x;
+    state.draggedToken.y = destination.y;
     if (state.layers.fog) state.explored.push({ x: state.draggedToken.x, y: state.draggedToken.y });
   }
   draw();
 });
 
 canvas.addEventListener("pointerup", () => {
+  if (state.panStart) {
+    state.panStart = null;
+    updateMapCursor();
+    persist();
+    draw();
+    return;
+  }
   if (state.measurement?.door) {
     state.doors.push({ id: crypto.randomUUID(), start: state.measurement.start, end: state.measurement.end, open: false });
     state.measurement = null;
@@ -1207,7 +1319,15 @@ canvas.addEventListener("pointerup", () => {
   draw();
 });
 
+canvas.addEventListener("pointercancel", () => {
+  state.pointer = null;
+  state.draggedToken = null;
+  state.panStart = null;
+  updateMapCursor();
+});
+
 canvas.addEventListener("wheel", (event) => {
+  if (state.mapLocked) return;
   event.preventDefault();
   const rect = canvas.getBoundingClientRect();
   const cursor = { x: event.clientX - rect.left, y: event.clientY - rect.top };
@@ -1217,6 +1337,43 @@ canvas.addEventListener("wheel", (event) => {
   updateZoom();
   draw();
 }, { passive: false });
+
+const mapContextMenu = document.querySelector("#map-context-menu");
+canvas.addEventListener("contextmenu", (event) => {
+  event.preventDefault();
+  const rect = shell.getBoundingClientRect();
+  mapContextMenu.style.left = `${Math.min(event.clientX - rect.left, shell.clientWidth - 184)}px`;
+  mapContextMenu.style.top = `${Math.min(event.clientY - rect.top, shell.clientHeight - 170)}px`;
+  mapContextMenu.hidden = false;
+});
+mapContextMenu.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-map-action]");
+  if (!button) return;
+  const action = button.dataset.mapAction;
+  if (action === "fit" && state.image) fitMapImage(state.image);
+  if (action === "fill") fillMapImage();
+  if (action === "center") centerMapImage();
+  if (action === "grid") {
+    state.layers.grid = !state.layers.grid;
+    document.querySelector('[data-layer="grid"]').checked = state.layers.grid;
+  }
+  if (action === "lock") {
+    state.mapLocked = !state.mapLocked;
+    button.textContent = state.mapLocked ? "Unlock map image" : "Lock map image";
+  }
+  if (action === "focus") {
+    const workspace = document.querySelector("#battlemap-view");
+    workspace.classList.toggle("map-focus");
+    button.textContent = workspace.classList.contains("map-focus") ? "Exit map focus" : "Focus map";
+    resizeCanvas();
+  }
+  mapContextMenu.hidden = true;
+  persist();
+  draw();
+});
+document.addEventListener("pointerdown", (event) => {
+  if (!event.target.closest("#map-context-menu") && !event.target.closest("#map-canvas")) mapContextMenu.hidden = true;
+});
 
 document.querySelector("#zoom-in").addEventListener("click", () => { state.zoom = Math.min(3, state.zoom * 1.2); updateZoom(); draw(); });
 document.querySelector("#zoom-out").addEventListener("click", () => { state.zoom = Math.max(.25, state.zoom / 1.2); updateZoom(); draw(); });
@@ -1233,7 +1390,40 @@ document.querySelector("#token-library").addEventListener("dragstart", (event) =
   const entry = event.target.closest("[data-creature]");
   if (entry) event.dataTransfer.setData("application/holocron-token", entry.dataset.creature);
 });
+
+function distanceToSegment(point, segment) {
+  const length = Math.hypot(segment.end.x - segment.start.x, segment.end.y - segment.start.y) || 1;
+  const t = Math.max(0, Math.min(1, ((point.x - segment.start.x) * (segment.end.x - segment.start.x) + (point.y - segment.start.y) * (segment.end.y - segment.start.y)) / (length * length)));
+  return Math.hypot(point.x - (segment.start.x + t * (segment.end.x - segment.start.x)), point.y - (segment.start.y + t * (segment.end.y - segment.start.y)));
+}
+
+function eraseMapElement(point) {
+  const threshold = Math.max(16 / state.zoom, state.gridSize * .22);
+  const targets = [
+    ...state.tokens.map((item, index) => ({ type: "tokens", index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
+    ...state.notePins.map((item, index) => ({ type: "notePins", index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
+    ...state.pings.map((item, index) => ({ type: "pings", index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
+    ...state.walls.map((item, index) => ({ type: "walls", index, distance: distanceToSegment(point, item) })),
+    ...state.doors.map((item, index) => ({ type: "doors", index, distance: distanceToSegment(point, item) })),
+  ].sort((a, b) => a.distance - b.distance);
+  const target = targets[0];
+  if (!target || target.distance > threshold) return;
+  if (target.type === "tokens") {
+    const [token] = state.tokens.splice(target.index, 1);
+    if (token?.combatantId) state.combatants = state.combatants.filter((combatant) => combatant.id !== token.combatantId);
+    renderInitiative();
+    return;
+  }
+  state[target.type].splice(target.index, 1);
+}
 document.querySelector("#token-library").addEventListener("click", (event) => {
+  const detailButton = event.target.closest("[data-open-creature]");
+  if (detailButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    openCreatureDetail(state.creatureCache[Number(detailButton.dataset.openCreature)]);
+    return;
+  }
   const addButton = event.target.closest("[data-add-creature]");
   if (addButton) {
     event.preventDefault();
@@ -1247,6 +1437,41 @@ document.querySelector("#token-library").addEventListener("click", (event) => {
   event.stopPropagation();
   setMapBackgroundFromLibrary(state.creatureCache[Number(button.dataset.mapBackground)]);
 });
+
+function applyAssetLibraryView() {
+  const dialog = document.querySelector("#bestiary-dialog");
+  dialog.classList.toggle("compact-view", state.assetLibraryView === "compact");
+  dialog.classList.toggle("minimized-view", state.assetLibraryView === "minimized");
+}
+
+document.querySelector("#bestiary-dialog").addEventListener("click", (event) => {
+  const view = event.target.closest("[data-library-view]");
+  if (!view) return;
+  state.assetLibraryView = view.dataset.libraryView;
+  applyAssetLibraryView();
+  persist();
+});
+
+document.querySelector("#bestiary-dialog").addEventListener("pointerdown", (event) => {
+  const dragBar = event.target.closest("[data-dialog-drag]");
+  const dialog = document.querySelector("#bestiary-dialog");
+  if (!dragBar || event.target.closest("button")) return;
+  const rect = dialog.getBoundingClientRect();
+  const start = { x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
+  dragBar.setPointerCapture(event.pointerId);
+  const move = (moveEvent) => {
+    dialog.style.left = `${start.left + moveEvent.clientX - start.x}px`;
+    dialog.style.top = `${start.top + moveEvent.clientY - start.y}px`;
+    dialog.style.margin = "0";
+  };
+  const up = () => {
+    document.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerup", up);
+  };
+  document.addEventListener("pointermove", move);
+  document.addEventListener("pointerup", up, { once: true });
+});
+applyAssetLibraryView();
 document.querySelector("#token-library").addEventListener("dblclick", (event) => {
   if (event.target.closest("[data-map-background], [data-add-creature]")) return;
   const entry = event.target.closest("[data-creature]");
@@ -1276,9 +1501,49 @@ document.querySelector("#asset-library-mode").addEventListener("change", () => {
   clearTimeout(bestiaryTimer);
   document.querySelector("#bestiary-search").value = "";
   document.querySelector("#bestiary-cr").value = "";
+  document.querySelector("#bestiary-type").value = "";
   loadBestiary();
 });
 document.querySelector("#bestiary-cr").addEventListener("change", loadBestiary);
+document.querySelector("#bestiary-type").addEventListener("change", loadBestiary);
+const bestiaryDialog = document.querySelector("#bestiary-dialog");
+document.querySelector("#open-bestiary").addEventListener("click", () => {
+  if (!bestiaryDialog.open) bestiaryDialog.show();
+  loadBestiary();
+  document.querySelector("#bestiary-search").focus();
+});
+document.querySelector("#close-bestiary").addEventListener("click", () => bestiaryDialog.close());
+
+let creatureDetailItem = null;
+function openCreatureDetail(item) {
+  if (!item) return;
+  creatureDetailItem = item;
+  const imageUrl = imageUrlFor(item);
+  const adapted = {
+    ...item,
+    maxHp: item.hp,
+    statBlock: item.stat_block,
+    defenses: {
+      vulnerabilities: item.damage_vulnerabilities || [],
+      resistances: item.damage_resistances || [],
+      immunities: item.damage_immunities || [],
+      conditionImmunities: item.condition_immunities || [],
+    },
+    matchedToken: item.matched_token,
+    assetMatch: item.asset_match,
+  };
+  document.querySelector("#creature-detail-title").textContent = item.name;
+  document.querySelector("#creature-detail-content").innerHTML = `
+    <div class="creature-detail-layout">
+      <div>${imageUrl ? `<img class="creature-detail-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.name)}">` : '<div class="creature-detail-image"></div>'}<p class="citation">${escapeHtml(item.source || "SW5e")} · p.${escapeHtml(item.page || "?")}</p></div>
+      <div class="creature-detail-copy">${renderStatBlock(adapted)}</div>
+    </div>`;
+  document.querySelector("#creature-detail-dialog").showModal();
+}
+document.querySelector("#deploy-creature-detail").addEventListener("click", () => {
+  if (creatureDetailItem) addLibraryItem(creatureDetailItem, mapCenterPoint());
+  document.querySelector("#creature-detail-dialog").close();
+});
 
 const dialog = document.querySelector("#combatant-dialog");
 document.querySelector("#add-combatant").addEventListener("click", () => dialog.showModal());
@@ -1409,7 +1674,7 @@ document.querySelector("#clear-encounter").addEventListener("click", () => {
 window.addEventListener("resize", resizeCanvas);
 window.addEventListener("resize", applyPanelLayout);
 setupPanelLayoutControls();
-loadBestiary();
+document.querySelector("#bestiary-count").textContent = "Open catalog";
 renderInitiative();
 resizeCanvas();
 
@@ -1436,18 +1701,48 @@ function activeNote() {
   return noteState.notes.find((note) => note.id === noteState.activeId);
 }
 
-function markdownToHtml(markdown) {
-  let html = escapeHtml(markdown);
-  html = html
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+function renderInlineMarkdown(value) {
+  return escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/\[\[([^\]]+)\]\]/g, '<button class="wiki-link" data-wiki="$1">$1</button>');
-  return html.split(/\n{2,}/).map((block) =>
-    /^<h[1-3]>/.test(block) ? block : `<p>${block.replace(/\n/g, "<br>")}</p>`
-  ).join("");
+}
+
+function markdownToHtml(markdown) {
+  const output = [];
+  let paragraph = [];
+  let list = [];
+  const flushParagraph = () => {
+    if (paragraph.length) output.push(`<p>${paragraph.map(renderInlineMarkdown).join("<br>")}</p>`);
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (list.length) output.push(`<ul>${list.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join("")}</ul>`);
+    list = [];
+  };
+  for (const rawLine of String(markdown || "").split(/\r?\n/)) {
+    const line = rawLine.trim();
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    const bullet = line.match(/^(?:\*|-)\s+(.+)$/);
+    if (!line) {
+      flushParagraph();
+      flushList();
+    } else if (heading) {
+      flushParagraph();
+      flushList();
+      output.push(`<h${heading[1].length}>${renderInlineMarkdown(heading[2])}</h${heading[1].length}>`);
+    } else if (bullet) {
+      flushParagraph();
+      list.push(bullet[1]);
+    } else {
+      flushList();
+      paragraph.push(line);
+    }
+  }
+  flushParagraph();
+  flushList();
+  return output.join("");
 }
 
 function createNote(title = "Untitled note", content = "") {
@@ -1534,6 +1829,12 @@ function scheduleNoteSave() {
   }, 500);
 }
 
+let compendiumInitialized = false;
+let booksInitialized = false;
+let toolkitInitialized = false;
+let soundInitialized = false;
+let questsInitialized = false;
+
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
   const view = button.dataset.view;
   document.querySelector("#battlemap-view").hidden = view !== "battlemap";
@@ -1542,8 +1843,35 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
   document.querySelector("#compendium-view").hidden = view !== "compendium";
   document.querySelector("#books-view").hidden = view !== "books";
   document.querySelector("#toolkit-view").hidden = view !== "toolkit";
+  document.querySelector("#sound-view").hidden = view !== "sound";
+  document.querySelector("#quests-view").hidden = view !== "quests";
   document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item === button));
   if (view === "battlemap") resizeCanvas();
+  if (view === "compendium" && !compendiumInitialized) {
+    compendiumInitialized = true;
+    searchCompendium("combat");
+  }
+  if (view === "books" && !booksInitialized) {
+    booksInitialized = true;
+    loadBooks();
+  }
+  if (view === "toolkit" && !toolkitInitialized) {
+    toolkitInitialized = true;
+    generateNpc();
+    generateLoot();
+    generateShopkeeper();
+    generateFlavor();
+    loadExternalResources();
+  }
+  if (view === "sound" && !soundInitialized) {
+    soundInitialized = true;
+    renderSoundAmbiance();
+  }
+  if (view === "quests" && !questsInitialized) {
+    questsInitialized = true;
+    ensureQuestState();
+    renderQuests();
+  }
 }));
 document.querySelector("#new-note").addEventListener("click", () => createNote());
 document.querySelector("#note-search").addEventListener("input", renderNoteList);
@@ -1668,6 +1996,10 @@ const defaultCharacter = {
   credits: 1200,
   cargoCapacity: 100,
   gmHooks: "Former contact inside the Exchange. Protects their sibling at any cost.",
+  sharedNote: "Agreements, debts and promises confirmed by both player and GM.",
+  playerSecretNote: "",
+  playerSecretSealed: "",
+  template: "human-male",
   equipped: {},
   inventory: [
     { id: "armor-1", name: "Reinforced Fiber Armor", slot: "chest", weight: 12, ac: 4 },
@@ -1683,6 +2015,31 @@ const characterState = JSON.parse(localStorage.getItem("holocron.characters") ||
   selectedItemId: null,
   characters: [defaultCharacter],
 };
+
+function normalizeCharacter(character) {
+  const validTemplates = new Set(["human-male", "human-female", "zabrak-male", "zabrak-female"]);
+  character.resources ||= structuredClone(defaultCharacter.resources);
+  character.equipped ||= {};
+  character.inventory ||= [];
+  character.sharedNote ||= "";
+  character.playerSecretNote ||= "";
+  character.playerSecretSealed ||= "";
+  if (!validTemplates.has(character.template)) character.template = character.species === "Zabrak" ? "zabrak-male" : "human-male";
+  character.cargoCapacity ||= 100;
+  character.baseAc ||= 10;
+  character.gmHooks ||= "";
+  return character;
+}
+
+characterState.characters.forEach(normalizeCharacter);
+
+function safeCharacterTemplate(character) {
+  const validTemplates = new Set(["human-male", "human-female", "zabrak-male", "zabrak-female"]);
+  if (validTemplates.has(character?.template)) return character.template;
+  const fallback = character?.species === "Zabrak" ? "zabrak-male" : "human-male";
+  if (character) character.template = fallback;
+  return fallback;
+}
 
 function publicCharacter(character) {
   return {
@@ -1718,18 +2075,27 @@ function alignmentLabel(value) {
   return "Balanced";
 }
 
+function characterArmorClass(character, equippedItems) {
+  const armorValues = equippedItems
+    .map((item) => Number.parseInt(item.armorClass, 10))
+    .filter(Number.isFinite);
+  const armorBase = Math.max(character.baseAc || 10, ...armorValues);
+  return armorBase + equippedItems.reduce((total, item) => total + Number(item.ac || item.acBonus || 0), 0);
+}
+
 function renderCharacters() {
   const character = currentCharacter();
   if (!character) return;
-  document.querySelector("#character-list").innerHTML = characterState.characters.map((item) => `
-    <button class="character-list-item" data-character-id="${item.id}">
-      <i>${initials(item.name)}</i><strong>${escapeHtml(item.name)}<span>${escapeHtml(item.species)}</span></strong>
-    </button>`).join("");
+  const picker = document.querySelector("#character-picker");
+  picker.innerHTML = characterState.characters.map((item) => `<option value="${item.id}">${escapeHtml(item.name)} · ${escapeHtml(item.species)}</option>`).join("");
+  picker.value = character.id;
   document.querySelector("#character-name").textContent = character.name;
   document.querySelector("#character-species").value = character.species;
-  document.querySelector(".silhouette").dataset.species = character.species;
+  const template = safeCharacterTemplate(character);
+  document.querySelector("#character-template").value = template;
+  document.querySelector("#character-template-image").src = `/assets/character_templates/inventory-${template}.png`;
   const equippedItems = Object.values(character.equipped).map((id) => character.inventory.find((item) => item.id === id)).filter(Boolean);
-  const ac = character.baseAc + equippedItems.reduce((total, item) => total + (item.ac || 0), 0);
+  const ac = characterArmorClass(character, equippedItems);
   const attack = equippedItems.reduce((total, item) => total + (item.attack || 0), 0);
   const weight = character.inventory.reduce((total, item) => total + item.weight, 0);
   document.querySelector("#character-ac").textContent = ac;
@@ -1741,7 +2107,12 @@ function renderCharacters() {
   document.querySelectorAll("[data-slot]").forEach((slot) => {
     const item = character.inventory.find((candidate) => candidate.id === character.equipped[slot.dataset.slot]);
     slot.querySelector("strong").textContent = item?.name || "Empty";
+    slot.classList.toggle("filled", Boolean(item));
     slot.classList.toggle("target", Boolean(characterState.selectedItemId && character.inventory.find((candidate) => candidate.id === characterState.selectedItemId)?.slot === slot.dataset.slot));
+  });
+  document.querySelectorAll("[data-body-fill]").forEach((part) => {
+    const slots = part.dataset.bodyFill === "hands" ? ["hands", "mainHand", "offHand"] : [part.dataset.bodyFill];
+    part.classList.toggle("filled", slots.some((slot) => Boolean(character.equipped[slot])));
   });
   document.querySelector("#character-stash").innerHTML = character.inventory
     .filter((item) => !Object.values(character.equipped).includes(item.id))
@@ -1761,12 +2132,13 @@ function renderCharacters() {
   document.querySelector("#alignment-output").textContent = alignmentLabel(character.alignment);
   document.querySelector("#passive-insight").value = character.passiveInsight;
   document.querySelector("#gm-hooks").value = character.gmHooks;
+  document.querySelector("#shared-character-note").value = character.sharedNote;
+  document.querySelector("#player-secret-note").value = character.playerSecretSealed ? "[sealed]" : character.playerSecretNote;
+  document.querySelector("#player-secret-note").disabled = Boolean(character.playerSecretSealed);
 }
 
-document.querySelector("#character-list").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-character-id]");
-  if (!button) return;
-  characterState.activeId = button.dataset.characterId;
+document.querySelector("#character-picker").addEventListener("change", (event) => {
+  characterState.activeId = event.target.value;
   characterState.selectedItemId = null;
   saveCharacters();
   renderCharacters();
@@ -1805,6 +2177,11 @@ document.querySelector("#character-species").addEventListener("change", (event) 
   saveCharacters();
   renderCharacters();
 });
+document.querySelector("#character-template").addEventListener("change", (event) => {
+  currentCharacter().template = event.target.value;
+  saveCharacters();
+  renderCharacters();
+});
 document.querySelector("#alignment-slider").addEventListener("input", (event) => {
   currentCharacter().alignment = Number(event.target.value);
   document.querySelector("#alignment-output").textContent = alignmentLabel(currentCharacter().alignment);
@@ -1818,6 +2195,33 @@ document.querySelector("#gm-hooks").addEventListener("input", (event) => {
   currentCharacter().gmHooks = event.target.value;
   saveCharacters();
 });
+document.querySelector("#shared-character-note").addEventListener("input", (event) => {
+  currentCharacter().sharedNote = event.target.value;
+  saveCharacters();
+});
+document.querySelector("#player-secret-note").addEventListener("input", (event) => {
+  if (currentCharacter().playerSecretSealed) return;
+  currentCharacter().playerSecretNote = event.target.value;
+  saveCharacters();
+});
+document.querySelector("#seal-player-note").addEventListener("click", () => {
+  const character = currentCharacter();
+  const password = document.querySelector("#player-note-password").value;
+  if (!character || !password || !character.playerSecretNote) return;
+  character.playerSecretSealed = btoa(unescape(encodeURIComponent(`${password}:${character.playerSecretNote}`)));
+  character.playerSecretNote = "";
+  document.querySelector("#player-note-password").value = "";
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#clear-player-note-seal").addEventListener("click", () => {
+  const character = currentCharacter();
+  if (!character) return;
+  character.playerSecretSealed = "";
+  character.playerSecretNote = "";
+  saveCharacters();
+  renderCharacters();
+});
 document.querySelector("#new-character").addEventListener("click", () => document.querySelector("#character-dialog").showModal());
 document.querySelector("#deploy-character").addEventListener("click", () => {
   const character = currentCharacter();
@@ -1825,7 +2229,7 @@ document.querySelector("#deploy-character").addEventListener("click", () => {
   const existing = state.combatants.find((combatant) => combatant.characterId === character.id || combatant.name === character.name);
   if (!existing) {
     const equippedItems = Object.values(character.equipped).map((id) => character.inventory.find((item) => item.id === id)).filter(Boolean);
-    const ac = character.baseAc + equippedItems.reduce((total, item) => total + (item.ac || 0), 0);
+    const ac = characterArmorClass(character, equippedItems);
     const point = {
       x: (shell.clientWidth / 2 - state.offset.x) / state.zoom,
       y: (shell.clientHeight / 2 - state.offset.y) / state.zoom,
@@ -1853,7 +2257,87 @@ document.querySelector("#delete-character").addEventListener("click", () => {
   saveCharacters();
   renderCharacters();
 });
-document.querySelector("#add-inventory-item").addEventListener("click", () => document.querySelector("#inventory-dialog").showModal());
+let itemCatalogCache = [];
+let itemCatalogTimer;
+
+function inferredItemSlot(item) {
+  const category = String(item.category || "").toLowerCase();
+  const classification = String(item.armor_classification || "").toLowerCase();
+  if (classification === "shield" || category.includes("shield")) return "offHand";
+  if (category === "armor" || category.includes("clothing")) return "chest";
+  if (category === "weapon") return "mainHand";
+  return null;
+}
+
+function renderItemCatalog(items, total) {
+  itemCatalogCache = items;
+  document.querySelector("#item-library-summary").textContent = `${total} matching items · showing ${items.length}`;
+  document.querySelector("#item-library-results").innerHTML = items.map((item, index) => {
+    const detail = [item.category, item.rarity, item.damage, item.armor_class].filter(Boolean).join(" · ");
+    const description = item.description ? item.description.replace(/\s+/g, " ").slice(0, 180) : "No short description available.";
+    return `<article class="item-entry"><div><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(detail)} · ${Number(item.cost || 0).toLocaleString()} cr · ${item.weight || 0} lb</span><small>${escapeHtml(description)}</small></div><button class="library-entry-add" data-add-item="${index}" title="Add to inventory" aria-label="Add ${escapeHtml(item.name)} to inventory">＋</button></article>`;
+  }).join("") || '<p class="loading-line">No item matched these filters.</p>';
+}
+
+async function loadItemCatalog() {
+  const search = document.querySelector("#item-library-search").value.trim();
+  const category = document.querySelector("#item-library-category").value;
+  const params = new URLSearchParams({ limit: "120" });
+  if (search) params.set("q", search);
+  if (category) params.set("category", category);
+  document.querySelector("#item-library-summary").textContent = "Loading SW5e catalog…";
+  try {
+    const response = await fetch(`/api/catalog/items?${params}`);
+    if (!response.ok) throw new Error("Catalog unavailable");
+    const payload = await response.json();
+    const categorySelect = document.querySelector("#item-library-category");
+    if (categorySelect.options.length === 1) {
+      for (const value of payload.categories) categorySelect.add(new Option(value, value));
+      categorySelect.value = category;
+    }
+    renderItemCatalog(payload.items, payload.total);
+  } catch {
+    document.querySelector("#item-library-summary").textContent = "Catalog unavailable. Check the local server connection.";
+    document.querySelector("#item-library-results").innerHTML = "";
+  }
+}
+
+document.querySelector("#add-inventory-item").addEventListener("click", () => {
+  document.querySelector("#item-library-dialog").showModal();
+  loadItemCatalog();
+});
+document.querySelector("#item-library-search").addEventListener("input", () => {
+  clearTimeout(itemCatalogTimer);
+  itemCatalogTimer = setTimeout(loadItemCatalog, 180);
+});
+document.querySelector("#item-library-category").addEventListener("change", loadItemCatalog);
+document.querySelector("#add-custom-item").addEventListener("click", () => {
+  document.querySelector("#item-library-dialog").close();
+  document.querySelector("#inventory-dialog").showModal();
+});
+document.querySelector("#item-library-results").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-add-item]");
+  const source = itemCatalogCache[Number(button?.dataset.addItem)];
+  const character = currentCharacter();
+  if (!source || !character) return;
+  character.inventory.push({
+    id: crypto.randomUUID(),
+    catalogId: source.id,
+    name: source.name,
+    description: source.description || "",
+    category: source.category,
+    weight: Number(source.weight || 0),
+    value: Number(source.cost || 0),
+    slot: inferredItemSlot(source),
+    armorClass: source.armor_class || "",
+    damage: source.damage || "",
+    properties: source.properties || [],
+  });
+  saveCharacters();
+  renderCharacters();
+  button.textContent = "✓";
+  button.disabled = true;
+});
 document.querySelectorAll("[data-close-dialog]").forEach((button) => button.addEventListener("click", () => {
   document.querySelector(`#${button.dataset.closeDialog}`).close();
 }));
@@ -1864,6 +2348,7 @@ document.querySelector("#character-form").addEventListener("submit", (event) => 
   character.id = crypto.randomUUID();
   character.name = data.name;
   character.species = data.species;
+  character.template = data.species === "Zabrak" ? "zabrak-male" : "human-male";
   character.inventory = [];
   character.equipped = {};
   character.credits = 500;
@@ -1916,6 +2401,19 @@ function citationLabel(result) {
   return `${result.source_title} · ${pages}`;
 }
 
+function compendiumResultTitle(item) {
+  const heading = String(item.excerpt || "").match(/^#\s+([^\n#]+)/)?.[1]?.trim();
+  if (heading && !heading.includes("|")) return heading;
+  return item.section_title || item.source_title;
+}
+
+function compendiumExcerptHtml(excerpt) {
+  if (/\|\s*:?-{3,}/.test(excerpt)) {
+    return "<p>This result is a reference index. Use the source citation to open the corresponding structured entry.</p>";
+  }
+  return markdownToHtml(excerpt);
+}
+
 async function searchCompendium(query) {
   const input = document.querySelector("#compendium-search");
   query = (query ?? input.value).trim();
@@ -1931,8 +2429,8 @@ async function searchCompendium(query) {
     document.querySelector("#results-count").textContent = `${items.length} result${items.length === 1 ? "" : "s"}`;
     results.innerHTML = items.map((item) => `
       <article class="search-result">
-        <header><h3>${escapeHtml(item.section_title || item.source_title)}</h3><span>${escapeHtml(item.knowledge_type.replaceAll("_", " "))}</span></header>
-        <p>${escapeHtml(item.excerpt)}</p>
+        <header><h3>${escapeHtml(compendiumResultTitle(item))}</h3><span>${escapeHtml(item.knowledge_type.replaceAll("_", " "))}</span></header>
+        <div class="markdown-body">${compendiumExcerptHtml(item.excerpt)}</div>
         <footer>${escapeHtml(citationLabel(item))}</footer>
       </article>`).join("") || '<p class="loading-line">No indexed source matched this query.</p>';
   } catch {
@@ -1941,15 +2439,69 @@ async function searchCompendium(query) {
   }
 }
 
-document.querySelector("#run-compendium-search").addEventListener("click", () => searchCompendium());
+function itemPropertyLabel(property) {
+  if (!property) return "";
+  if (typeof property === "string") return property;
+  return property.name || property.content || property.description || String(property);
+}
+
+async function renderEquipmentCompendium() {
+  const input = document.querySelector("#compendium-search");
+  const params = new URLSearchParams({ limit: "80" });
+  if (input.value.trim()) params.set("q", input.value.trim());
+  const results = document.querySelector("#compendium-results");
+  results.classList.add("equipment-card-grid");
+  results.innerHTML = '<p class="loading-line">Loading SW5e equipment cards...</p>';
+  document.querySelector("#results-count").textContent = "Loading equipment";
+  try {
+    const response = await fetch(`/api/catalog/items?${params}`);
+    if (!response.ok) throw new Error("Catalog unavailable");
+    const payload = await response.json();
+    document.querySelector("#results-count").textContent = `${payload.total} equipment result${payload.total === 1 ? "" : "s"}`;
+    results.innerHTML = payload.items.map((item) => {
+      const properties = (item.properties || []).map(itemPropertyLabel).filter(Boolean);
+      const detail = [item.category, item.rarity, item.damage, item.armor_class].filter(Boolean).join(" · ");
+      return `<article class="equipment-card">
+        <header><h3>${escapeHtml(item.name)}</h3><span>${escapeHtml(item.kind)}</span></header>
+        <p>${escapeHtml(detail || item.source || "SW5e catalog")}</p>
+        <dl><dt>Cost</dt><dd>${Number(item.cost || 0).toLocaleString()} cr</dd><dt>Weight</dt><dd>${item.weight || 0} lb</dd></dl>
+        <div class="property-chips">${properties.slice(0, 8).map((property) =>
+          `<button data-property-search="${escapeHtml(property)}" title="Open property in compendium">${escapeHtml(property)}</button>`
+        ).join("")}</div>
+        <small>${escapeHtml((item.description || "").replace(/\s+/g, " ").slice(0, 260))}</small>
+      </article>`;
+    }).join("") || '<p class="loading-line">No matching equipment.</p>';
+  } catch {
+    document.querySelector("#results-count").textContent = "Unavailable";
+    results.innerHTML = '<p class="loading-line">The SW5e item catalog is unavailable. Refresh the local catalog when the network is available.</p>';
+  }
+}
+
+document.querySelector("#run-compendium-search").addEventListener("click", () => {
+  if (document.querySelector(".compendium-preset.active")?.dataset.compendiumMode === "equipment") renderEquipmentCompendium();
+  else searchCompendium();
+});
 document.querySelector("#compendium-search").addEventListener("keydown", (event) => {
-  if (event.key === "Enter") searchCompendium();
+  if (event.key !== "Enter") return;
+  if (document.querySelector(".compendium-preset.active")?.dataset.compendiumMode === "equipment") renderEquipmentCompendium();
+  else searchCompendium();
 });
 document.querySelector(".compendium-nav").addEventListener("click", (event) => {
   const preset = event.target.closest("[data-query]");
-  if (!preset) return;
-  document.querySelectorAll(".compendium-preset").forEach((item) => item.classList.toggle("active", item === preset));
+  const modePreset = event.target.closest("[data-compendium-mode]");
+  const target = preset || modePreset;
+  if (!target) return;
+  document.querySelectorAll(".compendium-preset").forEach((item) => item.classList.toggle("active", item === target));
+  if (modePreset?.dataset.compendiumMode === "equipment") {
+    renderEquipmentCompendium();
+    return;
+  }
   searchCompendium(preset.dataset.query);
+});
+document.querySelector("#compendium-results").addEventListener("click", (event) => {
+  const property = event.target.closest("[data-property-search]");
+  if (!property) return;
+  searchCompendium(`weapon property ${property.dataset.propertySearch}`);
 });
 document.querySelector("#rules-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -1976,8 +2528,6 @@ document.querySelector("#rules-form").addEventListener("submit", async (event) =
     answer.innerHTML = "<p>The rules assistant could not reach the local index.</p>";
   }
 });
-
-searchCompendium("combat");
 
 let bookCatalog = [];
 let activeBookId = null;
@@ -2033,8 +2583,6 @@ document.querySelector("#book-list").addEventListener("click", (event) => {
   if (book) openBook(book);
 });
 
-loadBooks();
-
 const npcNames = {
   Human: ["Mara Venn", "Cal Jorren", "Tessa Rook", "Dain Ordo"],
   Zabrak: ["Vesh Korr", "Sira Drenn", "Keth Marr", "Ralo Vex"],
@@ -2062,6 +2610,14 @@ const speciesNamePatterns = {
   Ithorian: { given: ["Momaw", "Tendau", "Roron", "Fandom", "Bol", "Orr"], family: ["Nadon", "Bendin", "Corobb", "Ree", "Thuun"] },
 };
 const npcRoles = ["Smuggler", "Bounty Hunter", "Officer", "Mechanic", "Informant", "Force Adept"];
+const npcRoleTerms = {
+  "Smuggler": ["smuggler", "pirate", "scoundrel", "thief"],
+  "Bounty Hunter": ["hunter", "mercenary", "assassin", "bounty"],
+  "Officer": ["officer", "captain", "commander", "trooper"],
+  "Mechanic": ["engineer", "mechanic", "technician", "slicer"],
+  "Informant": ["spy", "scout", "agent", "crime"],
+  "Force Adept": ["jedi", "sith", "force", "adept"],
+};
 const npcQuirks = [
   "Never sits with their back to a door.",
   "Collects obsolete navigation chips.",
@@ -2100,14 +2656,60 @@ const flavorParts = {
     "Cold starlight spills across the cockpit as the navicomputer rejects another route.",
     "Somewhere beyond the bulkhead, a maintenance droid starts screaming in binary.",
   ],
+  temple: [
+    "Dust lifts from the mosaic floor as symbols ignite in sequence beneath your feet.",
+    "A stone door stands open by the width of a hand, breathing air colder than the chamber.",
+    "The ruined altar reflects faces that are not standing in front of it.",
+  ],
+  wilderness: [
+    "Tall silver grass bends against the wind while something large keeps pace beyond the ridge.",
+    "The local wildlife falls silent in a widening circle around the trail.",
+    "Rain beads on the sensor dish, turning every distant heat signature into a question.",
+  ],
+  city: [
+    "Air traffic paints moving bands of light across towers patched with a century of repairs.",
+    "Market calls, repulsorlifts, and police announcements compete beneath an elevated transit line.",
+    "A surveillance drone pauses above the crowd and rotates directly toward you.",
+  ],
+  underworld: [
+    "A coded knock travels through three doors before the final lock releases.",
+    "Every booth has a privacy field, and every privacy field has someone trying to defeat it.",
+    "Fresh bounty notices glow beside older ones scratched out with a vibroknife.",
+  ],
+  battlefield: [
+    "Ash rolls across the broken position as artillery flashes beyond the horizon.",
+    "A damaged walker burns without sound until the next shockwave reaches you.",
+    "The comm channel is crowded with half-finished orders and coordinates that no longer exist.",
+  ],
+  space: [
+    "The stars vanish behind the silhouette of something too large for the passive sensors.",
+    "Debris turns slowly in the searchlights, each fragment carrying the same scorched insignia.",
+    "A weak distress signal repeats from a point the navicomputer marks as empty space.",
+  ],
+  investigation: [
+    "The room has been cleaned carefully, except for one object placed back at the wrong angle.",
+    "Security footage skips the same eleven seconds on every available recording.",
+    "A witness repeats a perfect story while watching the exit instead of you.",
+  ],
+  celebration: [
+    "Lantern droids scatter colored light over a crowd singing three different versions of the same anthem.",
+    "Fireworks bloom above the district while vendors hand out spiced drinks and counterfeit medals.",
+    "For a few minutes, strangers dance together as though the war ended yesterday.",
+  ],
 };
 const flavorTone = {
   tense: "Nobody speaks above a murmur; every sudden movement draws a hand toward a holster.",
   mysterious: "A detail refuses to fit, as though someone carefully edited this place after the fact.",
   lively: "Voices overlap in a dozen languages, turning the space into a restless current of opportunity.",
   grim: "Everything useful has already been stripped away, leaving only stains and old promises.",
+  serene: "For once, the silence feels complete rather than threatening, and there is time to notice small things.",
+  ominous: "A slow pattern repeats at the edge of hearing, close enough to promise that something is approaching.",
+  hopeful: "One small sign of repair survives here, proof that somebody still expects a future.",
+  chaotic: "Plans collapse into overlapping movement, shouted warnings, and opportunities that will last only seconds.",
 };
 let generatedEncounter = [];
+let generatedNpc = null;
+let npcBestiaryCache = null;
 
 function randomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -2125,21 +2727,58 @@ function generateSpeciesName(species) {
   return `${randomItem(pattern.given)} ${randomItem(pattern.family)}`;
 }
 
-function generateNpc() {
+async function loadNpcBestiary() {
+  if (npcBestiaryCache) return npcBestiaryCache;
+  try {
+    const response = await fetch("/api/compendium/creatures?limit=200");
+    const payload = response.ok ? await response.json() : { items: [] };
+    npcBestiaryCache = payload.items || [];
+  } catch {
+    npcBestiaryCache = [];
+  }
+  return npcBestiaryCache;
+}
+
+async function generateNpc() {
   const species = document.querySelector("#npc-species").value || randomItem(Object.keys(speciesNamePatterns));
   const role = document.querySelector("#npc-role").value || randomItem(npcRoles);
   const name = Math.random() < 0.35 && npcNames[species] ? randomItem(npcNames[species]) : generateSpeciesName(species);
-  const attributes = ["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((label) => ({
-    label, value: 8 + Math.floor(Math.random() * 11),
-  }));
+  const catalog = await loadNpcBestiary();
+  const terms = npcRoleTerms[role] || [];
+  const roleMatches = catalog.filter((item) => terms.some((term) => item.name.toLowerCase().includes(term)));
+  const humanoids = catalog.filter((item) => ["human", "humanoid"].includes(item.type));
+  const candidatePool = roleMatches.length ? roleMatches : humanoids.length ? humanoids : catalog;
+  const illustratedRoleMatches = roleMatches.filter((item) => imageUrlFor(item));
+  const illustratedHumanoids = humanoids.filter((item) => imageUrlFor(item));
+  const candidate = illustratedRoleMatches.length
+    ? randomItem(illustratedRoleMatches)
+    : illustratedHumanoids.length
+      ? randomItem(illustratedHumanoids)
+      : candidatePool.length ? randomItem(candidatePool) : null;
+  const abilities = candidate?.abilities || candidate?.stat_block?.abilities || {};
+  const attributes = ["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((label) => {
+    const parsed = Number.parseInt(String(abilities[label.toLowerCase()] || ""), 10);
+    return { label, value: Number.isFinite(parsed) ? parsed : 8 + Math.floor(Math.random() * 11) };
+  });
+  const portraitUrl = imageUrlFor(candidate);
+  const actions = candidate?.actions?.slice(0, 4) || ["Blaster attack"];
+  const quirk = randomItem(npcQuirks);
+  const hook = randomItem(npcHooks);
+  generatedNpc = candidate
+    ? { ...candidate, name, type: candidate.type || "enemy", npcRole: role, npcSpecies: species }
+    : { name, type: "enemy", hp: 12, ac: 12, cr: "1/4", actions, abilities };
   document.querySelector("#npc-output").innerHTML = `
-    <canvas id="npc-portrait-canvas" class="npc-portrait" width="144" height="144"></canvas>
-    <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(randomItem(npcQuirks))}</p></div>`;
-  drawNpcPortrait(species, name);
+    ${portraitUrl ? `<img class="npc-portrait" src="${escapeHtml(portraitUrl)}" alt="${escapeHtml(name)}">` : '<canvas id="npc-portrait-canvas" class="npc-portrait" width="144" height="144"></canvas>'}
+    <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(quirk)}</p></div>`;
+  if (!portraitUrl) drawNpcPortrait(species, name);
   document.querySelector("#npc-attributes").innerHTML = attributes.map((attribute) =>
     `<span>${attribute.label}<strong>${attribute.value}</strong></span>`
   ).join("");
-  document.querySelector("#npc-hook").textContent = randomItem(npcHooks);
+  document.querySelector("#npc-combat-profile").innerHTML = `
+    <div class="npc-profile-stats"><span>AC<strong>${candidate?.ac || 12}</strong></span><span>HP<strong>${candidate?.hp || 12}</strong></span><span>CR<strong>${escapeHtml(candidate?.cr || "1/4")}</strong></span></div>
+    <div class="npc-profile-actions"><strong>Actions</strong> · ${escapeHtml(actions.join(", "))}</div>`;
+  document.querySelector("#npc-hook").textContent = hook;
+  document.querySelector("#npc-to-encounter").disabled = false;
 }
 
 let externalResources = [];
@@ -2206,16 +2845,56 @@ function drawNpcPortrait(species, name) {
   portraitCtx.beginPath(); portraitCtx.moveTo(58, 97); portraitCtx.quadraticCurveTo(72, 104, 87, 97); portraitCtx.stroke();
 }
 
-function generateLoot() {
+async function generateLoot() {
   const cr = Math.max(0, Number(document.querySelector("#toolkit-cr").value) || 0);
-  const credits = Math.round((150 + cr * 275 + Math.random() * 400) / 10) * 10;
-  const modCount = Math.max(1, Math.ceil(cr / 7));
-  const mods = Array.from({ length: modCount }, () => randomItem(lootMods));
-  document.querySelector("#loot-output").innerHTML = `
-    <div class="loot-line"><span>Credits</span><strong>${credits.toLocaleString()} cr</strong></div>
-    <div class="loot-line"><span>Modifications</span><strong>${escapeHtml(mods.join(", "))}</strong></div>
-    <div class="loot-line"><span>Consumables</span><strong>${1 + Math.floor(cr / 4)}× ${escapeHtml(randomItem(consumables))}</strong></div>
-    <div class="loot-line"><span>Salvage grade</span><strong>${cr < 5 ? "Standard" : cr < 12 ? "Prototype" : "Military restricted"}</strong></div>`;
+  const extraCategory = document.querySelector("#extra-loot-category").value;
+  const maxRarity = document.querySelector("#extra-loot-rarity").value;
+  const output = document.querySelector("#loot-output");
+  output.innerHTML = '<p class="loading-line">Searching the SW5e catalog…</p>';
+  try {
+    const params = new URLSearchParams({ cr, count: Math.max(3, Math.min(7, 3 + Math.floor(cr / 5))) });
+    if (extraCategory) {
+      params.set("extra_category", extraCategory);
+      params.set("max_rarity", maxRarity);
+    }
+    const response = await fetch(`/api/catalog/items/loot?${params}`);
+    if (!response.ok) throw new Error("Loot catalog unavailable");
+    const payload = await response.json();
+    const items = payload.items.map((item) => {
+      const detail = [item.category, item.rarity, item.damage].filter(Boolean).join(" · ");
+      return `<div class="loot-line"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(detail || item.source || "SW5e")}</strong></div>`;
+    }).join("");
+    output.innerHTML = `
+      <div class="loot-line"><span>Credits</span><strong>${payload.credits.toLocaleString()} cr</strong></div>
+      ${items}
+      <div class="loot-line"><span>Field supplies</span><strong>${1 + Math.floor(cr / 4)}× ${escapeHtml(randomItem(consumables))}</strong></div>
+      <div class="loot-line"><span>Salvage lead</span><strong>${escapeHtml(randomItem(lootMods))}</strong></div>`;
+  } catch {
+    output.innerHTML = '<p class="loading-line">The SW5e loot catalog is unavailable.</p>';
+  }
+}
+
+async function generateShopkeeper() {
+  const params = new URLSearchParams({
+    settlement: document.querySelector("#shop-size").value,
+    allegiance: document.querySelector("#shop-allegiance").value,
+    wealth: document.querySelector("#shop-wealth").value,
+  });
+  const output = document.querySelector("#shopkeeper-output");
+  output.innerHTML = '<p class="loading-line">Stocking the shelves...</p>';
+  try {
+    const response = await fetch(`/api/catalog/items/shopkeeper?${params}`);
+    if (!response.ok) throw new Error("Shop unavailable");
+    const payload = await response.json();
+    output.innerHTML = `
+      <div class="shopkeeper-title"><strong>${escapeHtml(payload.name)}</strong><span>${escapeHtml(payload.settlement)} · ${escapeHtml(payload.allegiance)} · ${escapeHtml(payload.wealth)}</span></div>
+      ${payload.wares.map((item) => {
+        const detail = [item.category, item.rarity, item.damage].filter(Boolean).join(" · ");
+        return `<div class="loot-line"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(detail || `${Number(item.cost || 0).toLocaleString()} cr`)}</strong></div>`;
+      }).join("")}`;
+  } catch {
+    output.innerHTML = '<p class="loading-line">Shopkeeper catalog unavailable.</p>';
+  }
 }
 
 async function generateEncounter() {
@@ -2244,7 +2923,13 @@ function generateFlavor() {
 }
 
 document.querySelector("#generate-npc").addEventListener("click", generateNpc);
+document.querySelector("#npc-to-encounter").addEventListener("click", () => {
+  if (!generatedNpc) return;
+  addCombatant(generatedNpc, mapCenterPoint());
+  document.querySelector('[data-view="battlemap"]').click();
+});
 document.querySelector("#generate-loot").addEventListener("click", generateLoot);
+document.querySelector("#generate-shopkeeper").addEventListener("click", generateShopkeeper);
 document.querySelector("#generate-encounter").addEventListener("click", generateEncounter);
 document.querySelector("#generate-flavor").addEventListener("click", generateFlavor);
 document.querySelector("#external-resource-search").addEventListener("input", renderExternalResources);
@@ -2260,37 +2945,239 @@ document.querySelector("#flavor-to-note").addEventListener("click", () => {
   document.querySelector('[data-view="notes"]').click();
 });
 
-generateNpc();
-generateLoot();
-generateFlavor();
-loadExternalResources();
+let soundAudioContext;
+let soundMasterGain;
+const activeSoundNodes = new Set();
+
+function ensureSoundboard() {
+  soundAudioContext ||= new AudioContext();
+  if (!soundMasterGain) {
+    soundMasterGain = soundAudioContext.createGain();
+    soundMasterGain.gain.value = Number(document.querySelector("#soundboard-volume").value) / 100;
+    soundMasterGain.connect(soundAudioContext.destination);
+  }
+  soundAudioContext.resume();
+  return soundAudioContext;
+}
+
+function trackSoundNode(node) {
+  activeSoundNodes.add(node);
+  node.addEventListener("ended", () => activeSoundNodes.delete(node), { once: true });
+  return node;
+}
+
+function soundTone(startFrequency, endFrequency, duration, type = "sine", volume = .2, delay = 0) {
+  const audio = ensureSoundboard();
+  const start = audio.currentTime + delay;
+  const oscillator = trackSoundNode(audio.createOscillator());
+  const gain = audio.createGain();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(startFrequency, start);
+  oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), start + duration);
+  gain.gain.setValueAtTime(volume, start);
+  gain.gain.exponentialRampToValueAtTime(.001, start + duration);
+  oscillator.connect(gain).connect(soundMasterGain);
+  oscillator.start(start);
+  oscillator.stop(start + duration);
+}
+
+function soundNoise(duration, volume = .12, frequency = 1000, delay = 0) {
+  const audio = ensureSoundboard();
+  const buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * duration), audio.sampleRate);
+  const samples = buffer.getChannelData(0);
+  for (let index = 0; index < samples.length; index++) samples[index] = Math.random() * 2 - 1;
+  const source = trackSoundNode(audio.createBufferSource());
+  const filter = audio.createBiquadFilter();
+  const gain = audio.createGain();
+  const start = audio.currentTime + delay;
+  source.buffer = buffer;
+  filter.type = "lowpass";
+  filter.frequency.value = frequency;
+  gain.gain.setValueAtTime(volume, start);
+  gain.gain.exponentialRampToValueAtTime(.001, start + duration);
+  source.connect(filter).connect(gain).connect(soundMasterGain);
+  source.start(start);
+  source.stop(start + duration);
+}
 
 function playSoundEffect(type) {
-  const audio = new AudioContext();
-  const oscillator = audio.createOscillator();
-  const gain = audio.createGain();
-  const now = audio.currentTime;
-  oscillator.connect(gain).connect(audio.destination);
   if (type === "blaster") {
-    oscillator.type = "sawtooth"; oscillator.frequency.setValueAtTime(900, now); oscillator.frequency.exponentialRampToValueAtTime(90, now + .18);
-    gain.gain.setValueAtTime(.35, now); gain.gain.exponentialRampToValueAtTime(.001, now + .2);
+    soundTone(1450, 85, .22, "sawtooth", .42);
+    soundNoise(.18, .2, 2400);
   } else if (type === "saber") {
-    oscillator.type = "sawtooth"; oscillator.frequency.setValueAtTime(75, now); oscillator.frequency.linearRampToValueAtTime(130, now + .5);
-    gain.gain.setValueAtTime(.18, now); gain.gain.exponentialRampToValueAtTime(.001, now + .65);
+    soundTone(72, 128, .85, "sawtooth", .22);
+    soundTone(144, 95, .7, "sine", .12, .08);
   } else if (type === "alarm") {
-    oscillator.type = "square"; oscillator.frequency.setValueAtTime(440, now); oscillator.frequency.setValueAtTime(660, now + .22); oscillator.frequency.setValueAtTime(440, now + .44);
-    gain.gain.setValueAtTime(.15, now); gain.gain.exponentialRampToValueAtTime(.001, now + .7);
-  } else {
-    oscillator.type = "triangle"; oscillator.frequency.setValueAtTime(65, now); oscillator.frequency.exponentialRampToValueAtTime(28, now + .7);
-    gain.gain.setValueAtTime(.3, now); gain.gain.exponentialRampToValueAtTime(.001, now + .75);
+    [0, .24, .48].forEach((delay, index) => soundTone(index % 2 ? 720 : 470, index % 2 ? 500 : 650, .2, "square", .16, delay));
+  } else if (type === "door") {
+    soundNoise(.8, .28, 380);
+    soundTone(82, 28, .85, "triangle", .3);
+  } else if (type === "hyperdrive") {
+    soundNoise(1.4, .18, 1400);
+    soundTone(55, 1500, 1.2, "sawtooth", .22);
+    soundTone(110, 2200, .8, "sine", .13, .35);
+  } else if (type === "comms") {
+    soundNoise(.65, .08, 3200);
+    [0, .14, .3].forEach((delay) => soundTone(920, 640, .09, "square", .13, delay));
+  } else if (type === "storm") {
+    soundNoise(1.8, .24, 850);
+    soundTone(48, 28, 1.7, "sine", .2);
+  } else if (type === "cantina") {
+    [330, 392, 440, 523, 392].forEach((frequency, index) => soundTone(frequency, frequency * .98, .18, "triangle", .14, index * .14));
   }
-  oscillator.start(now);
-  oscillator.stop(now + .8);
 }
 
 document.querySelector(".soundboard-grid").addEventListener("click", (event) => {
   const button = event.target.closest("[data-sound]");
   if (button) playSoundEffect(button.dataset.sound);
+});
+document.querySelector("#soundboard-volume").addEventListener("input", (event) => {
+  if (soundMasterGain) soundMasterGain.gain.value = Number(event.target.value) / 100;
+});
+document.querySelector("#stop-sounds").addEventListener("click", () => {
+  for (const node of activeSoundNodes) {
+    try { node.stop(); } catch { /* Already stopped. */ }
+  }
+  activeSoundNodes.clear();
+});
+
+const realmSoundBoards = [
+  { name: "Darth Vader", url: "https://www.realmofdarkness.net/sb/sw-vader/" },
+  { name: "Sound Effects", url: "https://www.realmofdarkness.net/sb/category/sw/sw-sfx" },
+  { name: "Droids", url: "https://www.realmofdarkness.net/sb/category/sw/droids" },
+  { name: "Creatures", url: "https://www.realmofdarkness.net/sb/category/sw/creatures" },
+  { name: "Podracers", url: "https://www.realmofdarkness.net/sb/category/sw/podracers" },
+  { name: "Jedi & Rebellion", url: "https://www.realmofdarkness.net/sb/category/sw/jedi-rebellion" },
+  { name: "Empire & Villains", url: "https://www.realmofdarkness.net/sb/category/sw/empire-villains" },
+];
+
+function youtubeIdFromUrl(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) return parsed.pathname.slice(1);
+    if (parsed.searchParams.get("v")) return parsed.searchParams.get("v");
+    const match = parsed.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/);
+    return match?.[1] || "";
+  } catch {
+    return "";
+  }
+}
+
+async function resolveYoutubeTitle(url) {
+  try {
+    const response = await fetch(`/api/media/youtube-title?url=${encodeURIComponent(url)}`);
+    if (!response.ok) throw new Error("Title unavailable");
+    const payload = await response.json();
+    return payload.title || "";
+  } catch {
+    return "";
+  }
+}
+
+function renderSoundAmbiance() {
+  document.querySelector("#realm-sound-links").innerHTML = realmSoundBoards.map((board) => `
+    <a href="${escapeHtml(board.url)}" target="_blank" rel="noopener">
+      <strong>${escapeHtml(board.name)}</strong><span>Open source board</span>
+    </a>`).join("");
+  const activeTrack = state.soundPlaylist.find((track) => track.id === state.activeTrackId) || state.soundPlaylist[0];
+  if (activeTrack) {
+    state.activeTrackId = activeTrack.id;
+    document.querySelector("#youtube-player").src = `https://www.youtube.com/embed/${escapeHtml(activeTrack.videoId)}?rel=0`;
+  } else {
+    document.querySelector("#youtube-player").removeAttribute("src");
+  }
+  document.querySelector("#youtube-playlist").innerHTML = state.soundPlaylist.map((track) => `
+    <article class="playlist-track ${track.id === state.activeTrackId ? "active" : ""}">
+      <button data-play-track="${track.id}"><strong>${escapeHtml(track.title)}</strong><span>YouTube</span></button>
+      <button class="icon-button" data-remove-track="${track.id}" title="Remove track">×</button>
+    </article>`).join("") || '<p class="loading-line">Add curated music links when ready.</p>';
+  persist();
+}
+
+document.querySelector("#youtube-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const input = document.querySelector("#youtube-url");
+  const url = input.value.trim();
+  const videoId = youtubeIdFromUrl(url);
+  if (!videoId) return;
+  const resolved = await resolveYoutubeTitle(url);
+  const title = prompt("Playlist name", resolved || `YouTube track ${state.soundPlaylist.length + 1}`);
+  if (!title) return;
+  const track = { id: crypto.randomUUID(), videoId, title, url };
+  state.soundPlaylist.push(track);
+  state.activeTrackId = track.id;
+  input.value = "";
+  renderSoundAmbiance();
+});
+
+document.querySelector("#add-youtube-track").addEventListener("click", () => document.querySelector("#youtube-url").focus());
+document.querySelector("#youtube-playlist").addEventListener("click", (event) => {
+  const play = event.target.closest("[data-play-track]");
+  const remove = event.target.closest("[data-remove-track]");
+  if (play) state.activeTrackId = play.dataset.playTrack;
+  if (remove) {
+    state.soundPlaylist = state.soundPlaylist.filter((track) => track.id !== remove.dataset.removeTrack);
+    if (state.activeTrackId === remove.dataset.removeTrack) state.activeTrackId = state.soundPlaylist[0]?.id || null;
+  }
+  if (play || remove) renderSoundAmbiance();
+});
+
+function renderQuests() {
+  ensureQuestState();
+  const active = state.quests[0];
+  document.querySelector("#quest-active-title").textContent = active?.title || "Episode workspace";
+  document.querySelector("#quest-list").innerHTML = state.quests.map((quest) => `
+    <article class="quest-entry">
+      <button data-quest-id="${quest.id}"><strong>${escapeHtml(quest.title)}</strong><span>${quest.folders.length} folders · ${quest.files.length} files</span></button>
+      <div>${quest.folders.map((folder) => `<button data-open-quest-folder="${quest.id}:${escapeHtml(folder)}">${escapeHtml(folder)}</button>`).join("")}</div>
+    </article>`).join("");
+  document.querySelector("#quest-file-windows").innerHTML = active.files.map((file) => `
+    <article class="quest-file-window">
+      <header><strong>${escapeHtml(file.title)}</strong><button class="icon-button" data-close-quest-file="${file.id}">×</button></header>
+      <div class="note-preview">${markdownToHtml(file.content)}</div>
+    </article>`).join("") || '<p class="loading-line">Open a quest folder to create a working file window.</p>';
+  persist();
+}
+
+document.querySelector("#new-quest-episode").addEventListener("click", () => {
+  const title = prompt("Episode title", `Episode ${state.quests.length + 1}: Untitled Quest`);
+  if (!title) return;
+  state.quests.unshift({
+    id: crypto.randomUUID(),
+    title,
+    folders: ["NPC", "Loot", "Encounters detail", "Main Quest", "Side quests", "Activities", "Random Events", "Locations", "Points of interest"],
+    files: [],
+  });
+  renderQuests();
+});
+document.querySelector("#quest-list").addEventListener("click", (event) => {
+  const folderButton = event.target.closest("[data-open-quest-folder]");
+  if (!folderButton) return;
+  const [questId, folder] = folderButton.dataset.openQuestFolder.split(":");
+  const quest = state.quests.find((item) => item.id === questId);
+  if (!quest) return;
+  quest.files.push({
+    id: crypto.randomUUID(),
+    title: `${folder} notes`,
+    content: `# ${folder}\n\nLink NPCs, loot, compendium entries or other files with [[double brackets]].`,
+  });
+  renderQuests();
+});
+document.querySelector("#quest-file-windows").addEventListener("click", (event) => {
+  const close = event.target.closest("[data-close-quest-file]");
+  if (!close) return;
+  const quest = state.quests[0];
+  quest.files = quest.files.filter((file) => file.id !== close.dataset.closeQuestFile);
+  renderQuests();
+});
+document.querySelector("#open-quest-file").addEventListener("click", () => {
+  ensureQuestState();
+  state.quests[0].files.push({
+    id: crypto.randomUUID(),
+    title: "New quest file",
+    content: "# New quest file\n\n",
+  });
+  renderQuests();
 });
 
 let lastAssistantAnswer = "";

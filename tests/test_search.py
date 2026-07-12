@@ -1,7 +1,7 @@
 from holocron.db.database import get_connection
 from holocron.ingest.pipeline import ingest_books
 from holocron.search.answer import answer_question
-from holocron.search.fts import search_chunks
+from holocron.search.fts import _excerpt, search_chunks
 
 
 def test_search_and_answer_have_citations(tmp_path, monkeypatch):
@@ -37,3 +37,10 @@ def test_search_no_result(tmp_path, monkeypatch):
 
     assert search_chunks("missingterm", 5) == []
     assert answer_question("missingterm").found is False
+
+
+def test_excerpt_restores_compendium_structure():
+    excerpt = _excerpt("# Combat ## Summary Combat rules. ## Key Rules * Roll initiative. * Take a turn.")
+
+    assert "## Summary\nCombat rules." in excerpt
+    assert "\n* Roll initiative." in excerpt

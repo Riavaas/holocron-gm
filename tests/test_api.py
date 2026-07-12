@@ -177,6 +177,47 @@ def test_compendium_creature_detail_and_missing():
     assert client.get("/api/compendium/creatures/not-real").status_code == 404
 
 
+def test_item_catalog_api_filters_cached_items(monkeypatch):
+    from holocron.api.routes import catalog
+
+    monkeypatch.setattr(
+        catalog,
+        "load_item_catalog",
+        lambda: (
+            {"id": "1", "name": "Medpac", "category": "Medical", "description": "Healing", "kind": "equipment"},
+            {"id": "2", "name": "Blaster", "category": "Weapon", "description": "Energy", "kind": "equipment"},
+        ),
+    )
+    client = TestClient(app)
+
+    response = client.get("/api/catalog/items", params={"q": "med", "category": "Medical"})
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["name"] == "Medpac"
+    assert response.json()["total"] == 1
+
+
+def test_item_catalog_generates_repeatable_loot(monkeypatch):
+    from holocron.api.routes import catalog
+
+    monkeypatch.setattr(
+        catalog,
+        "load_item_catalog",
+        lambda: tuple(
+            {"id": str(index), "name": f"Item {index}", "category": "Gear", "kind": "equipment", "cost": 100}
+            for index in range(8)
+        ),
+    )
+    client = TestClient(app)
+
+    first = client.get("/api/catalog/items/loot", params={"cr": 3, "count": 4, "seed": 42})
+    second = client.get("/api/catalog/items/loot", params={"cr": 3, "count": 4, "seed": 42})
+
+    assert first.status_code == 200
+    assert first.json() == second.json()
+    assert len(first.json()["items"]) == 4
+
+
 def test_books_library_and_inline_reader(tmp_path, monkeypatch):
     books = tmp_path / "Books"
     books.mkdir()
