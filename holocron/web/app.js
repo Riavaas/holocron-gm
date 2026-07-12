@@ -23,6 +23,7 @@ const defaults = {
   zoom: 1,
   offset: { x: 0, y: 0 },
   mapLocked: false,
+  mapFitMode: "fit",
   tool: "select",
   snapToGrid: true,
   layers: { background: true, objects: true, tokens: true, grid: true, lighting: false, fog: false },
@@ -176,6 +177,7 @@ function resizeCanvas() {
   canvas.width = Math.round(rect.width * ratio);
   canvas.height = Math.round(rect.height * ratio);
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  if (state.image && ["fit", "fill", "center"].includes(state.mapFitMode)) applyMapFitMode(state.mapFitMode, false);
   draw();
 }
 
@@ -578,6 +580,7 @@ function fitMapImage(image) {
     x: (shell.clientWidth - image.width * state.zoom) / 2,
     y: (shell.clientHeight - image.height * state.zoom) / 2,
   };
+  state.mapFitMode = "fit";
   updateZoom();
 }
 
@@ -589,6 +592,7 @@ function fillMapImage(image = state.image) {
     x: (shell.clientWidth - image.width * state.zoom) / 2,
     y: (shell.clientHeight - image.height * state.zoom) / 2,
   };
+  state.mapFitMode = "fill";
   updateZoom();
 }
 
@@ -599,7 +603,16 @@ function centerMapImage(image = state.image) {
     x: (shell.clientWidth - image.width) / 2,
     y: (shell.clientHeight - image.height) / 2,
   };
+  state.mapFitMode = "center";
   updateZoom();
+}
+
+function applyMapFitMode(mode, updateControls = true) {
+  if (!state.image) return;
+  if (mode === "fit") fitMapImage(state.image);
+  if (mode === "fill") fillMapImage(state.image);
+  if (mode === "center") centerMapImage(state.image);
+  if (updateControls) syncMapActionControls();
 }
 
 function loadMapFromUrl(url, options = {}) {
@@ -609,6 +622,8 @@ function loadMapFromUrl(url, options = {}) {
     state.image = image;
     state.imageUrl = url;
     if (options.fit) fitMapImage(image);
+    else if (["fit", "fill", "center"].includes(state.mapFitMode)) applyMapFitMode(state.mapFitMode, false);
+    syncMapActionControls();
     emptyState.hidden = true;
     draw();
   };
@@ -1248,12 +1263,36 @@ document.querySelector("#vision-range").addEventListener("input", (event) => {
 });
 document.querySelectorAll("[data-layer]").forEach((input) => input.addEventListener("change", () => {
   state.layers[input.dataset.layer] = input.checked;
+  syncMapActionControls();
   persist();
   draw();
 }));
 
 function updateMapCursor() {
   canvas.dataset.cursor = state.panStart ? "panning" : state.tool === "pan" ? "pan" : state.tool === "select" ? "select" : state.tool === "eraser" ? "erase" : "draw";
+}
+
+function syncMapActionControls() {
+  document.querySelectorAll('[data-map-action="fit"]').forEach((button) => button.classList.toggle("active", state.mapFitMode === "fit"));
+  document.querySelectorAll('[data-map-action="fill"]').forEach((button) => button.classList.toggle("active", state.mapFitMode === "fill"));
+  document.querySelectorAll('[data-map-action="center"]').forEach((button) => button.classList.toggle("active", state.mapFitMode === "center"));
+  document.querySelectorAll('[data-map-action="grid"]').forEach((button) => button.classList.toggle("active", Boolean(state.layers.grid)));
+  document.querySelectorAll('[data-map-action="lock"]').forEach((button) => {
+    button.classList.toggle("active", Boolean(state.mapLocked));
+    button.textContent = state.mapLocked ? "U" : "L";
+    button.title = state.mapLocked ? "Unlock map image" : "Lock map image";
+  });
+  const workspace = document.querySelector("#battlemap-view");
+  document.querySelectorAll('[data-map-action="focus"]').forEach((button) => {
+    const focused = workspace.classList.contains("map-focus");
+    button.classList.toggle("active", focused);
+    button.textContent = focused ? "><" : "[]";
+    button.title = focused ? "Exit map focus" : "Focus map";
+  });
+  const contextLock = document.querySelector('#map-context-menu [data-map-action="lock"]');
+  if (contextLock) contextLock.textContent = state.mapLocked ? "Unlock map image" : "Lock map image";
+  const contextFocus = document.querySelector('#map-context-menu [data-map-action="focus"]');
+  if (contextFocus) contextFocus.textContent = workspace.classList.contains("map-focus") ? "Exit map focus" : "Focus map";
 }
 
 document.querySelectorAll("[data-tool]").forEach((button) => button.addEventListener("click", () => {
@@ -1265,6 +1304,7 @@ document.querySelectorAll("[data-tool]").forEach((button) => button.addEventList
 
 document.querySelectorAll("[data-tool]").forEach((button) => button.classList.toggle("active", button.dataset.tool === state.tool));
 updateMapCursor();
+syncMapActionControls();
 
 canvas.addEventListener("pointerdown", (event) => {
   document.querySelector("#map-context-menu").hidden = true;
@@ -1330,6 +1370,8 @@ canvas.addEventListener("pointermove", (event) => {
       x: state.panStart.offsetX + event.clientX - state.panStart.clientX,
       y: state.panStart.offsetY + event.clientY - state.panStart.clientY,
     };
+    state.mapFitMode = "custom";
+    syncMapActionControls();
     draw();
     return;
   }
@@ -1384,7 +1426,9 @@ canvas.addEventListener("wheel", (event) => {
   const before = { x: (cursor.x - state.offset.x) / state.zoom, y: (cursor.y - state.offset.y) / state.zoom };
   state.zoom = Math.min(3, Math.max(.25, state.zoom * (event.deltaY < 0 ? 1.1 : .9)));
   state.offset = { x: cursor.x - before.x * state.zoom, y: cursor.y - before.y * state.zoom };
+  state.mapFitMode = "custom";
   updateZoom();
+  syncMapActionControls();
   draw();
 }, { passive: false });
 
@@ -1396,11 +1440,11 @@ canvas.addEventListener("contextmenu", (event) => {
   mapContextMenu.style.top = `${Math.min(event.clientY - rect.top, shell.clientHeight - 170)}px`;
   mapContextMenu.hidden = false;
 });
-mapContextMenu.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-map-action]");
+function handleMapAction(button) {
   if (!button) return;
   const action = button.dataset.mapAction;
-  if (action === "fit" && state.image) fitMapImage(state.image);
+  if (state.mapLocked && ["fit", "fill", "center"].includes(action)) return;
+  if (action === "fit" && state.image) applyMapFitMode("fit");
   if (action === "fill") fillMapImage();
   if (action === "center") centerMapImage();
   if (action === "grid") {
@@ -1409,25 +1453,58 @@ mapContextMenu.addEventListener("click", (event) => {
   }
   if (action === "lock") {
     state.mapLocked = !state.mapLocked;
-    button.textContent = state.mapLocked ? "Unlock map image" : "Lock map image";
   }
   if (action === "focus") {
     const workspace = document.querySelector("#battlemap-view");
     workspace.classList.toggle("map-focus");
-    button.textContent = workspace.classList.contains("map-focus") ? "Exit map focus" : "Focus map";
     resizeCanvas();
   }
-  mapContextMenu.hidden = true;
+  syncMapActionControls();
   persist();
   draw();
+}
+mapContextMenu.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-map-action]");
+  if (!button) return;
+  handleMapAction(button);
+  mapContextMenu.hidden = true;
 });
+document.querySelector(".map-toolbar").addEventListener("click", (event) => handleMapAction(event.target.closest("[data-map-action]")));
 document.addEventListener("pointerdown", (event) => {
   if (!event.target.closest("#map-context-menu") && !event.target.closest("#map-canvas")) mapContextMenu.hidden = true;
 });
 
-document.querySelector("#zoom-in").addEventListener("click", () => { state.zoom = Math.min(3, state.zoom * 1.2); updateZoom(); draw(); });
-document.querySelector("#zoom-out").addEventListener("click", () => { state.zoom = Math.max(.25, state.zoom / 1.2); updateZoom(); draw(); });
-document.querySelector("#reset-view").addEventListener("click", () => { state.zoom = 1; state.offset = { x: 0, y: 0 }; updateZoom(); draw(); });
+document.querySelector("#zoom-in").addEventListener("click", () => {
+  if (state.mapLocked) return;
+  state.zoom = Math.min(3, state.zoom * 1.2);
+  state.mapFitMode = "custom";
+  updateZoom();
+  syncMapActionControls();
+  persist();
+  draw();
+});
+document.querySelector("#zoom-out").addEventListener("click", () => {
+  if (state.mapLocked) return;
+  state.zoom = Math.max(.25, state.zoom / 1.2);
+  state.mapFitMode = "custom";
+  updateZoom();
+  syncMapActionControls();
+  persist();
+  draw();
+});
+document.querySelector("#reset-view").addEventListener("click", () => {
+  if (state.mapLocked) return;
+  if (state.image) fillMapImage();
+  else {
+    state.zoom = 1;
+    state.offset = { x: 0, y: 0 };
+    state.mapFitMode = "custom";
+    updateZoom();
+  }
+  syncMapActionControls();
+  persist();
+  draw();
+});
 document.querySelector("#clear-measurement").addEventListener("click", () => {
   state.measurement = null;
   state.walls = [];

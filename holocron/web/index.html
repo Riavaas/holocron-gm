@@ -126,6 +126,11 @@
         <button id="zoom-out" class="icon-button" title="Zoom out">−</button>
         <output id="zoom-output">100%</output>
         <button id="zoom-in" class="icon-button" title="Zoom in">＋</button>
+        <button class="icon-button" data-map-action="fit" title="Fit entire map">□</button>
+        <button class="icon-button" data-map-action="fill" title="Fill viewport">▣</button>
+        <button class="icon-button" data-map-action="grid" title="Toggle grid">#</button>
+        <button class="icon-button" data-map-action="lock" title="Lock map image">L</button>
+        <button class="icon-button" data-map-action="focus" title="Focus map">[]</button>
         <button id="clear-measurement" class="text-button">Clear marks</button>
       </div>
       <div id="measurement" class="measurement" hidden></div>
@@ -609,7 +614,7 @@
       </div>
     </form>
   </aside>
-  <script src="/static/app.js?v=20260712-audit-v11"></script>
+  <script src="/static/app.js?v=20260712-audit-v12"></script>
   <script type="module" src="/static/dice.js?v=20260712-audit-v3"></script>
 </body>
 </html>
