@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from holocron.api.routes import assets, assistant, books, campaigns, catalog, compendium, ingest, media, rules, session, sources
+from holocron.api.routes import assets, assistant, books, campaigns, catalog, characters, compendium, ingest, media, rules, session, sources
 from holocron.core.paths import ASSETS_DIR, PROJECT_ROOT
 
 app = FastAPI(title="Holocron GM", version="0.1.0")
@@ -27,6 +27,7 @@ app.include_router(campaigns.router, prefix="/api/campaigns")
 app.include_router(assets.router, prefix="/api/assets")
 app.include_router(catalog.router, prefix="/api/catalog")
 app.include_router(media.router, prefix="/api/media")
+app.include_router(characters.router, prefix="/api/characters")
 
 
 @app.get("/player", include_in_schema=False)

@@ -199,6 +199,10 @@
         <button id="open-bestiary" class="asset-library-launch secondary-button"><span>Browse creatures, tokens and maps</span><b>⌕</b></button>
       </section>
     </aside>
+    <div id="panel-launcher" class="panel-launcher">
+      <button id="panel-launcher-toggle" type="button" title="Show hidden windows">◌</button>
+      <div id="panel-launcher-menu" class="panel-launcher-menu" hidden></div>
+    </div>
   </main>
   <section id="player-gate" class="player-gate" hidden>
     <div>
@@ -265,6 +269,11 @@
       </footer>
     </section>
     <aside class="character-tracker">
+      <section>
+        <div class="section-heading"><h2>Pregens</h2><span id="pregen-count">Local ZIPs</span></div>
+        <select id="pregen-select" aria-label="Pre-generated character"><option value="">Loading pregens...</option></select>
+        <button id="import-pregen" class="secondary-button" type="button">Import selected</button>
+      </section>
       <section>
         <div class="section-heading"><h2>Resources</h2><span>Click to adjust</span></div>
         <div id="resource-rings" class="resource-rings"></div>
@@ -554,6 +563,13 @@
       <div id="item-library-results" class="item-library-results"></div>
     </section>
   </dialog>
+  <dialog id="item-detail-dialog" class="item-detail-dialog">
+    <section>
+      <header class="dialog-heading"><div><small>SW5E ITEM</small><h2 id="item-detail-title"></h2></div><button type="button" class="icon-button" data-close-dialog="item-detail-dialog" aria-label="Close">×</button></header>
+      <div id="item-detail-content" class="item-detail-content"></div>
+      <div class="creature-detail-actions"><button id="item-detail-add" class="primary-button" type="button">Add to active character</button></div>
+    </section>
+  </dialog>
   <dialog id="inventory-dialog">
     <form id="inventory-form">
       <div class="dialog-heading"><h2>Add inventory item</h2><button type="button" class="icon-button" data-close-dialog="inventory-dialog">×</button></div>
@@ -587,7 +603,7 @@
       </div>
     </form>
   </aside>
-  <script src="/static/app.js?v=20260712-audit-v8"></script>
+  <script src="/static/app.js?v=20260712-audit-v10"></script>
   <script type="module" src="/static/dice.js?v=20260712-audit-v3"></script>
 </body>
 </html>

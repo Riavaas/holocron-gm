@@ -39,6 +39,7 @@ const defaults = {
   round: 1,
   panelLayout: {
     mode: "anchored",
+    hidden: [],
     panels: {
       left: { anchor: "left", x: 12, y: 12, width: 280, height: 720 },
       right: { anchor: "right", x: 0, y: 12, width: 340, height: 720 },
@@ -62,9 +63,10 @@ state.pendingNotePin = null;
 state.panStart = null;
 state.assetFilterMode = null;
 state.imageBookFilters = null;
-state.panelLayout = {
+  state.panelLayout = {
   ...defaults.panelLayout,
   ...(state.panelLayout || {}),
+  hidden: Array.isArray(state.panelLayout?.hidden) ? state.panelLayout.hidden : [],
   panels: {
     ...defaults.panelLayout.panels,
     ...(state.panelLayout?.panels || {}),
@@ -743,15 +745,21 @@ function anchorPanel(panelId, anchor) {
 
 function applyPanelLayout() {
   const workspace = document.querySelector("#battlemap-view");
+  state.panelLayout.hidden ||= [];
   const floating = state.panelLayout.mode === "floating";
   workspace.classList.toggle("window-layout", floating);
   document.querySelector("#toggle-window-layout")?.classList.toggle("active", floating);
   for (const panelId of ["left", "right"]) {
     const element = panelElement(panelId);
     if (!element) continue;
+    if (!floating) element.removeAttribute("style");
+    if (state.panelLayout.hidden.includes(panelId)) {
+      element.style.display = "none";
+      continue;
+    }
+    element.style.display = "";
     const panel = panelLayout(panelId);
     if (!floating) {
-      element.removeAttribute("style");
       continue;
     }
     const rect = workspace.getBoundingClientRect();
@@ -762,6 +770,7 @@ function applyPanelLayout() {
     element.style.width = `${panel.width}px`;
     element.style.height = `${panel.height}px`;
   }
+  renderPanelLauncher();
   resizeCanvas();
 }
 
@@ -780,6 +789,7 @@ function installPanelChrome() {
         <button data-panel-anchor="${panelId}:left" title="Anchor left">L</button>
         <button data-panel-anchor="${panelId}:right" title="Anchor right">R</button>
         <button data-panel-anchor="${panelId}:bottom" title="Anchor bottom">B</button>
+        <button data-panel-close="${panelId}" title="Hide window">×</button>
       </span>`;
     element.prepend(bar);
   }
@@ -820,6 +830,22 @@ function setupPanelLayoutControls() {
     persist();
   });
   document.querySelector("#battlemap-view").addEventListener("click", (event) => {
+    const closeButton = event.target.closest("[data-panel-close]");
+    if (closeButton) {
+      state.panelLayout.mode = "floating";
+      if (!state.panelLayout.hidden.includes(closeButton.dataset.panelClose)) state.panelLayout.hidden.push(closeButton.dataset.panelClose);
+      applyPanelLayout();
+      persist();
+      return;
+    }
+    const restoreButton = event.target.closest("[data-panel-restore]");
+    if (restoreButton) {
+      state.panelLayout.mode = "floating";
+      state.panelLayout.hidden = state.panelLayout.hidden.filter((panelId) => panelId !== restoreButton.dataset.panelRestore);
+      applyPanelLayout();
+      persist();
+      return;
+    }
     const button = event.target.closest("[data-panel-anchor]");
     if (!button) return;
     const [panelId, anchor] = button.dataset.panelAnchor.split(":");
@@ -849,6 +875,25 @@ function setupPanelLayoutControls() {
   });
   applyPanelLayout();
 }
+
+function renderPanelLauncher() {
+  const launcher = document.querySelector("#panel-launcher");
+  const menu = document.querySelector("#panel-launcher-menu");
+  if (!launcher || !menu) return;
+  const labels = { left: "Map tools", right: "Encounter" };
+  const hidden = state.panelLayout.hidden || [];
+  launcher.classList.toggle("has-hidden", hidden.length > 0);
+  menu.innerHTML = ["left", "right"].map((panelId) => {
+    const active = !hidden.includes(panelId);
+    return `<button data-panel-restore="${panelId}" class="${active ? "active" : ""}" ${active ? "disabled" : ""}><strong>${labels[panelId]}</strong><span>${active ? "in use" : "hidden"}</span></button>`;
+  }).join("");
+}
+
+document.querySelector("#panel-launcher-toggle")?.addEventListener("click", () => {
+  const menu = document.querySelector("#panel-launcher-menu");
+  menu.hidden = !menu.hidden;
+  renderPanelLauncher();
+});
 
 function addMapAsset(source, point = mapCenterPoint()) {
   if (!source || !imageUrlFor(source)) return;
@@ -1834,6 +1879,7 @@ let booksInitialized = false;
 let toolkitInitialized = false;
 let soundInitialized = false;
 let questsInitialized = false;
+let charactersInitialized = false;
 
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
   const view = button.dataset.view;
@@ -1847,6 +1893,10 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
   document.querySelector("#quests-view").hidden = view !== "quests";
   document.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("active", item === button));
   if (view === "battlemap") resizeCanvas();
+  if (view === "characters" && !charactersInitialized) {
+    charactersInitialized = true;
+    loadPregens();
+  }
   if (view === "compendium" && !compendiumInitialized) {
     compendiumInitialized = true;
     searchCompendium("combat");
@@ -2015,6 +2065,7 @@ const characterState = JSON.parse(localStorage.getItem("holocron.characters") ||
   selectedItemId: null,
   characters: [defaultCharacter],
 };
+let pregenCatalog = [];
 
 function normalizeCharacter(character) {
   const validTemplates = new Set(["human-male", "human-female", "zabrak-male", "zabrak-female"]);
@@ -2051,6 +2102,9 @@ function publicCharacter(character) {
     equipped: character.equipped,
     inventory: character.inventory,
     baseAc: character.baseAc,
+    level: character.level || 1,
+    className: character.className || "",
+    subclass: character.subclass || "",
   };
 }
 
@@ -2135,6 +2189,49 @@ function renderCharacters() {
   document.querySelector("#shared-character-note").value = character.sharedNote;
   document.querySelector("#player-secret-note").value = character.playerSecretSealed ? "[sealed]" : character.playerSecretNote;
   document.querySelector("#player-secret-note").disabled = Boolean(character.playerSecretSealed);
+}
+
+function characterFromPregen(pregen) {
+  const character = structuredClone(defaultCharacter);
+  const selectedLevel = pregen.levels?.find((level) => level.level === pregen.max_level) || pregen.levels?.[0];
+  character.id = crypto.randomUUID();
+  character.name = pregen.name;
+  character.species = pregen.species || "Human";
+  character.className = pregen.class || "";
+  character.subclass = pregen.subclass || "";
+  character.level = selectedLevel?.level || pregen.max_level || 1;
+  character.template = character.species === "Zabrak" ? "zabrak-male" : "human-male";
+  character.inventory = [];
+  character.equipped = {};
+  character.credits = 500 + character.level * 150;
+  character.gmHooks = `Imported from ${pregen.archive}: ${selectedLevel?.path || pregen.name}`;
+  character.sharedNote = `${character.species} ${character.className}${character.subclass ? ` - ${character.subclass}` : ""}, level ${character.level}.`;
+  character.resources.hp.max = Math.max(10, 8 + character.level * 7);
+  character.resources.hp.value = character.resources.hp.max;
+  character.resources.force.value = character.className?.match(/consular|guardian|sentinel/i) ? Math.max(2, character.level * 2) : 0;
+  character.resources.force.max = character.resources.force.value;
+  character.resources.tech.value = character.className?.match(/engineer|scholar|scout|operative/i) ? Math.max(2, character.level * 2) : 0;
+  character.resources.tech.max = character.resources.tech.value;
+  character.resources.hitDice.value = character.level;
+  character.resources.hitDice.max = character.level;
+  return normalizeCharacter(character);
+}
+
+async function loadPregens() {
+  const select = document.querySelector("#pregen-select");
+  try {
+    const response = await fetch("/api/characters/pregens");
+    if (!response.ok) throw new Error("Pregens unavailable");
+    const payload = await response.json();
+    pregenCatalog = payload.items || [];
+    document.querySelector("#pregen-count").textContent = `${pregenCatalog.length} sheets`;
+    select.innerHTML = pregenCatalog.map((pregen, index) =>
+      `<option value="${index}">${escapeHtml(pregen.name)} · Lv ${pregen.max_level} · ${escapeHtml(pregen.archive)}</option>`
+    ).join("") || '<option value="">No pregen ZIPs found</option>';
+  } catch {
+    document.querySelector("#pregen-count").textContent = "Unavailable";
+    select.innerHTML = '<option value="">Pregen ZIPs unavailable</option>';
+  }
 }
 
 document.querySelector("#character-picker").addEventListener("change", (event) => {
@@ -2223,6 +2320,16 @@ document.querySelector("#clear-player-note-seal").addEventListener("click", () =
   renderCharacters();
 });
 document.querySelector("#new-character").addEventListener("click", () => document.querySelector("#character-dialog").showModal());
+document.querySelector("#import-pregen").addEventListener("click", () => {
+  const pregen = pregenCatalog[Number(document.querySelector("#pregen-select").value)];
+  if (!pregen) return;
+  const character = characterFromPregen(pregen);
+  characterState.characters.push(character);
+  characterState.activeId = character.id;
+  characterState.selectedItemId = null;
+  saveCharacters();
+  renderCharacters();
+});
 document.querySelector("#deploy-character").addEventListener("click", () => {
   const character = currentCharacter();
   if (!character) return;
@@ -2259,6 +2366,8 @@ document.querySelector("#delete-character").addEventListener("click", () => {
 });
 let itemCatalogCache = [];
 let itemCatalogTimer;
+let compendiumItemCache = [];
+let activeDetailItem = null;
 
 function inferredItemSlot(item) {
   const category = String(item.category || "").toLowerCase();
@@ -2267,6 +2376,29 @@ function inferredItemSlot(item) {
   if (category === "armor" || category.includes("clothing")) return "chest";
   if (category === "weapon") return "mainHand";
   return null;
+}
+
+function addCatalogItemToCharacter(source) {
+  const character = currentCharacter();
+  if (!source || !character) return null;
+  const item = {
+    id: crypto.randomUUID(),
+    catalogId: source.id,
+    name: source.name,
+    description: source.description || "",
+    category: source.category,
+    weight: Number(source.weight || 0),
+    value: Number(source.cost || 0),
+    slot: inferredItemSlot(source),
+    armorClass: source.armor_class || "",
+    damage: source.damage || "",
+    rarity: source.rarity || "",
+    properties: source.properties || [],
+  };
+  character.inventory.push(item);
+  saveCharacters();
+  renderCharacters();
+  return item;
 }
 
 function renderItemCatalog(items, total) {
@@ -2318,23 +2450,7 @@ document.querySelector("#add-custom-item").addEventListener("click", () => {
 document.querySelector("#item-library-results").addEventListener("click", (event) => {
   const button = event.target.closest("[data-add-item]");
   const source = itemCatalogCache[Number(button?.dataset.addItem)];
-  const character = currentCharacter();
-  if (!source || !character) return;
-  character.inventory.push({
-    id: crypto.randomUUID(),
-    catalogId: source.id,
-    name: source.name,
-    description: source.description || "",
-    category: source.category,
-    weight: Number(source.weight || 0),
-    value: Number(source.cost || 0),
-    slot: inferredItemSlot(source),
-    armorClass: source.armor_class || "",
-    damage: source.damage || "",
-    properties: source.properties || [],
-  });
-  saveCharacters();
-  renderCharacters();
+  if (!addCatalogItemToCharacter(source)) return;
   button.textContent = "✓";
   button.disabled = true;
 });
@@ -2445,6 +2561,38 @@ function itemPropertyLabel(property) {
   return property.name || property.content || property.description || String(property);
 }
 
+function itemDetailMarkup(item) {
+  const properties = (item.properties || []).map(itemPropertyLabel).filter(Boolean);
+  const description = (item.description || "").replace(/\s+/g, " ").trim() || "No description available in the local SW5e catalog.";
+  const lines = [
+    ["Category", item.category],
+    ["Kind", item.kind],
+    ["Rarity", item.rarity],
+    ["Cost", `${Number(item.cost || 0).toLocaleString()} cr`],
+    ["Weight", `${item.weight || 0} lb`],
+    ["Damage", item.damage],
+    ["Damage type", item.damage_type],
+    ["Armor class", item.armor_class],
+    ["Weapon class", item.weapon_classification],
+    ["Armor class", item.armor_classification],
+    ["Source", item.source],
+  ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "");
+  return `
+    <dl class="item-detail-stats">${lines.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>
+    <div class="property-chips detail">${properties.map((property) =>
+      `<button data-property-search="${escapeHtml(property)}" title="Open property in compendium">${escapeHtml(property)}</button>`
+    ).join("") || '<span>No listed properties</span>'}</div>
+    <p>${escapeHtml(description)}</p>`;
+}
+
+function openItemDetail(item) {
+  if (!item) return;
+  activeDetailItem = item;
+  document.querySelector("#item-detail-title").textContent = item.name;
+  document.querySelector("#item-detail-content").innerHTML = itemDetailMarkup(item);
+  document.querySelector("#item-detail-dialog").showModal();
+}
+
 async function renderEquipmentCompendium() {
   const input = document.querySelector("#compendium-search");
   const params = new URLSearchParams({ limit: "80" });
@@ -2457,11 +2605,12 @@ async function renderEquipmentCompendium() {
     const response = await fetch(`/api/catalog/items?${params}`);
     if (!response.ok) throw new Error("Catalog unavailable");
     const payload = await response.json();
+    compendiumItemCache = payload.items;
     document.querySelector("#results-count").textContent = `${payload.total} equipment result${payload.total === 1 ? "" : "s"}`;
-    results.innerHTML = payload.items.map((item) => {
+    results.innerHTML = payload.items.map((item, index) => {
       const properties = (item.properties || []).map(itemPropertyLabel).filter(Boolean);
       const detail = [item.category, item.rarity, item.damage, item.armor_class].filter(Boolean).join(" · ");
-      return `<article class="equipment-card">
+      return `<article class="equipment-card" data-open-item="${index}">
         <header><h3>${escapeHtml(item.name)}</h3><span>${escapeHtml(item.kind)}</span></header>
         <p>${escapeHtml(detail || item.source || "SW5e catalog")}</p>
         <dl><dt>Cost</dt><dd>${Number(item.cost || 0).toLocaleString()} cr</dd><dt>Weight</dt><dd>${item.weight || 0} lb</dd></dl>
@@ -2500,8 +2649,24 @@ document.querySelector(".compendium-nav").addEventListener("click", (event) => {
 });
 document.querySelector("#compendium-results").addEventListener("click", (event) => {
   const property = event.target.closest("[data-property-search]");
+  if (property) {
+    searchCompendium(`weapon property ${property.dataset.propertySearch}`);
+    document.querySelector("#item-detail-dialog")?.close();
+    return;
+  }
+  const card = event.target.closest("[data-open-item]");
+  if (card) openItemDetail(compendiumItemCache[Number(card.dataset.openItem)]);
+});
+document.querySelector("#item-detail-content").addEventListener("click", (event) => {
+  const property = event.target.closest("[data-property-search]");
   if (!property) return;
+  document.querySelector("#item-detail-dialog").close();
   searchCompendium(`weapon property ${property.dataset.propertySearch}`);
+});
+document.querySelector("#item-detail-add").addEventListener("click", () => {
+  if (!addCatalogItemToCharacter(activeDetailItem)) return;
+  document.querySelector("#item-detail-add").textContent = "Added";
+  setTimeout(() => { document.querySelector("#item-detail-add").textContent = "Add to active character"; }, 900);
 });
 document.querySelector("#rules-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -2710,6 +2875,7 @@ const flavorTone = {
 let generatedEncounter = [];
 let generatedNpc = null;
 let npcBestiaryCache = null;
+const npcPortraitCache = new Map();
 
 function randomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -2739,6 +2905,32 @@ async function loadNpcBestiary() {
   return npcBestiaryCache;
 }
 
+async function loadNpcPortraitAsset(species, role) {
+  const cacheKey = `${species}:${role}`;
+  if (npcPortraitCache.has(cacheKey)) return npcPortraitCache.get(cacheKey);
+  const queries = [
+    `${species} ${role}`,
+    species,
+    role,
+  ].filter(Boolean);
+  for (const query of queries) {
+    try {
+      const response = await fetch(`/api/assets/external?asset_type=tokens&q=${encodeURIComponent(query)}&limit=12`);
+      const payload = response.ok ? await response.json() : { items: [] };
+      const illustrated = (payload.items || []).filter((item) => imageUrlFor(item));
+      if (illustrated.length) {
+        const picked = randomItem(illustrated);
+        npcPortraitCache.set(cacheKey, picked);
+        return picked;
+      }
+    } catch {
+      // Keep falling back through the candidate sources.
+    }
+  }
+  npcPortraitCache.set(cacheKey, null);
+  return null;
+}
+
 async function generateNpc() {
   const species = document.querySelector("#npc-species").value || randomItem(Object.keys(speciesNamePatterns));
   const role = document.querySelector("#npc-role").value || randomItem(npcRoles);
@@ -2760,13 +2952,14 @@ async function generateNpc() {
     const parsed = Number.parseInt(String(abilities[label.toLowerCase()] || ""), 10);
     return { label, value: Number.isFinite(parsed) ? parsed : 8 + Math.floor(Math.random() * 11) };
   });
-  const portraitUrl = imageUrlFor(candidate);
+  const portraitAsset = await loadNpcPortraitAsset(species, role);
+  const portraitUrl = imageUrlFor(portraitAsset) || imageUrlFor(candidate);
   const actions = candidate?.actions?.slice(0, 4) || ["Blaster attack"];
   const quirk = randomItem(npcQuirks);
   const hook = randomItem(npcHooks);
   generatedNpc = candidate
-    ? { ...candidate, name, type: candidate.type || "enemy", npcRole: role, npcSpecies: species }
-    : { name, type: "enemy", hp: 12, ac: 12, cr: "1/4", actions, abilities };
+    ? { ...candidate, name, type: candidate.type || "enemy", npcRole: role, npcSpecies: species, imageUrl: portraitUrl }
+    : { name, type: "enemy", hp: 12, ac: 12, cr: "1/4", actions, abilities, imageUrl: portraitUrl };
   document.querySelector("#npc-output").innerHTML = `
     ${portraitUrl ? `<img class="npc-portrait" src="${escapeHtml(portraitUrl)}" alt="${escapeHtml(name)}">` : '<canvas id="npc-portrait-canvas" class="npc-portrait" width="144" height="144"></canvas>'}
     <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(quirk)}</p></div>`;
