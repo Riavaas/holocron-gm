@@ -2007,6 +2007,47 @@ function markdownToHtml(markdown) {
   return output.join("");
 }
 
+function exactCatalogMatch(items, label) {
+  const target = normalizeQuestLinkLabel(label);
+  return items.find((item) => normalizeQuestLinkLabel(item.name) === target)
+    || (items.length === 1 ? items[0] : null);
+}
+
+async function openCompendiumWikiLink(label) {
+  const query = String(label || "").trim();
+  if (!query) return false;
+  const params = new URLSearchParams({ q: query, limit: "8" });
+  try {
+    const [itemsResponse, creaturesResponse] = await Promise.all([
+      fetch(`/api/catalog/items?${params}`),
+      fetch(`/api/compendium/creatures?${params}`),
+    ]);
+    const [itemsPayload, creaturesPayload] = await Promise.all([
+      itemsResponse.ok ? itemsResponse.json() : Promise.resolve({ items: [] }),
+      creaturesResponse.ok ? creaturesResponse.json() : Promise.resolve({ items: [] }),
+    ]);
+    const item = exactCatalogMatch(itemsPayload.items || [], query);
+    const creature = exactCatalogMatch(creaturesPayload.items || [], query);
+    if (item && !creature) {
+      openItemDetail(item);
+      return true;
+    }
+    if (creature && !item) {
+      openCreatureDetail(creature);
+      return true;
+    }
+    if (item && creature) {
+      document.querySelector('[data-view="compendium"]').click();
+      document.querySelector("#compendium-search").value = query;
+      searchCompendium(query);
+      return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 function createNote(title = "Untitled note", content = "") {
   const note = {
     id: crypto.randomUUID(),
@@ -2151,7 +2192,7 @@ document.querySelector("#note-list").addEventListener("click", (event) => {
 });
 document.querySelector("#note-title").addEventListener("input", scheduleNoteSave);
 document.querySelector("#note-editor").addEventListener("input", scheduleNoteSave);
-document.querySelector("#note-preview").addEventListener("click", (event) => {
+document.querySelector("#note-preview").addEventListener("click", async (event) => {
   const link = event.target.closest("[data-wiki]");
   if (!link) return;
   const existing = noteState.notes.find((note) => note.title.toLowerCase() === link.dataset.wiki.toLowerCase());
@@ -2159,6 +2200,8 @@ document.querySelector("#note-preview").addEventListener("click", (event) => {
     noteState.activeId = existing.id;
     saveNotes();
     renderNotes();
+  } else if (await openCompendiumWikiLink(link.dataset.wiki)) {
+    return;
   } else {
     createNote(link.dataset.wiki, `# ${link.dataset.wiki}\n\n`);
   }
@@ -4730,7 +4773,7 @@ document.querySelector("#quest-list").addEventListener("click", (event) => {
   if (!quest.files.some((file) => inferQuestFileFolder(file, quest.folders).toLowerCase() === folder.toLowerCase())) addQuestFile(quest, folder);
   renderQuests();
 });
-document.querySelector("#quest-file-windows").addEventListener("click", (event) => {
+document.querySelector("#quest-file-windows").addEventListener("click", async (event) => {
   const close = event.target.closest("[data-close-quest-file]");
   if (close) {
     const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
@@ -4741,6 +4784,7 @@ document.querySelector("#quest-file-windows").addEventListener("click", (event) 
   const wiki = event.target.closest("[data-wiki]");
   if (wiki) {
     if (openQuestWikiLink(wiki.dataset.wiki)) return;
+    if (await openCompendiumWikiLink(wiki.dataset.wiki)) return;
     document.querySelector('[data-view="compendium"]').click();
     searchCompendium(wiki.dataset.wiki);
   }
