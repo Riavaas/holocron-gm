@@ -744,6 +744,10 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .toolkit-output { min-height: 140px; padding: 12px 0; border-block: 1px solid var(--line); }
 .loot-line { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; color: var(--muted); font-size: 10px; }
 .loot-line strong { color: var(--text); text-align: right; }
+.interactive-loot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, auto) auto; align-items: center; border-bottom: 1px solid var(--line); cursor: pointer; }
+.interactive-loot:hover { background: var(--panel-raised); }
+.loot-actions { display: flex; gap: 4px; }
+.loot-actions button { width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--accent); cursor: pointer; }
 .encounter-tool-heading { margin: 18px 0 8px; }
 .encounter-output { display: grid; gap: 5px; }
 .encounter-suggestion { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; border-left: 2px solid var(--accent); background: var(--panel-raised); }

@@ -3125,6 +3125,8 @@ const flavorTone = {
 };
 let generatedEncounter = [];
 let generatedNpc = null;
+let generatedLootItems = [];
+let generatedShopWares = [];
 let npcBestiaryCache = null;
 const npcPortraitCache = new Map();
 
@@ -3304,9 +3306,17 @@ async function generateLoot() {
     const response = await fetch(`/api/catalog/items/loot?${params}`);
     if (!response.ok) throw new Error("Loot catalog unavailable");
     const payload = await response.json();
-    const items = payload.items.map((item) => {
+    generatedLootItems = payload.items || [];
+    const items = generatedLootItems.map((item, index) => {
       const detail = [item.category, item.rarity, item.damage].filter(Boolean).join(" · ");
-      return `<div class="loot-line"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(detail || item.source || "SW5e")}</strong></div>`;
+      return `<div class="loot-line interactive-loot" data-open-loot-item="${index}">
+        <span>${escapeHtml(item.name)}</span>
+        <strong>${escapeHtml(detail || item.source || "SW5e")}</strong>
+        <span class="loot-actions">
+          <button data-open-loot-item="${index}" title="Open item sheet" type="button">⌕</button>
+          <button data-add-loot-item="${index}" title="Add to active character" type="button">＋</button>
+        </span>
+      </div>`;
     }).join("");
     output.innerHTML = `
       <div class="loot-line"><span>Credits</span><strong>${payload.credits.toLocaleString()} cr</strong></div>
@@ -3314,6 +3324,7 @@ async function generateLoot() {
       <div class="loot-line"><span>Field supplies</span><strong>${1 + Math.floor(cr / 4)}× ${escapeHtml(randomItem(consumables))}</strong></div>
       <div class="loot-line"><span>Salvage lead</span><strong>${escapeHtml(randomItem(lootMods))}</strong></div>`;
   } catch {
+    generatedLootItems = [];
     output.innerHTML = '<p class="loading-line">The SW5e loot catalog is unavailable.</p>';
   }
 }
@@ -3330,13 +3341,22 @@ async function generateShopkeeper() {
     const response = await fetch(`/api/catalog/items/shopkeeper?${params}`);
     if (!response.ok) throw new Error("Shop unavailable");
     const payload = await response.json();
+    generatedShopWares = payload.wares || [];
     output.innerHTML = `
       <div class="shopkeeper-title"><strong>${escapeHtml(payload.name)}</strong><span>${escapeHtml(payload.settlement)} · ${escapeHtml(payload.allegiance)} · ${escapeHtml(payload.wealth)}</span></div>
-      ${payload.wares.map((item) => {
+      ${generatedShopWares.map((item, index) => {
         const detail = [item.category, item.rarity, item.damage].filter(Boolean).join(" · ");
-        return `<div class="loot-line"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(detail || `${Number(item.cost || 0).toLocaleString()} cr`)}</strong></div>`;
+        return `<div class="loot-line interactive-loot" data-open-shop-item="${index}">
+          <span>${escapeHtml(item.name)}</span>
+          <strong>${escapeHtml(detail || `${Number(item.cost || 0).toLocaleString()} cr`)}</strong>
+          <span class="loot-actions">
+            <button data-open-shop-item="${index}" title="Open item sheet" type="button">⌕</button>
+            <button data-add-shop-item="${index}" title="Add to active character" type="button">＋</button>
+          </span>
+        </div>`;
       }).join("")}`;
   } catch {
+    generatedShopWares = [];
     output.innerHTML = '<p class="loading-line">Shopkeeper catalog unavailable.</p>';
   }
 }
@@ -3376,6 +3396,30 @@ document.querySelector("#generate-loot").addEventListener("click", generateLoot)
 document.querySelector("#generate-shopkeeper").addEventListener("click", generateShopkeeper);
 document.querySelector("#generate-encounter").addEventListener("click", generateEncounter);
 document.querySelector("#generate-flavor").addEventListener("click", generateFlavor);
+document.querySelector("#loot-output").addEventListener("click", (event) => {
+  const add = event.target.closest("[data-add-loot-item]");
+  const open = event.target.closest("[data-open-loot-item]");
+  if (add) {
+    event.stopPropagation();
+    if (!addCatalogItemToCharacter(generatedLootItems[Number(add.dataset.addLootItem)])) return;
+    add.textContent = "✓";
+    add.disabled = true;
+    return;
+  }
+  if (open) openItemDetail(generatedLootItems[Number(open.dataset.openLootItem)]);
+});
+document.querySelector("#shopkeeper-output").addEventListener("click", (event) => {
+  const add = event.target.closest("[data-add-shop-item]");
+  const open = event.target.closest("[data-open-shop-item]");
+  if (add) {
+    event.stopPropagation();
+    if (!addCatalogItemToCharacter(generatedShopWares[Number(add.dataset.addShopItem)])) return;
+    add.textContent = "✓";
+    add.disabled = true;
+    return;
+  }
+  if (open) openItemDetail(generatedShopWares[Number(open.dataset.openShopItem)]);
+});
 document.querySelector("#external-resource-search").addEventListener("input", renderExternalResources);
 document.querySelector("#external-resource-status").addEventListener("change", renderExternalResources);
 document.querySelector("#send-encounter").addEventListener("click", () => {
