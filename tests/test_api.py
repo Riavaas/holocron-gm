@@ -218,6 +218,32 @@ def test_item_catalog_generates_repeatable_loot(monkeypatch):
     assert len(first.json()["items"]) == 4
 
 
+def test_item_catalog_caps_enhanced_loot_rarity(monkeypatch):
+    from holocron.api.routes import catalog
+
+    monkeypatch.setattr(
+        catalog,
+        "load_item_catalog",
+        lambda: (
+            {"id": "gear", "name": "Field Kit", "category": "Gear", "kind": "equipment", "cost": 100},
+            {"id": "standard", "name": "Standard Mod", "category": "ItemModification", "subcategory": "armor", "kind": "enhanced", "rarity": "Standard"},
+            {"id": "premium", "name": "Premium Mod", "category": "ItemModification", "subcategory": "armor", "kind": "enhanced", "rarity": "Premium"},
+            {"id": "artifact", "name": "Artifact Mod", "category": "ItemModification", "subcategory": "armor", "kind": "enhanced", "rarity": "Artifact"},
+        ),
+    )
+    client = TestClient(app)
+
+    response = client.get(
+        "/api/catalog/items/loot",
+        params={"cr": 4, "count": 4, "extra_category": "enhanced", "max_rarity": "Premium", "seed": 1},
+    )
+
+    assert response.status_code == 200
+    rarities = {item.get("rarity", "Unenhanced") for item in response.json()["items"]}
+    assert "Artifact" not in rarities
+    assert rarities <= {"Unenhanced", "Standard", "Premium"}
+
+
 def test_books_library_and_inline_reader(tmp_path, monkeypatch):
     books = tmp_path / "Books"
     books.mkdir()

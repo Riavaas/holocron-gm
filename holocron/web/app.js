@@ -3345,7 +3345,7 @@ async function generateLoot() {
     const payload = await response.json();
     generatedLootItems = payload.items || [];
     const items = generatedLootItems.map((item, index) => {
-      const detail = [item.category, item.rarity, item.damage].filter(Boolean).join(" · ");
+      const detail = [catalogLabel(item.category), item.rarity, item.damage].filter(Boolean).join(" · ");
       return `<div class="loot-line interactive-loot" data-open-loot-item="${index}">
         <span>${escapeHtml(item.name)}</span>
         <strong>${escapeHtml(detail || item.source || "SW5e")}</strong>
@@ -3382,7 +3382,7 @@ async function generateShopkeeper() {
     output.innerHTML = `
       <div class="shopkeeper-title"><strong>${escapeHtml(payload.name)}</strong><span>${escapeHtml(payload.settlement)} · ${escapeHtml(payload.allegiance)} · ${escapeHtml(payload.wealth)}</span></div>
       ${generatedShopWares.map((item, index) => {
-        const detail = [item.category, item.rarity, item.damage].filter(Boolean).join(" · ");
+        const detail = [catalogLabel(item.category), item.rarity, item.damage].filter(Boolean).join(" · ");
         return `<div class="loot-line interactive-loot" data-open-shop-item="${index}">
           <span>${escapeHtml(item.name)}</span>
           <strong>${escapeHtml(detail || `${Number(item.cost || 0).toLocaleString()} cr`)}</strong>

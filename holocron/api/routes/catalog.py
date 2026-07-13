@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Query
 from holocron.catalog.items import filter_items, load_item_catalog, refresh_item_catalog
 
 router = APIRouter()
+RARITY_ORDER = ["Unenhanced", "Standard", "Premium", "Prototype", "Advanced", "Legendary", "Artifact"]
 
 
 def _catalog_or_503():
@@ -12,6 +13,27 @@ def _catalog_or_503():
         return load_item_catalog()
     except (OSError, ValueError) as error:
         raise HTTPException(status_code=503, detail="SW5e item catalog unavailable") from error
+
+
+def _category_needle(value: str | None) -> str:
+    return "".join(ch for ch in str(value or "").lower() if ch.isalnum())
+
+
+def _rarity_index(value: object) -> int:
+    rarity = str(value or "Unenhanced")
+    return RARITY_ORDER.index(rarity) if rarity in RARITY_ORDER else 0
+
+
+def _rarity_cap_for_cr(cr: int) -> str:
+    if cr >= 25:
+        return "Artifact"
+    if cr >= 19:
+        return "Legendary"
+    if cr >= 13:
+        return "Advanced"
+    if cr >= 8:
+        return "Prototype"
+    return "Premium"
 
 
 @router.get("/items/loot")
@@ -30,17 +52,17 @@ def loot_items(
         if item.get("kind") == "equipment" and int(item.get("cost") or 0) <= budget
     ]
     if cr >= 4:
-        candidates.extend(item for item in catalog if item.get("kind") == "enhanced")
+        cap_index = _rarity_index(_rarity_cap_for_cr(cr))
+        candidates.extend(item for item in catalog if item.get("kind") == "enhanced" and _rarity_index(item.get("rarity")) <= cap_index)
     rng = random.Random(seed)
     selected = rng.sample(candidates, min(count, len(candidates))) if candidates else []
     if extra_category:
-        rarity_order = ["Unenhanced", "Standard", "Premium", "Prototype", "Advanced", "Legendary", "Artifact"]
-        max_index = rarity_order.index(max_rarity) if max_rarity in rarity_order else len(rarity_order) - 1
+        max_index = _rarity_index(max_rarity) if max_rarity in RARITY_ORDER else len(RARITY_ORDER) - 1
+        needle = _category_needle(extra_category)
         extra_pool = [
             item for item in catalog
-            if extra_category.lower() in str(item.get("category") or item.get("kind") or "").lower()
-            and rarity_order.index(str(item.get("rarity") or "Unenhanced")) <= max_index
-            if str(item.get("rarity") or "Unenhanced") in rarity_order
+            if needle in _category_needle(f"{item.get('category')} {item.get('kind')} {item.get('subcategory')}")
+            and _rarity_index(item.get("rarity")) <= max_index
         ]
         if extra_pool:
             selected.append(rng.choice(extra_pool))
