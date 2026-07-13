@@ -2300,6 +2300,7 @@ function publicCharacter(character) {
     level: character.level || 1,
     className: character.className || "",
     subclass: character.subclass || "",
+    sharedNote: character.sharedNote || "",
   };
 }
 
@@ -4475,6 +4476,13 @@ function renderPlayerIdentity() {
   document.querySelector("#player-round").textContent = state.round || 1;
   document.querySelector("#player-visible-count").textContent = `${visibleTokens.length} visible`;
   document.querySelector("#player-sync-status").textContent = `Synced ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+  document.querySelector("#player-character-summary").innerHTML = `
+    <span>${escapeHtml(player.species || "Unknown species")}</span>
+    <strong>Level ${escapeHtml(player.level || 1)} ${escapeHtml(player.className || "Adventurer")}</strong>
+    ${player.subclass ? `<small>${escapeHtml(player.subclass)}</small>` : ""}`;
+  const sharedNote = document.querySelector("#player-shared-note");
+  sharedNote.hidden = !String(player.sharedNote || "").trim();
+  sharedNote.innerHTML = player.sharedNote ? `<small>Player / GM note</small><p>${escapeHtml(player.sharedNote)}</p>` : "";
   const turnCard = document.querySelector("#player-turn-card");
   turnCard.hidden = !activeVisible;
   if (activeVisible) turnCard.innerHTML = `<span>Current turn</span><strong>${escapeHtml(activeCombatant.name)}</strong>`;

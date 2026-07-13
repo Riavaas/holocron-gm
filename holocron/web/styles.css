@@ -515,6 +515,11 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .player-session-strip span, .player-turn-card { padding: 6px; border: 1px solid var(--line); background: var(--panel-raised); color: var(--muted); font-size: 8px; text-transform: uppercase; }
 .player-session-strip strong { color: var(--ink); }
 #player-sync-status { grid-column: 1 / -1; color: var(--accent); }
+.player-character-summary, .player-shared-note { margin-bottom: 10px; padding: 8px; border-left: 2px solid var(--accent); background: var(--panel-raised); }
+.player-character-summary span, .player-character-summary strong, .player-character-summary small, .player-shared-note small { display: block; }
+.player-character-summary span, .player-character-summary small, .player-shared-note small { color: var(--muted); font-size: 8px; }
+.player-character-summary strong { color: var(--ink); font-size: 12px; }
+.player-shared-note p { margin: 4px 0 0; color: var(--ink); font-size: 10px; line-height: 1.45; }
 .player-turn-card { margin-bottom: 10px; text-transform: none; }
 .player-turn-card strong { display: block; color: var(--ink); font-size: 11px; }
 .player-resource-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 14px; }
