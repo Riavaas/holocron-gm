@@ -1208,6 +1208,11 @@ function renderLibrary(items = tokenPresets) {
     </div>`).join("") : '<p class="loading-line">No matching local assets.</p>';
 }
 
+function setAssetLibraryStatus(label) {
+  const status = document.querySelector("#asset-library-header-status");
+  if (status) status.textContent = label;
+}
+
 function mapCenterPoint() {
   return {
     x: (shell.clientWidth / 2 - state.offset.x) / state.zoom,
@@ -1259,6 +1264,7 @@ async function loadBestiary() {
   const search = document.querySelector("#bestiary-search").value.trim();
   const params = new URLSearchParams({ limit: mode === "images" ? "40" : "60" });
   document.querySelector("#bestiary-search").placeholder = mode === "tokens" ? "Search token, faction…" : mode === "images" ? "Search book, page, source…" : "Search creature, faction…";
+  setAssetLibraryStatus(`${mode} · loading`);
   try {
     await configureAssetFilter(mode);
     const filterValue = document.querySelector("#bestiary-cr").value;
@@ -1292,6 +1298,7 @@ async function loadBestiary() {
     const label = `${payload.total} ${mode === "tokens" ? "tokens" : mode === "images" ? "images" : "creatures"}`;
     document.querySelector("#bestiary-count").textContent = label;
     document.querySelector("#asset-library-summary").textContent = `${label} · showing ${items.length}`;
+    setAssetLibraryStatus(`${mode} · ${items.length}/${payload.total}`);
   } catch {
     const query = search.toLowerCase();
     const offlineItems = mode === "images"
@@ -1303,6 +1310,7 @@ async function loadBestiary() {
     document.querySelector("#asset-library-summary").textContent = mode === "images"
       ? "Local PDF art could not be loaded. Check the asset manifest and server logs."
       : `${label} · server catalog unavailable`;
+    setAssetLibraryStatus(mode === "images" ? "PDF art unavailable" : `offline · ${offlineItems.length} presets`);
   }
 }
 
@@ -1770,6 +1778,9 @@ function applyAssetLibraryView() {
   document.querySelectorAll("[data-library-view]").forEach((button) => {
     button.classList.toggle("active", button.dataset.libraryView === state.assetLibraryView);
   });
+  const mode = document.querySelector("#asset-library-mode")?.value || "assets";
+  const count = state.creatureCache?.length || 0;
+  setAssetLibraryStatus(`${mode} · ${state.assetLibraryView} · ${count} shown`);
 }
 
 function applyAssetLibraryPosition() {
