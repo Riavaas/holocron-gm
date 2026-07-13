@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Holocron GM</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20260713-quests-v1">
+  <link rel="stylesheet" href="/static/styles.css?v=20260713-player-share-v1">
 </head>
 <body>
   <header class="topbar">
@@ -219,6 +219,12 @@
   </section>
   <aside id="player-hud" class="player-hud" hidden>
     <div class="player-hud-title"><div><small>PLAYING</small><h2 id="player-name"></h2></div><button id="change-player" class="icon-button" title="Change character">↺</button></div>
+    <div class="player-session-strip">
+      <span>Round <strong id="player-round">1</strong></span>
+      <span id="player-visible-count">0 visible</span>
+      <span id="player-sync-status">Waiting</span>
+    </div>
+    <div id="player-turn-card" class="player-turn-card" hidden></div>
     <div id="player-resources" class="player-resource-list"></div>
     <div class="section-heading"><h2>Equipment & inventory</h2><span id="player-credits"></span></div>
     <div id="player-inventory" class="player-inventory"></div>
@@ -619,7 +625,7 @@
       </div>
     </form>
   </aside>
-  <script src="/static/app.js?v=20260713-quests-v2"></script>
+  <script src="/static/app.js?v=20260713-player-share-v1"></script>
   <script type="module" src="/static/dice.js?v=20260712-audit-v3"></script>
 </body>
 </html>

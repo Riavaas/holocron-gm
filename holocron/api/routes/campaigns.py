@@ -8,7 +8,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from holocron.core.paths import DATA_DIR
@@ -106,13 +106,14 @@ def update_campaign(campaign_id: str, payload: CampaignPayload) -> dict[str, obj
     return campaign
 
 
-@router.delete("/{campaign_id}", status_code=204)
-def delete_campaign(campaign_id: str) -> None:
+@router.delete("/{campaign_id}")
+def delete_campaign(campaign_id: str) -> Response:
     campaign = _read_campaign(campaign_id)
     map_path = _map_path(campaign)
     _campaign_path(campaign_id).unlink(missing_ok=True)
     if map_path:
         map_path.unlink(missing_ok=True)
+    return Response(status_code=204)
 
 
 @router.put("/{campaign_id}/map")

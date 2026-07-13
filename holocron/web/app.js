@@ -308,6 +308,7 @@ function tokenVisibleToPlayer(token) {
   if (!origin) return false;
   if (token === origin) return true;
   const distance = Math.hypot(token.x - origin.x, token.y - origin.y);
+  if (distance < 0.0001) return true;
   if (distance > state.visionRange * state.gridSize) return false;
   const direction = { x: (token.x - origin.x) / distance, y: (token.y - origin.y) / distance };
   return ![...state.walls, ...state.doors.filter((door) => !door.open)].some((wall) => {
@@ -4211,10 +4212,21 @@ function renderPlayerIdentity() {
   ).join("");
   if (playerCharacters.some((character) => character.id === selectedPlayerId)) select.value = selectedPlayerId;
   const player = playerCharacters.find((character) => character.id === selectedPlayerId);
+  if (playerJoined && !player) playerJoined = false;
   document.querySelector("#player-gate").hidden = playerJoined;
   document.querySelector("#player-hud").hidden = !playerJoined || !player;
   if (!player) return;
+  const visibleTokens = state.tokens.filter(tokenVisibleToPlayer);
+  const activeCombatant = state.combatants[state.activeTurn];
+  const activeToken = activeCombatant ? state.tokens.find((token) => token.combatantId === activeCombatant.id) : null;
+  const activeVisible = activeCombatant && (!activeToken || tokenVisibleToPlayer(activeToken));
   document.querySelector("#player-name").textContent = player.name;
+  document.querySelector("#player-round").textContent = state.round || 1;
+  document.querySelector("#player-visible-count").textContent = `${visibleTokens.length} visible`;
+  document.querySelector("#player-sync-status").textContent = `Synced ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+  const turnCard = document.querySelector("#player-turn-card");
+  turnCard.hidden = !activeVisible;
+  if (activeVisible) turnCard.innerHTML = `<span>Current turn</span><strong>${escapeHtml(activeCombatant.name)}</strong>`;
   document.querySelector("#player-credits").textContent = `${player.credits || 0} cr`;
   document.querySelector("#player-resources").innerHTML = Object.values(player.resources || {}).map((resource) => `
     <div class="player-resource" style="--resource-color:${resource.color}">
@@ -4251,6 +4263,7 @@ if (isPlayerView) {
       const bundle = payload.state;
       const mapState = bundle.map || bundle;
       playerCharacters = bundle.characters || [];
+      document.querySelector("#player-sync-status").textContent = "Syncing…";
       const transient = {
         image: state.image,
         imageUrl: state.imageUrl,
