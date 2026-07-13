@@ -1102,12 +1102,12 @@ function libraryActions(item, index) {
 
 function renderLibrary(items = tokenPresets) {
   state.creatureCache = items;
-  document.querySelector("#token-library").innerHTML = items.map((item, index) => `
+  document.querySelector("#token-library").innerHTML = items.length ? items.map((item, index) => `
     <div class="library-entry" draggable="true" tabindex="0" data-creature="${index}" title="Drag or double-click ${escapeHtml(item.name)} to add it to the map">
       ${tokenMarkup(item, "library-token")}
       <span class="library-entry-info"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(librarySubtitle(item))}</span></span>
       ${libraryActions(item, index)}
-    </div>`).join("");
+    </div>`).join("") : '<p class="loading-line">No matching local assets.</p>';
 }
 
 function mapCenterPoint() {
@@ -1160,15 +1160,15 @@ async function loadBestiary() {
   const mode = document.querySelector("#asset-library-mode").value;
   const search = document.querySelector("#bestiary-search").value.trim();
   const params = new URLSearchParams({ limit: mode === "images" ? "40" : "60" });
-  await configureAssetFilter(mode);
-  const filterValue = document.querySelector("#bestiary-cr").value;
-  const typeValue = document.querySelector("#bestiary-type").value;
   document.querySelector("#bestiary-search").placeholder = mode === "tokens" ? "Search token, faction…" : mode === "images" ? "Search book, page, source…" : "Search creature, faction…";
-  if (search) params.set("q", search);
-  if (mode === "creatures" && filterValue) params.set("cr", filterValue);
-  if (mode === "creatures" && typeValue) params.set("type", typeValue);
-  if (mode === "images" && filterValue) params.set("book", filterValue);
   try {
+    await configureAssetFilter(mode);
+    const filterValue = document.querySelector("#bestiary-cr").value;
+    const typeValue = document.querySelector("#bestiary-type").value;
+    if (search) params.set("q", search);
+    if (mode === "creatures" && filterValue) params.set("cr", filterValue);
+    if (mode === "creatures" && typeValue) params.set("type", typeValue);
+    if (mode === "images" && filterValue) params.set("book", filterValue);
     const endpoint = mode === "tokens"
       ? `/api/assets/external?asset_type=tokens&${params}`
       : mode === "images"
@@ -1195,9 +1195,16 @@ async function loadBestiary() {
     document.querySelector("#bestiary-count").textContent = label;
     document.querySelector("#asset-library-summary").textContent = `${label} · showing ${items.length}`;
   } catch {
-    renderLibrary();
-    document.querySelector("#bestiary-count").textContent = "Offline presets";
-    document.querySelector("#asset-library-summary").textContent = "Offline presets";
+    const query = search.toLowerCase();
+    const offlineItems = mode === "images"
+      ? []
+      : tokenPresets.filter((item) => !query || `${item.name} ${item.type}`.toLowerCase().includes(query));
+    renderLibrary(offlineItems);
+    const label = mode === "images" ? "PDF art unavailable" : `${offlineItems.length}/${tokenPresets.length} local presets`;
+    document.querySelector("#bestiary-count").textContent = label;
+    document.querySelector("#asset-library-summary").textContent = mode === "images"
+      ? "Local PDF art could not be loaded. Check the asset manifest and server logs."
+      : `${label} · server catalog unavailable`;
   }
 }
 
