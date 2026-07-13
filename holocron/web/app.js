@@ -4141,6 +4141,14 @@ function inferQuestFileFolder(file, folders = []) {
   return match || current;
 }
 
+function normalizeQuestLinkLabel(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+notes$/, "")
+    .replace(/\s+/g, " ");
+}
+
 function addQuestFile(quest, folder, title = `${folder} notes`) {
   const existing = quest.files.find((file) => {
     const inferredFolder = inferQuestFileFolder(file, quest.folders);
@@ -4158,6 +4166,32 @@ function addQuestFile(quest, folder, title = `${folder} notes`) {
   };
   quest.files.push(file);
   return file;
+}
+
+function openQuestWikiLink(label) {
+  ensureQuestState();
+  const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
+  if (!quest) return false;
+  const target = normalizeQuestLinkLabel(label);
+  if (!target) return false;
+  let file = quest.files.find((item) => {
+    const title = normalizeQuestLinkLabel(item.title);
+    const folder = normalizeQuestLinkLabel(inferQuestFileFolder(item, quest.folders));
+    return title === target || folder === target;
+  });
+  if (!file) {
+    const folder = quest.folders.find((item) => normalizeQuestLinkLabel(item) === target);
+    if (folder) file = addQuestFile(quest, folder);
+  }
+  if (!file) return false;
+  renderQuests();
+  requestAnimationFrame(() => {
+    const element = document.querySelector(`[data-quest-file="${file.id}"]`);
+    element?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    element?.classList.add("quest-link-target");
+    setTimeout(() => element?.classList.remove("quest-link-target"), 900);
+  });
+  return true;
 }
 
 function isGenericQuestFile(file) {
@@ -4204,6 +4238,7 @@ document.querySelector("#quest-file-windows").addEventListener("click", (event) 
   }
   const wiki = event.target.closest("[data-wiki]");
   if (wiki) {
+    if (openQuestWikiLink(wiki.dataset.wiki)) return;
     document.querySelector('[data-view="compendium"]').click();
     searchCompendium(wiki.dataset.wiki);
   }
