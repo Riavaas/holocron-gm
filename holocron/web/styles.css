@@ -728,6 +728,7 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .npc-output { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: 14px; min-height: 100px; margin-bottom: 14px; padding-block: 12px; border-block: 1px solid var(--line); }
 .npc-portrait { width: 72px; height: 72px; border: 1px solid var(--accent); border-radius: 50%; background: var(--accent-soft); }
 .npc-output h2 { font-size: 17px; }.npc-output p { margin: 3px 0; color: var(--muted); font-size: 10px; }
+.npc-output small { color: var(--accent); font-size: 8px; }
 .npc-output img { object-fit: cover; }
 .generated-details { margin-top: 20px; }.generated-details h2 { margin: 14px 0 7px; }
 .generated-details p { color: var(--muted); font-size: 11px; line-height: 1.6; }
@@ -736,6 +737,10 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .npc-profile-stats span { padding: 6px; border: 1px solid var(--line); color: var(--muted); font-size: 8px; }
 .npc-profile-stats strong { display: block; color: var(--text); font-size: 11px; }
 .npc-profile-actions { color: var(--muted); font-size: 9px; line-height: 1.5; }
+.npc-storyline { display: grid; gap: 5px; margin: 8px 0 10px; padding-block: 8px; border-block: 1px solid var(--line); }
+.npc-storyline p { margin: 0; }
+.npc-storyline strong { color: var(--text); }
+.npc-generated-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
 #npc-to-encounter { width: 100%; }
 .attribute-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
 .attribute-strip span { padding: 7px 2px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); font-size: 8px; text-align: center; }

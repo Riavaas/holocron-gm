@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Holocron GM</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20260713-toolkit-v1">
+  <link rel="stylesheet" href="/static/styles.css?v=20260713-npc-v1">
 </head>
 <body>
   <header class="topbar">
@@ -401,7 +401,12 @@
         <div id="npc-combat-profile" class="npc-combat-profile"></div>
         <h2>Hook</h2>
         <p id="npc-hook"></p>
-        <button id="npc-to-encounter" class="secondary-button" type="button">Add NPC to encounter</button>
+        <div id="npc-storyline" class="npc-storyline"></div>
+        <div class="npc-generated-actions">
+          <button id="npc-open-sheet" class="secondary-button" type="button" disabled>Open sheet</button>
+          <button id="npc-save-note" class="secondary-button" type="button" disabled>Save note</button>
+          <button id="npc-to-encounter" class="secondary-button" type="button">Add NPC to encounter</button>
+        </div>
       </section>
     </section>
     <section class="generator-column middle">
@@ -614,7 +619,7 @@
       </div>
     </form>
   </aside>
-  <script src="/static/app.js?v=20260713-toolkit-v1"></script>
+  <script src="/static/app.js?v=20260713-npc-v1"></script>
   <script type="module" src="/static/dice.js?v=20260712-audit-v3"></script>
 </body>
 </html>

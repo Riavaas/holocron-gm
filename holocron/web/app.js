@@ -3049,6 +3049,22 @@ const npcHooks = [
   "Can arrange transport through a blockade for a personal concession.",
   "Knows where the missing shipment landed, but the site is occupied.",
 ];
+const npcDistinctions = [
+  "Keeps one glove sealed and refuses to explain the scar beneath it.",
+  "Has a droid caller welded into an old military medal.",
+  "Wears faction colors that have been carefully desaturated.",
+  "Carries a cracked sabacc card as a warning token.",
+  "Has a voice modulator tuned half an octave too low.",
+  "Never removes a visor etched with a dead squad's tally marks.",
+];
+const npcSecrets = [
+  "Quietly feeds information to a rival cell when civilian lives are at stake.",
+  "Is carrying forged credentials that will fail under a military-grade scan.",
+  "Knows the location of a hidden cache, but not who else is watching it.",
+  "Was paid to delay the party, not kill them.",
+  "Recognized a party member's ship transponder before the conversation began.",
+  "Needs help escaping a debt that is about to become violent.",
+];
 const lootMods = ["hair-trigger assembly", "balanced hilt", "enhanced power cell", "reinforced plating", "stealth field module", "targeting optic"];
 const consumables = ["premium medpac", "adrenal stim", "fragmentation grenade", "repair kit", "shield generator charge", "antitoxin"];
 const flavorParts = {
@@ -3190,14 +3206,19 @@ async function generateNpc() {
   const name = Math.random() < 0.35 && npcNames[species] ? randomItem(npcNames[species]) : generateSpeciesName(species);
   const catalog = await loadNpcBestiary();
   const terms = npcRoleTerms[role] || [];
+  const humanoidTypes = new Set(["human", "humanoid"]);
   const roleMatches = catalog.filter((item) => terms.some((term) => item.name.toLowerCase().includes(term)));
-  const humanoids = catalog.filter((item) => ["human", "humanoid"].includes(item.type));
-  const candidatePool = roleMatches.length ? roleMatches : humanoids.length ? humanoids : catalog;
-  const illustratedRoleMatches = roleMatches.filter((item) => imageUrlFor(item));
+  const humanoids = catalog.filter((item) => humanoidTypes.has(item.type));
+  const humanoidRoleMatches = roleMatches.filter((item) => humanoidTypes.has(item.type));
+  const speciesMatches = catalog.filter((item) => item.name.toLowerCase().includes(species.toLowerCase()) || String(item.type || "").toLowerCase().includes(species.toLowerCase()));
+  const candidatePool = speciesMatches.length ? speciesMatches : humanoidRoleMatches.length ? humanoidRoleMatches : humanoids.length ? humanoids : roleMatches.length ? roleMatches : catalog;
+  const illustratedRoleMatches = humanoidRoleMatches.filter((item) => imageUrlFor(item));
   const illustratedHumanoids = humanoids.filter((item) => imageUrlFor(item));
   const candidate = illustratedRoleMatches.length
     ? randomItem(illustratedRoleMatches)
-    : illustratedHumanoids.length
+    : speciesMatches.filter((item) => imageUrlFor(item)).length
+      ? randomItem(speciesMatches.filter((item) => imageUrlFor(item)))
+      : illustratedHumanoids.length
       ? randomItem(illustratedHumanoids)
       : candidatePool.length ? randomItem(candidatePool) : null;
   const abilities = candidate?.abilities || candidate?.stat_block?.abilities || {};
@@ -3210,12 +3231,14 @@ async function generateNpc() {
   const actions = candidate?.actions?.slice(0, 4) || ["Blaster attack"];
   const quirk = randomItem(npcQuirks);
   const hook = randomItem(npcHooks);
+  const distinction = randomItem(npcDistinctions);
+  const secret = randomItem(npcSecrets);
   generatedNpc = candidate
-    ? { ...candidate, name, type: candidate.type || "enemy", npcRole: role, npcSpecies: species, imageUrl: portraitUrl }
-    : { name, type: "enemy", hp: 12, ac: 12, cr: "1/4", actions, abilities, imageUrl: portraitUrl };
+    ? { ...candidate, name, type: "enemy", creatureType: candidate.type, npcRole: role, npcSpecies: species, npcQuirk: quirk, npcHook: hook, npcDistinction: distinction, npcSecret: secret, imageUrl: portraitUrl }
+    : { name, type: "enemy", hp: 12, ac: 12, cr: "1/4", actions, abilities, npcRole: role, npcSpecies: species, npcQuirk: quirk, npcHook: hook, npcDistinction: distinction, npcSecret: secret, imageUrl: portraitUrl };
   document.querySelector("#npc-output").innerHTML = `
     ${portraitUrl ? `<img class="npc-portrait" src="${escapeHtml(portraitUrl)}" alt="${escapeHtml(name)}">` : '<canvas id="npc-portrait-canvas" class="npc-portrait" width="144" height="144"></canvas>'}
-    <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(quirk)}</p></div>`;
+    <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(quirk)}</p>${candidate ? `<small>Template: ${escapeHtml(candidate.name)} · CR ${escapeHtml(candidate.cr || "—")}</small>` : "<small>Template: local fallback</small>"}</div>`;
   if (!portraitUrl) drawNpcPortrait(species, name);
   document.querySelector("#npc-attributes").innerHTML = attributes.map((attribute) =>
     `<span>${attribute.label}<strong>${attribute.value}</strong></span>`
@@ -3224,6 +3247,11 @@ async function generateNpc() {
     <div class="npc-profile-stats"><span>AC<strong>${candidate?.ac || 12}</strong></span><span>HP<strong>${candidate?.hp || 12}</strong></span><span>CR<strong>${escapeHtml(candidate?.cr || "1/4")}</strong></span></div>
     <div class="npc-profile-actions"><strong>Actions</strong> · ${escapeHtml(actions.join(", "))}</div>`;
   document.querySelector("#npc-hook").textContent = hook;
+  document.querySelector("#npc-storyline").innerHTML = `
+    <p><strong>Distinction</strong> ${escapeHtml(distinction)}</p>
+    <p><strong>GM secret</strong> ${escapeHtml(secret)}</p>`;
+  document.querySelector("#npc-open-sheet").disabled = false;
+  document.querySelector("#npc-save-note").disabled = false;
   document.querySelector("#npc-to-encounter").disabled = false;
 }
 
@@ -3391,6 +3419,35 @@ document.querySelector("#npc-to-encounter").addEventListener("click", () => {
   if (!generatedNpc) return;
   addCombatant(generatedNpc, mapCenterPoint());
   document.querySelector('[data-view="battlemap"]').click();
+});
+document.querySelector("#npc-open-sheet").addEventListener("click", () => {
+  if (!generatedNpc) return;
+  openCreatureDetail(generatedNpc);
+});
+document.querySelector("#npc-save-note").addEventListener("click", () => {
+  if (!generatedNpc) return;
+  const content = `# ${generatedNpc.name}
+
+${generatedNpc.npcSpecies || "Unknown species"} ${generatedNpc.npcRole || "NPC"}
+
+## Table Read
+${generatedNpc.npcQuirk || ""}
+
+## Hook
+${generatedNpc.npcHook || ""}
+
+## Distinction
+${generatedNpc.npcDistinction || ""}
+
+## GM Secret
+${generatedNpc.npcSecret || ""}
+
+## Combat Template
+${generatedNpc.source || "Local generated profile"} · CR ${generatedNpc.cr || "1/4"} · AC ${generatedNpc.ac || 12} · HP ${generatedNpc.hp || 12}
+
+Actions: ${(generatedNpc.actions || ["Blaster attack"]).join(", ")}`;
+  createNote(`NPC · ${generatedNpc.name}`, content);
+  document.querySelector('[data-view="notes"]').click();
 });
 document.querySelector("#generate-loot").addEventListener("click", generateLoot);
 document.querySelector("#generate-shopkeeper").addEventListener("click", generateShopkeeper);
