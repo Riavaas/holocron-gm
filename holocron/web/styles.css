@@ -797,8 +797,17 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .soundboard-controls label { color: var(--muted); font-size: 9px; }
 .soundboard-controls input { margin: 5px 0 0; }
 .soundboard-controls button { min-height: 30px; }
-.resource-filters { display: grid; grid-template-columns: 1fr 105px; gap: 6px; margin-bottom: 8px; }
+.resource-filters { display: grid; grid-template-columns: minmax(120px, 1fr) 105px minmax(150px, 220px); gap: 6px; margin-bottom: 8px; }
 .resource-filters input, .resource-filters select { margin: 0; }
+.external-resource-summary { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+.external-resource-summary span {
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  background: var(--panel-raised);
+  color: var(--muted);
+  font-size: 9px;
+}
+.external-resource-summary strong { color: var(--text); }
 .external-resource-list { display: grid; gap: 5px; max-height: 280px; overflow-y: auto; }
 .external-resource-entry {
   display: grid;

@@ -151,6 +151,9 @@ def test_external_resource_backlog_api(tmp_path, monkeypatch):
     assert body["items"][0]["category"] == "Maps and Galaxy Tools"
     assert body["features"][0]["item"] == "Species-based name generator"
     assert body["statuses"]["To review"] == 1
+    assert body["categories"]["Maps and Galaxy Tools"] == 1
+    filtered = client.get("/api/assets/resource-backlog", params={"category": "Maps and Galaxy Tools"}).json()
+    assert filtered["filtered_total"] == 1
 
 
 def test_compendium_creatures_can_be_filtered():

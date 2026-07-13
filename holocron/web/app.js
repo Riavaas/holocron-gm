@@ -3467,15 +3467,37 @@ async function generateNpc() {
 }
 
 let externalResources = [];
+let externalResourceMeta = { statuses: {}, categories: {} };
+
+function populateExternalResourceCategories() {
+  const categorySelect = document.querySelector("#external-resource-category");
+  const current = categorySelect.value;
+  const options = Object.entries(externalResourceMeta.categories || {})
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([category, total]) => `<option value="${escapeHtml(category)}">${escapeHtml(category)} (${total})</option>`)
+    .join("");
+  categorySelect.innerHTML = `<option value="">All categories</option>${options}`;
+  if ([...categorySelect.options].some((option) => option.value === current)) {
+    categorySelect.value = current;
+  }
+}
 
 function renderExternalResources() {
   const search = document.querySelector("#external-resource-search").value.trim().toLowerCase();
   const status = document.querySelector("#external-resource-status").value;
+  const category = document.querySelector("#external-resource-category").value;
   const matches = externalResources.filter((item) => {
     const haystack = `${item.resource} ${item.category} ${item.intended_use} ${item.status} ${item.url}`.toLowerCase();
-    return (!status || item.status === status) && (!search || haystack.includes(search));
+    return (!status || item.status === status)
+      && (!category || item.category === category)
+      && (!search || haystack.includes(search));
   });
   document.querySelector("#external-resource-count").textContent = `${matches.length}/${externalResources.length}`;
+  const statusSummary = Object.entries(externalResourceMeta.statuses || {})
+    .map(([label, total]) => `<span>${escapeHtml(label)} <strong>${total}</strong></span>`)
+    .join("");
+  document.querySelector("#external-resource-summary").innerHTML = statusSummary
+    || '<span>No tracked resources yet</span>';
   document.querySelector("#external-resource-list").innerHTML = matches.slice(0, 24).map((item) => `
     <a class="external-resource-entry ${item.status === "Imported locally" ? "imported" : ""}" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">
       <strong>${escapeHtml(item.resource)}</strong>
@@ -3491,9 +3513,12 @@ async function loadExternalResources() {
     if (!response.ok) throw new Error("Resource backlog unavailable");
     const payload = await response.json();
     externalResources = payload.items;
+    externalResourceMeta = { statuses: payload.statuses || {}, categories: payload.categories || {} };
+    populateExternalResourceCategories();
     renderExternalResources();
   } catch {
     document.querySelector("#external-resource-count").textContent = "Unavailable";
+    document.querySelector("#external-resource-summary").innerHTML = "";
     document.querySelector("#external-resource-list").innerHTML = '<p class="loading-line">Resource backlog unavailable.</p>';
   }
 }
@@ -3719,6 +3744,7 @@ document.querySelector("#shopkeeper-output").addEventListener("click", (event) =
 });
 document.querySelector("#external-resource-search").addEventListener("input", renderExternalResources);
 document.querySelector("#external-resource-status").addEventListener("change", renderExternalResources);
+document.querySelector("#external-resource-category").addEventListener("change", renderExternalResources);
 document.querySelector("#send-encounter").addEventListener("click", () => {
   generatedEncounter.forEach((creature) => addCombatant(creature));
   document.querySelector('[data-view="battlemap"]').click();
