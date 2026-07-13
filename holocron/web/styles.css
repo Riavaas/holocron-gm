@@ -533,6 +533,16 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .creature-detail-content { overflow-y: auto; }
 .creature-detail-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; }
 .creature-detail-image { width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--line); background: var(--dark-surface); }
+.creature-combat-summary { display: grid; gap: 8px; }
+.creature-combat-summary img, .creature-summary-placeholder { width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--line); background: var(--dark-surface); }
+.creature-combat-summary dl { display: grid; grid-template-columns: 54px 1fr; gap: 0; margin: 0; border: 1px solid var(--line); }
+.creature-combat-summary dt, .creature-combat-summary dd { margin: 0; padding: 5px 7px; border-bottom: 1px solid var(--line); font-size: 9px; }
+.creature-combat-summary dt { background: var(--panel-raised); color: var(--muted); font-weight: 800; text-transform: uppercase; }
+.creature-combat-summary dd { color: var(--text); }
+.creature-combat-summary dt:nth-last-child(2), .creature-combat-summary dd:last-child { border-bottom: 0; }
+.creature-action-chips, .creature-defense-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.creature-action-chips span, .creature-defense-chips span { padding: 4px 6px; border: 1px solid var(--line); background: var(--panel-raised); color: var(--muted); font-size: 8px; }
+.creature-defense-chips span { border-color: rgba(196,15,15,.28); background: var(--accent-soft); color: var(--accent); }
 .creature-detail-copy .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .creature-detail-copy .stat-line { padding-block: 7px; border-bottom: 1px solid var(--line); }
 .creature-detail-actions { display: flex; justify-content: flex-end; }

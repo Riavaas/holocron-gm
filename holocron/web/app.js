@@ -1036,6 +1036,41 @@ function renderStatBlock(combatant) {
   `;
 }
 
+function creatureDefenseChips(item) {
+  const groups = [
+    ["Vuln", item.damage_vulnerabilities],
+    ["Res", item.damage_resistances],
+    ["Imm", item.damage_immunities],
+    ["Cond", item.condition_immunities],
+  ];
+  return groups.flatMap(([label, values]) => (values || []).slice(0, 6).map((value) =>
+    `<span title="${escapeHtml(label)}">${escapeHtml(label)} ${escapeHtml(value)}</span>`
+  )).join("");
+}
+
+function creatureCombatSummary(item, imageUrl) {
+  const block = item.stat_block || {};
+  const summary = [
+    ["CR", item.cr || block.challenge_rating || "—"],
+    ["XP", item.xp || block.xp || "—"],
+    ["AC", item.ac || block.armor_class || "—"],
+    ["HP", item.hp || block.hit_points || "—"],
+    ["Speed", block.speed || "—"],
+    ["Type", item.type || block.type || "—"],
+  ];
+  const actions = (block.actions || item.actions || []).slice(0, 4).map((action) =>
+    typeof action === "string" ? action : action.name
+  ).filter(Boolean);
+  const defenses = creatureDefenseChips(item);
+  return `
+    <aside class="creature-combat-summary">
+      ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.name)}">` : '<div class="creature-summary-placeholder"></div>'}
+      <dl>${summary.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>
+      ${actions.length ? `<div class="creature-action-chips">${actions.map((action) => `<span>${escapeHtml(action)}</span>`).join("")}</div>` : ""}
+      ${defenses ? `<div class="creature-defense-chips">${defenses}</div>` : ""}
+    </aside>`;
+}
+
 function renderCombatantInspector() {
   const inspector = document.querySelector("#combatant-inspector");
   const combatant = selectedCombatant();
@@ -1824,7 +1859,7 @@ function openCreatureDetail(item) {
   document.querySelector("#creature-detail-title").textContent = item.name;
   document.querySelector("#creature-detail-content").innerHTML = `
     <div class="creature-detail-layout">
-      <div>${imageUrl ? `<img class="creature-detail-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.name)}">` : '<div class="creature-detail-image"></div>'}<p class="citation">${escapeHtml(item.source || "SW5e")} · p.${escapeHtml(item.page || "?")}</p></div>
+      <div>${creatureCombatSummary(item, imageUrl)}<p class="citation">${escapeHtml(item.source || "SW5e")} · p.${escapeHtml(item.page || "?")}</p></div>
       <div class="creature-detail-copy">${renderStatBlock(adapted)}</div>
     </div>`;
   document.querySelector("#creature-detail-dialog").showModal();
