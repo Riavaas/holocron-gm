@@ -3608,6 +3608,10 @@ async function generateLoot() {
     if (!response.ok) throw new Error("Loot catalog unavailable");
     const payload = await response.json();
     generatedLootItems = payload.items || [];
+    const summaryChips = [
+      ...(payload.summary?.rarities || []).map(([name, count]) => `${name} ${count}`),
+      ...(payload.summary?.categories || []).slice(0, 3).map(([name, count]) => `${catalogLabel(name)} ${count}`),
+    ].map((label) => `<span>${escapeHtml(label)}</span>`).join("");
     const items = generatedLootItems.map((item, index) => {
       const detail = [catalogLabel(item.category), item.rarity, item.damage].filter(Boolean).join(" · ");
       return `<div class="loot-line interactive-loot" data-open-loot-item="${index}">
@@ -3621,6 +3625,7 @@ async function generateLoot() {
     }).join("");
     output.innerHTML = `
       <div class="loot-line"><span>Credits</span><strong>${payload.credits.toLocaleString()} cr</strong></div>
+      ${summaryChips ? `<div class="loot-summary">${summaryChips}</div>` : ""}
       ${items}
       <div class="loot-line"><span>Field supplies</span><strong>${1 + Math.floor(cr / 4)}× ${escapeHtml(randomItem(consumables))}</strong></div>
       <div class="loot-line"><span>Salvage lead</span><strong>${escapeHtml(randomItem(lootMods))}</strong></div>`;
@@ -3648,6 +3653,7 @@ async function generateShopkeeper() {
     output.innerHTML = `
       <div class="shopkeeper-title"><strong>${escapeHtml(payload.name)}</strong><span>${escapeHtml(payload.settlement)} · ${escapeHtml(payload.allegiance)} · ${escapeHtml(payload.wealth)} · ${escapeHtml(priceLabel)}</span></div>
       <p class="shopkeeper-pitch">${escapeHtml(payload.pitch || "A practical merchant with a rotating stock of local wares.")}</p>
+      ${payload.policy ? `<p class="shopkeeper-policy">${escapeHtml(payload.policy)}</p>` : ""}
       ${departments ? `<div class="shopkeeper-departments">${departments}</div>` : ""}
       ${generatedShopWares.map((item, index) => {
         const detail = [catalogLabel(item.category), item.rarity, item.damage].filter(Boolean).join(" · ");

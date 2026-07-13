@@ -219,6 +219,8 @@ def test_item_catalog_generates_repeatable_loot(monkeypatch):
     assert first.status_code == 200
     assert first.json() == second.json()
     assert len(first.json()["items"]) == 4
+    assert first.json()["summary"]["count"] == 4
+    assert first.json()["summary"]["categories"] == [["Gear", 4]]
 
 
 def test_item_catalog_caps_enhanced_loot_rarity(monkeypatch):
@@ -271,6 +273,7 @@ def test_shopkeeper_adds_identity_departments_and_prices(monkeypatch):
     assert payload["name"] == "Back-Room Exchange"
     assert payload["price_modifier"] == 1.45
     assert payload["pitch"]
+    assert "favors" in payload["policy"]
     assert payload["departments"]
     assert any(item.get("shop_cost") == 1450 for item in payload["wares"] if item["id"] == "blaster")
 

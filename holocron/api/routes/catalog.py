@@ -36,6 +36,21 @@ def _rarity_cap_for_cr(cr: int) -> str:
     return "Premium"
 
 
+def _loot_summary(items: list[dict[str, object]]) -> dict[str, object]:
+    by_rarity: dict[str, int] = {}
+    by_category: dict[str, int] = {}
+    for item in items:
+        rarity = str(item.get("rarity") or "Unenhanced")
+        category = str(item.get("category") or item.get("kind") or "Misc")
+        by_rarity[rarity] = by_rarity.get(rarity, 0) + 1
+        by_category[category] = by_category.get(category, 0) + 1
+    return {
+        "count": len(items),
+        "rarities": sorted(by_rarity.items(), key=lambda item: (_rarity_index(item[0]), item[0])),
+        "categories": sorted(by_category.items(), key=lambda item: (-item[1], item[0])),
+    }
+
+
 @router.get("/items/loot")
 def loot_items(
     cr: int = Query(1, ge=0, le=30),
@@ -67,7 +82,7 @@ def loot_items(
         if extra_pool:
             selected.append(rng.choice(extra_pool))
     credits = rng.randrange(max(50, 100 + cr * 100), max(100, 400 + cr * 400), 10)
-    return {"items": selected, "credits": credits, "budget": budget}
+    return {"items": selected, "credits": credits, "budget": budget, "summary": _loot_summary(selected)}
 
 
 @router.get("/items/shopkeeper")
@@ -126,6 +141,13 @@ def shopkeeper_items(
         "poor": "Salvaged shelves, barter welcome, and every working component already has a story.",
         "neutral": "Practical wares for travelers who need to leave before docking fees climb.",
     }
+    policies = {
+        "empire": "Restricted wares require papers; suspicious purchases are logged.",
+        "republic": "Discounts are possible for relief work, medical aid, or anti-slaver operations.",
+        "outlaws": "Rare goods move fast; names are optional, favors are not.",
+        "poor": "Barter beats credits, and damaged gear may be repairable with time.",
+        "neutral": "Bulk purchases are welcome, but docking delays change prices by the hour.",
+    }
     adjusted_wares = []
     price_modifier = price_modifiers.get(wealth, 1.0)
     for item in wares:
@@ -140,6 +162,7 @@ def shopkeeper_items(
         "wealth": wealth,
         "price_modifier": price_modifier,
         "pitch": pitch_templates.get(allegiance, pitch_templates["neutral"]),
+        "policy": policies.get(allegiance, policies["neutral"]),
         "departments": sorted(departments.items(), key=lambda item: (-item[1], item[0])),
         "wares": adjusted_wares,
     }

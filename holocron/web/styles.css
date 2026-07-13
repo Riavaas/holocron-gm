@@ -769,6 +769,8 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .toolkit-output { min-height: 140px; padding: 12px 0; border-block: 1px solid var(--line); }
 .loot-line { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; color: var(--muted); font-size: 10px; }
 .loot-line strong { color: var(--text); text-align: right; }
+.loot-summary { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 0 8px; }
+.loot-summary span { padding: 4px 6px; border: 1px solid var(--line); background: var(--panel-raised); color: var(--muted); font-size: 8px; }
 .interactive-loot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, auto) auto; align-items: center; border-bottom: 1px solid var(--line); cursor: pointer; }
 .interactive-loot:hover { background: var(--panel-raised); }
 .loot-actions { display: flex; gap: 4px; }
@@ -890,6 +892,7 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .shopkeeper-title { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .shopkeeper-title span { color: var(--muted); font-size: 9px; }
 .shopkeeper-pitch { margin: 8px 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.shopkeeper-policy { margin: 6px 0 10px; padding-left: 8px; border-left: 2px solid var(--accent); color: var(--text); font-size: 10px; line-height: 1.45; }
 .shopkeeper-departments { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 8px; }
 .shopkeeper-departments span { display: flex; justify-content: space-between; gap: 6px; padding: 5px 6px; border: 1px solid var(--line); background: var(--panel-raised); color: var(--muted); font-size: 8px; }
 .shopkeeper-departments strong { color: var(--text); }
