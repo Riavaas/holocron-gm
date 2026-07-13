@@ -25,6 +25,7 @@ const defaults = {
   mapLocked: false,
   mapFitMode: "fit",
   mapFocus: false,
+  mapImmersive: false,
   tool: "select",
   snapToGrid: true,
   layers: { background: true, objects: true, tokens: true, grid: true, lighting: false, fog: false },
@@ -135,6 +136,7 @@ function sessionSnapshot() {
   delete clean.panStart;
   delete clean.assetFilterMode;
   delete clean.imageBookFilters;
+  delete clean.mapImmersive;
   return clean;
 }
 
@@ -1309,11 +1311,13 @@ function updateMapCursor() {
 function syncMapActionControls() {
   const workspace = document.querySelector("#battlemap-view");
   workspace.classList.toggle("map-focus", Boolean(state.mapFocus));
+  workspace.classList.toggle("map-immersive", Boolean(state.mapImmersive));
+  document.body.classList.toggle("map-immersive-active", Boolean(state.mapImmersive));
   shell.classList.toggle("map-locked", Boolean(state.mapLocked));
   document.querySelectorAll('[data-map-action="fit"]').forEach((button) => button.classList.toggle("active", state.mapFitMode === "fit"));
   document.querySelectorAll('[data-map-action="fill"]').forEach((button) => button.classList.toggle("active", state.mapFitMode === "fill"));
   document.querySelectorAll('[data-map-action="center"]').forEach((button) => button.classList.toggle("active", state.mapFitMode === "center"));
-  document.querySelectorAll('[data-map-action="immersive"]').forEach((button) => button.classList.toggle("active", state.mapFitMode === "fill" && state.mapFocus && state.mapLocked && !state.layers.grid));
+  document.querySelectorAll('[data-map-action="immersive"], [data-map-action="image-only"]').forEach((button) => button.classList.toggle("active", Boolean(state.mapImmersive)));
   document.querySelectorAll('[data-map-action="grid"]').forEach((button) => button.classList.toggle("active", Boolean(state.layers.grid)));
   document.querySelectorAll('[data-map-action="lock"]').forEach((button) => {
     button.classList.toggle("active", Boolean(state.mapLocked));
@@ -1330,9 +1334,13 @@ function syncMapActionControls() {
   if (contextLock) contextLock.textContent = state.mapLocked ? "Unlock map image" : "Lock map image";
   const contextFocus = document.querySelector('#map-context-menu [data-map-action="focus"]');
   if (contextFocus) contextFocus.textContent = state.mapFocus ? "Exit map focus" : "Focus map";
+  const contextImageOnly = document.querySelector('#map-context-menu [data-map-action="image-only"]');
+  if (contextImageOnly) contextImageOnly.textContent = state.mapImmersive ? "Refresh image-only viewport" : "Image-only viewport";
+  const contextExitImmersive = document.querySelector('#map-context-menu [data-map-action="exit-immersive"]');
+  if (contextExitImmersive) contextExitImmersive.hidden = !state.mapImmersive;
   const pill = document.querySelector("#map-state-pill");
   if (pill) {
-    const fitLabel = state.mapFitMode === "fill" ? "viewport filled" : state.mapFitMode === "fit" ? "full map visible" : state.mapFitMode === "center" ? "100% centered" : "custom view";
+    const fitLabel = state.mapImmersive ? "image-only viewport" : state.mapFitMode === "fill" ? "viewport filled" : state.mapFitMode === "fit" ? "full map visible" : state.mapFitMode === "center" ? "100% centered" : "custom view";
     const gridLabel = state.layers.grid ? "grid on" : "grid off";
     const lockLabel = state.mapLocked ? "locked" : "unlocked";
     pill.textContent = `${fitLabel} · ${gridLabel} · ${lockLabel}`;
@@ -1489,13 +1497,21 @@ function handleMapAction(button) {
   if (!button) return;
   const action = button.dataset.mapAction;
   if (state.mapLocked && ["fit", "fill", "center"].includes(action)) return;
-  if (action === "immersive") {
-    if (state.image) fillMapImage();
+  if (action === "immersive" || action === "image-only") {
+    state.mapImmersive = true;
     state.layers.grid = false;
     document.querySelector('[data-layer="grid"]').checked = false;
     state.mapLocked = true;
     state.mapFocus = true;
-    document.querySelector("#battlemap-view").classList.add("map-focus");
+    syncMapActionControls();
+    resizeCanvas();
+    if (state.image) fillMapImage();
+  }
+  if (action === "exit-immersive") {
+    state.mapImmersive = false;
+    state.mapFocus = false;
+    state.mapLocked = false;
+    syncMapActionControls();
     resizeCanvas();
   }
   if (action === "fit" && state.image) applyMapFitMode("fit");
@@ -1510,7 +1526,8 @@ function handleMapAction(button) {
   }
   if (action === "focus") {
     state.mapFocus = !state.mapFocus;
-    document.querySelector("#battlemap-view").classList.toggle("map-focus", state.mapFocus);
+    if (!state.mapFocus) state.mapImmersive = false;
+    syncMapActionControls();
     resizeCanvas();
   }
   syncMapActionControls();
@@ -1526,6 +1543,16 @@ mapContextMenu.addEventListener("click", (event) => {
 document.querySelector(".map-toolbar").addEventListener("click", (event) => handleMapAction(event.target.closest("[data-map-action]")));
 document.addEventListener("pointerdown", (event) => {
   if (!event.target.closest("#map-context-menu") && !event.target.closest("#map-canvas")) mapContextMenu.hidden = true;
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !state.mapImmersive) return;
+  state.mapImmersive = false;
+  state.mapFocus = false;
+  state.mapLocked = false;
+  syncMapActionControls();
+  resizeCanvas();
+  persist();
+  draw();
 });
 
 document.querySelector("#zoom-in").addEventListener("click", () => {

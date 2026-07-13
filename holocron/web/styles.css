@@ -264,6 +264,38 @@ input:focus, select:focus { border-color: var(--accent); }
 .workspace.map-focus .left-panel, .workspace.map-focus .right-panel { display: none; }
 .workspace.map-focus { grid-template-columns: 1fr; }
 .workspace.map-focus .map-shell { grid-column: 1; }
+body.map-immersive-active .topbar { display: none; }
+body.map-immersive-active { min-width: 0; }
+body.map-immersive-active .workspace {
+  height: 100vh;
+}
+.workspace.map-immersive {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  background: #000;
+}
+.workspace.map-immersive .map-shell {
+  grid-column: 1;
+  height: 100vh;
+}
+.workspace.map-immersive .map-toolbar {
+  opacity: .08;
+  transition: opacity .15s ease;
+}
+.workspace.map-immersive .map-toolbar:hover,
+.workspace.map-immersive .map-toolbar:focus-within {
+  opacity: 1;
+}
+.workspace.map-immersive .map-state-pill {
+  opacity: .18;
+}
+.workspace.map-immersive .map-state-pill:hover {
+  opacity: 1;
+}
 .map-shell.map-locked::after {
   content: "LOCKED";
   position: absolute;
