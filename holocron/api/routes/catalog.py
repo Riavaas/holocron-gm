@@ -55,8 +55,8 @@ def _loot_summary(items: list[dict[str, object]]) -> dict[str, object]:
 def loot_items(
     cr: int = Query(1, ge=0, le=30),
     count: int = Query(4, ge=1, le=12),
-    extra_category: str | None = None,
-    max_rarity: str | None = None,
+    extra_category: list[str] | None = Query(None),
+    max_rarity: list[str] | None = Query(None),
     seed: int | None = None,
 ) -> dict[str, object]:
     catalog = _catalog_or_503()
@@ -71,9 +71,12 @@ def loot_items(
         candidates.extend(item for item in catalog if item.get("kind") == "enhanced" and _rarity_index(item.get("rarity")) <= cap_index)
     rng = random.Random(seed)
     selected = rng.sample(candidates, min(count, len(candidates))) if candidates else []
-    if extra_category:
-        max_index = _rarity_index(max_rarity) if max_rarity in RARITY_ORDER else len(RARITY_ORDER) - 1
-        needle = _category_needle(extra_category)
+    extra_categories = extra_category or []
+    rarity_caps = max_rarity or []
+    for index, category in enumerate(extra_categories):
+        cap = rarity_caps[index] if index < len(rarity_caps) else (rarity_caps[-1] if rarity_caps else None)
+        max_index = _rarity_index(cap) if cap in RARITY_ORDER else len(RARITY_ORDER) - 1
+        needle = _category_needle(category)
         extra_pool = [
             item for item in catalog
             if needle in _category_needle(f"{item.get('category')} {item.get('kind')} {item.get('subcategory')}")

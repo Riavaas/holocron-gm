@@ -861,6 +861,13 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .attribute-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
 .attribute-strip span { padding: 7px 2px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); font-size: 8px; text-align: center; }
 .attribute-strip strong { display: block; color: var(--text); font-size: 12px; }
+.loot-bonus-builder { display: grid; grid-template-columns: 126px minmax(0, 1fr); align-items: start; gap: 8px; margin-top: 8px; }
+.loot-bonus-list { display: flex; flex-wrap: wrap; gap: 5px; min-height: 30px; padding: 2px 0; }
+.loot-bonus-chip { display: inline-grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 5px; max-width: 100%; min-height: 28px; padding: 4px 6px; border: 1px solid var(--line); background: #fff; color: var(--muted); font-size: 8px; cursor: pointer; }
+.loot-bonus-chip:hover { border-color: var(--accent); background: var(--accent-soft); }
+.loot-bonus-chip strong { overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
+.loot-bonus-chip b { color: var(--accent); font-size: 11px; line-height: 1; }
+.loot-bonus-empty { display: grid; align-items: center; color: var(--muted); font-size: 9px; }
 .dual-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 10px 0 18px; }
 .toolkit-output { min-height: 140px; padding: 12px 0; border-block: 1px solid var(--line); }
 .loot-line { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; color: var(--muted); font-size: 10px; }

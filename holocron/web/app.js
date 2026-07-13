@@ -3833,6 +3833,7 @@ let generatedLootItems = [];
 let generatedShopWares = [];
 let lastLootPayload = null;
 let lastShopkeeperPayload = null;
+let bonusLootRequests = [];
 let npcBestiaryCache = null;
 const npcPortraitCache = new Map();
 
@@ -4060,10 +4061,11 @@ async function generateLoot() {
   output.innerHTML = '<p class="loading-line">Searching the SW5e catalog…</p>';
   try {
     const params = new URLSearchParams({ cr, count: Math.max(3, Math.min(7, 3 + Math.floor(cr / 5))) });
-    if (extraCategory) {
-      params.set("extra_category", extraCategory);
-      params.set("max_rarity", maxRarity);
-    }
+    const requests = bonusLootRequests.length ? bonusLootRequests : (extraCategory ? [{ category: extraCategory, rarity: maxRarity }] : []);
+    requests.forEach((request) => {
+      params.append("extra_category", request.category);
+      params.append("max_rarity", request.rarity);
+    });
     const response = await fetch(`/api/catalog/items/loot?${params}`);
     if (!response.ok) throw new Error("Loot catalog unavailable");
     const payload = await response.json();
@@ -4097,6 +4099,16 @@ async function generateLoot() {
     document.querySelector("#save-loot-note").disabled = true;
     output.innerHTML = '<p class="loading-line">The SW5e loot catalog is unavailable.</p>';
   }
+}
+
+function renderBonusLootRequests() {
+  const list = document.querySelector("#extra-loot-list");
+  if (!list) return;
+  list.innerHTML = bonusLootRequests.map((request, index) => `
+    <button class="loot-bonus-chip" data-remove-extra-loot="${index}" type="button" title="Remove this bonus pull">
+      <strong>${escapeHtml(catalogLabel(request.category))}</strong><span>${escapeHtml(request.rarity)}</span><b>×</b>
+    </button>
+  `).join("") || '<span class="loot-bonus-empty">No queued bonus pulls</span>';
 }
 
 async function generateShopkeeper() {
@@ -4302,6 +4314,18 @@ Actions: ${(generatedNpc.actions || ["Blaster attack"]).join(", ")}`;
   document.querySelector('[data-view="notes"]').click();
 });
 document.querySelector("#generate-loot").addEventListener("click", generateLoot);
+document.querySelector("#add-extra-loot").addEventListener("click", () => {
+  const category = document.querySelector("#extra-loot-category").value;
+  if (!category) return;
+  bonusLootRequests.push({ category, rarity: document.querySelector("#extra-loot-rarity").value });
+  renderBonusLootRequests();
+});
+document.querySelector("#extra-loot-list").addEventListener("click", (event) => {
+  const remove = event.target.closest("[data-remove-extra-loot]");
+  if (!remove) return;
+  bonusLootRequests.splice(Number(remove.dataset.removeExtraLoot), 1);
+  renderBonusLootRequests();
+});
 document.querySelector("#save-loot-note").addEventListener("click", saveLootAsNote);
 document.querySelector("#generate-shopkeeper").addEventListener("click", generateShopkeeper);
 document.querySelector("#save-shopkeeper-note").addEventListener("click", saveShopkeeperAsNote);
@@ -4351,6 +4375,7 @@ document.querySelector("#shopkeeper-output").addEventListener("click", (event) =
 document.querySelector("#external-resource-search").addEventListener("input", renderExternalResources);
 document.querySelector("#external-resource-status").addEventListener("change", renderExternalResources);
 document.querySelector("#external-resource-category").addEventListener("change", renderExternalResources);
+renderBonusLootRequests();
 document.querySelector("#send-encounter").addEventListener("click", () => {
   generatedEncounter.forEach((creature) => addCombatant(creature));
   document.querySelector('[data-view="battlemap"]').click();

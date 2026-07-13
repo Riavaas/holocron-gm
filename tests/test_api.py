@@ -249,6 +249,41 @@ def test_item_catalog_caps_enhanced_loot_rarity(monkeypatch):
     assert rarities <= {"Unenhanced", "Standard", "Premium"}
 
 
+def test_item_catalog_accepts_multiple_bonus_loot_pulls(monkeypatch):
+    from holocron.api.routes import catalog
+
+    monkeypatch.setattr(
+        catalog,
+        "load_item_catalog",
+        lambda: (
+            {"id": "gear", "name": "Field Kit", "category": "Gear", "kind": "equipment", "cost": 100},
+            {"id": "weapon", "name": "Hold-out Blaster", "category": "Weapon", "kind": "equipment", "cost": 100},
+            {"id": "armor", "name": "Mesh Armor", "category": "Armor", "kind": "equipment", "cost": 100},
+            {"id": "legendary-armor", "name": "Mythic Plate", "category": "Armor", "kind": "enhanced", "rarity": "Legendary"},
+        ),
+    )
+    client = TestClient(app)
+
+    response = client.get(
+        "/api/catalog/items/loot",
+        params=[
+            ("cr", 1),
+            ("count", 1),
+            ("extra_category", "Weapon"),
+            ("max_rarity", "Unenhanced"),
+            ("extra_category", "Armor"),
+            ("max_rarity", "Premium"),
+            ("seed", 2),
+        ],
+    )
+
+    assert response.status_code == 200
+    names = {item["name"] for item in response.json()["items"]}
+    assert "Hold-out Blaster" in names
+    assert "Mesh Armor" in names
+    assert "Mythic Plate" not in names
+
+
 def test_shopkeeper_adds_identity_departments_and_prices(monkeypatch):
     from holocron.api.routes import catalog
 
