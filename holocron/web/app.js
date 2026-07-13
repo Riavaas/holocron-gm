@@ -3589,6 +3589,46 @@ const flavorParts = {
     "Fireworks bloom above the district while vendors hand out spiced drinks and counterfeit medals.",
     "For a few minutes, strangers dance together as though the war ended yesterday.",
   ],
+  chase: [
+    "Repulsor traffic splits around the party as warning lights smear across wet duracrete.",
+    "A cargo sled overturns ahead, spilling crates that bounce and skid into every lane.",
+    "The quarry cuts through a maintenance gate just as its security shutters begin to drop.",
+  ],
+  market: [
+    "Vendors switch languages mid-sentence whenever a patrol droid drifts too close.",
+    "A stall of polished relics hums softly, though the merchant swears none are powered.",
+    "Price tags flicker between credits, favors, and names nobody should know.",
+  ],
+  prison: [
+    "Cell doors breathe open and shut in sequence, each cycle a fraction slower than the last.",
+    "A guard post sits empty except for a cooling cup and a stun baton still blinking ready.",
+    "The inmates fall silent together, as though someone issued an order no speaker carried.",
+  ],
+  medbay: [
+    "Kolto vapor hangs low under surgical lamps while monitors disagree about the same patient.",
+    "A medical droid repeats triage priorities in a voice too calm for the blood on the floor.",
+    "The sterile smell breaks whenever the ventilation coughs up smoke from another deck.",
+  ],
+  hangar: [
+    "Fuel mist rolls over painted deck lines as ground crews shout over a warming engine.",
+    "A half-open blast door frames the void beyond, and every unsecured tool inches toward it.",
+    "A transponder pings from the wrong ship while docking clamps unlock one by one.",
+  ],
+  council: [
+    "Projected delegates flicker at different delays, turning every pause into a possible insult.",
+    "The central table records each word, but one chair has been carefully muted.",
+    "Ceremonial guards stand too still, listening to comms nobody else can hear.",
+  ],
+  desert: [
+    "Heat shimmer turns distant wreckage into a moving city that never gets closer.",
+    "Sand ticks against armor plates while buried machinery pulses beneath the dunes.",
+    "A moisture vaporator clicks dry, then answers in a voice that is not its owner's.",
+  ],
+  laboratory: [
+    "Specimen tanks throw pale light across labels that have been scraped clean.",
+    "A containment field flickers with every footstep, revealing claw marks in the glass.",
+    "The central console is locked open on a countdown no one remembers starting.",
+  ],
 };
 const flavorTone = {
   tense: "Nobody speaks above a murmur; every sudden movement draws a hand toward a holster.",
@@ -3621,7 +3661,25 @@ const flavorPressures = {
   space: ["A sensor ghost matches the party's vector too precisely.", "Power rationing turns every scan into a visible beacon."],
   investigation: ["The clue is real, but it was planted to make the party move quickly.", "A witness is about to disappear into a crowd or transport queue."],
   celebration: ["The crowd hides an extraction team moving in parade formation.", "A ceremonial countdown is also the timer on someone else's plan."],
+  chase: ["A shortcut saves time but forces a dangerous skill choice.", "The target drops evidence to slow pursuit or frame the party."],
+  market: ["A vendor recognizes contraband and calls it by the wrong owner's name.", "A sudden inspection turns casual shopping into a social hazard."],
+  prison: ["A lockdown begins from a wing nobody admits exists.", "A prisoner offers the right information in exchange for the wrong release."],
+  medbay: ["The treatment bay can save one person now or stabilize several later.", "A medical record exposes a false identity before the patient wakes."],
+  hangar: ["A launch window closes in three rounds unless someone overrides control.", "A rival crew starts preflight on the only clean escape route."],
+  council: ["A vote is about to pass unless someone changes one delegate's risk calculation.", "A hidden comm feed leaks the private version of a public speech."],
+  desert: ["A storm front will erase the route but reveal buried metal for one minute.", "The safest landmark belongs to something still alive under the sand."],
+  laboratory: ["A sample breaches containment if the party uses heavy weapons.", "The research log answers the question but triggers a silent alarm."],
 };
+const flavorTableMoves = [
+  "Call for one fast skill check, then show the consequence immediately.",
+  "Offer a bargain: progress now in exchange for noise, debt, or exposure.",
+  "Put the most useful clue in the most dangerous reachable place.",
+  "Let a player name one environmental detail, then make it tactically relevant.",
+  "Start a visible three-step countdown and advance it whenever the table hesitates.",
+  "Give one NPC a reason to help, one reason to lie, and no time to explain both.",
+  "Turn a failed roll into a complication that changes position rather than stopping play.",
+  "Expose a faction symbol, code phrase, or transponder ping that links this scene forward.",
+];
 const flavorObjects = [
   "a locked datapad with one message preview still visible",
   "a half-repaired astromech projecting corrupted route data",
@@ -4032,6 +4090,7 @@ function generateFlavor() {
     `Sensory tell: ${randomItem(flavorDetails)}`,
     `Immediate pressure: ${randomItem(flavorPressures[scene] || flavorPressures.location)}`,
     `Interactive object: ${randomItem(flavorObjects)}`,
+    `Table move: ${randomItem(flavorTableMoves)}`,
   ];
   document.querySelector("#flavor-output").innerHTML = lines
     .map((line, index) => index < 2 ? `<p>${escapeHtml(line)}</p>` : `<p><strong>${escapeHtml(line.split(":")[0])}:</strong>${escapeHtml(line.slice(line.indexOf(":") + 1))}</p>`)
