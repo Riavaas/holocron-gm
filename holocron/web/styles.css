@@ -1064,11 +1064,15 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .quest-entry div button { min-height: 28px; border: 1px solid var(--line); background: #fff; color: var(--muted); font-size: 9px; cursor: pointer; }
 .quest-windows { display: grid; grid-template-rows: 58px 1fr; min-width: 0; }
 .quest-file-windows { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); align-content: start; gap: 12px; overflow-y: auto; padding: 16px; }
-.quest-file-window { display: grid; grid-template-rows: auto 140px minmax(160px, 1fr); min-height: 360px; border: 1px solid var(--line); background: var(--panel); }
+.quest-file-window { display: grid; grid-template-rows: auto auto 140px minmax(160px, 1fr); min-height: 390px; border: 1px solid var(--line); background: var(--panel); }
 .quest-file-window.quest-link-target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .quest-file-window header { display: grid; grid-template-columns: auto 1fr 28px; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 .quest-file-window header span { padding: 3px 6px; border: 1px solid var(--line); background: var(--panel-raised); color: var(--muted); font-size: 8px; text-transform: uppercase; }
 .quest-file-window header input { width: 100%; margin: 0; border: 0; background: transparent; color: var(--text); font-weight: 800; }
+.quest-link-strip { display: flex; gap: 5px; overflow-x: auto; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--panel-raised); }
+.quest-link-strip button, .quest-link-strip span { flex: 0 0 auto; padding: 3px 6px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); font-size: 8px; }
+.quest-link-strip button { cursor: pointer; }
+.quest-link-strip button:hover { border-color: var(--accent); color: var(--accent); }
 .quest-file-window textarea { width: 100%; min-height: 140px; padding: 12px; resize: vertical; border: 0; border-bottom: 1px solid var(--line); background: #fff; color: var(--text); font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .quest-file-window .note-preview { overflow-y: auto; max-height: none; padding: 16px; }
 .quest-toolbar { flex-wrap: wrap; }

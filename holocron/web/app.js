@@ -2069,6 +2069,14 @@ function markdownToHtml(markdown) {
   return output.join("");
 }
 
+function wikiLinksInMarkdown(markdown) {
+  return [...String(markdown || "").matchAll(/\[\[([^\]]+)\]\]/g)]
+    .map((match) => match[1].trim())
+    .filter(Boolean)
+    .filter((label, index, labels) => labels.findIndex((item) => item.toLowerCase() === label.toLowerCase()) === index)
+    .slice(0, 8);
+}
+
 function exactCatalogMatch(items, label) {
   const target = normalizeQuestLinkLabel(label);
   return items.find((item) => normalizeQuestLinkLabel(item.name) === target)
@@ -4649,6 +4657,9 @@ function renderQuests() {
   document.querySelector("#quest-file-windows").innerHTML = active.files.map((file) => `
     <article class="quest-file-window" data-quest-file="${file.id}">
       <header><span>${escapeHtml(file.folder || "General")}</span><input data-quest-title="${file.id}" value="${escapeHtml(file.title)}"><button class="icon-button" data-close-quest-file="${file.id}">×</button></header>
+      <div class="quest-link-strip" data-quest-links="${file.id}">
+        ${wikiLinksInMarkdown(file.content).map((label) => `<button class="wiki-link" data-wiki="${escapeHtml(label)}">${escapeHtml(label)}</button>`).join("") || '<span>No links yet</span>'}
+      </div>
       <textarea data-quest-content="${file.id}" spellcheck="true">${escapeHtml(file.content)}</textarea>
       <div class="note-preview" data-quest-preview="${file.id}">${markdownToHtml(file.content)}</div>
     </article>`).join("") || '<p class="loading-line">Open a quest folder to create a working file window.</p>';
@@ -4966,6 +4977,11 @@ document.querySelector("#quest-file-windows").addEventListener("input", (event) 
     file.content = contentInput.value;
     const preview = document.querySelector(`[data-quest-preview="${file.id}"]`);
     if (preview) preview.innerHTML = markdownToHtml(file.content);
+    const strip = document.querySelector(`[data-quest-links="${file.id}"]`);
+    if (strip) {
+      const links = wikiLinksInMarkdown(file.content);
+      strip.innerHTML = links.map((label) => `<button class="wiki-link" data-wiki="${escapeHtml(label)}">${escapeHtml(label)}</button>`).join("") || '<span>No links yet</span>';
+    }
   }
   persist();
 });
