@@ -1208,6 +1208,20 @@ function updateZoom() {
 
 function ensureQuestState() {
   if (state.quests?.length) {
+    state.quests.forEach((quest) => {
+      quest.folders ||= ["NPC", "Loot", "Encounters detail", "Main Quest", "Side quests", "Activities", "Random Events", "Locations", "Points of interest"];
+      quest.files ||= [];
+      quest.files.forEach((file) => { file.folder = inferQuestFileFolder(file, quest.folders); });
+      const seenFiles = new Set();
+      quest.files = quest.files.filter((file) => {
+        const key = `${(file.folder || "General").toLowerCase()}::${String(file.title || "").toLowerCase()}`;
+        if (!seenFiles.has(key)) {
+          seenFiles.add(key);
+          return true;
+        }
+        return false;
+      });
+    });
     state.activeQuestId ||= state.quests[0].id;
     return;
   }
@@ -3891,7 +3905,7 @@ function renderQuests() {
     </article>`).join("");
   document.querySelector("#quest-file-windows").innerHTML = active.files.map((file) => `
     <article class="quest-file-window" data-quest-file="${file.id}">
-      <header><input data-quest-title="${file.id}" value="${escapeHtml(file.title)}"><button class="icon-button" data-close-quest-file="${file.id}">×</button></header>
+      <header><span>${escapeHtml(file.folder || "General")}</span><input data-quest-title="${file.id}" value="${escapeHtml(file.title)}"><button class="icon-button" data-close-quest-file="${file.id}">×</button></header>
       <textarea data-quest-content="${file.id}" spellcheck="true">${escapeHtml(file.content)}</textarea>
       <div class="note-preview" data-quest-preview="${file.id}">${markdownToHtml(file.content)}</div>
     </article>`).join("") || '<p class="loading-line">Open a quest folder to create a working file window.</p>';
@@ -4043,12 +4057,31 @@ Use [[conditions]], [[skills]], [[cover]], or item/rule names.`,
 Link NPCs, loot, compendium entries or other files with [[double brackets]].`;
 }
 
+function inferQuestFileFolder(file, folders = []) {
+  const current = file.folder || "General";
+  if (current !== "General") return current;
+  const title = String(file.title || "").toLowerCase();
+  const match = folders.find((folder) => title === `${folder.toLowerCase()} notes` || title === folder.toLowerCase());
+  return match || current;
+}
+
 function addQuestFile(quest, folder, title = `${folder} notes`) {
-  quest.files.push({
+  const existing = quest.files.find((file) => {
+    const inferredFolder = inferQuestFileFolder(file, quest.folders);
+    return inferredFolder.toLowerCase() === folder.toLowerCase() && file.title.toLowerCase() === title.toLowerCase();
+  });
+  if (existing) {
+    existing.folder = folder;
+    return existing;
+  }
+  const file = {
     id: crypto.randomUUID(),
+    folder,
     title,
     content: questFileTemplate(folder, quest.title),
-  });
+  };
+  quest.files.push(file);
+  return file;
 }
 
 function isGenericQuestFile(file) {
@@ -4082,7 +4115,7 @@ document.querySelector("#quest-list").addEventListener("click", (event) => {
   const quest = state.quests.find((item) => item.id === questId);
   if (!quest) return;
   state.activeQuestId = quest.id;
-  addQuestFile(quest, folder);
+  if (!quest.files.some((file) => inferQuestFileFolder(file, quest.folders).toLowerCase() === folder.toLowerCase())) addQuestFile(quest, folder);
   renderQuests();
 });
 document.querySelector("#quest-file-windows").addEventListener("click", (event) => {
@@ -4124,6 +4157,7 @@ document.querySelector("#open-quest-file").addEventListener("click", () => {
   const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
   quest.files.push({
     id: crypto.randomUUID(),
+    folder: "General",
     title: "New quest file",
     content: "# New quest file\n\n",
   });
@@ -4134,7 +4168,7 @@ document.querySelector("#scaffold-quest-files").addEventListener("click", () => 
   const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
   for (const folder of quest.folders) {
     const title = `${folder} notes`;
-    const existing = quest.files.find((file) => file.title.toLowerCase() === title.toLowerCase());
+    const existing = quest.files.find((file) => inferQuestFileFolder(file, quest.folders).toLowerCase() === folder.toLowerCase() && file.title.toLowerCase() === title.toLowerCase());
     if (existing && isGenericQuestFile(existing)) existing.content = questFileTemplate(folder, quest.title);
     else if (!existing) addQuestFile(quest, folder, title);
   }
