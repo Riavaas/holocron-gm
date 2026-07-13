@@ -1646,6 +1646,18 @@ document.querySelector("#bestiary-dialog").addEventListener("click", (event) => 
   renderPanelLauncher();
 });
 
+document.querySelectorAll("[data-library-view]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    state.assetLibraryView = button.dataset.libraryView;
+    applyAssetLibraryView();
+    rememberAssetLibraryPosition();
+    persist();
+    renderPanelLauncher();
+  });
+});
+
 document.querySelector("#bestiary-dialog").addEventListener("pointerdown", (event) => {
   const dragBar = event.target.closest("[data-dialog-drag]");
   const dialog = document.querySelector("#bestiary-dialog");
@@ -2593,7 +2605,13 @@ function renderItemCatalog(items, total) {
   document.querySelector("#item-library-results").innerHTML = items.map((item, index) => {
     const detail = [item.category, item.rarity, item.damage, item.armor_class].filter(Boolean).join(" · ");
     const description = item.description ? item.description.replace(/\s+/g, " ").slice(0, 180) : "No short description available.";
-    return `<article class="item-entry"><div><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(detail)} · ${Number(item.cost || 0).toLocaleString()} cr · ${item.weight || 0} lb</span><small>${escapeHtml(description)}</small></div><button class="library-entry-add" data-add-item="${index}" title="Add to inventory" aria-label="Add ${escapeHtml(item.name)} to inventory">＋</button></article>`;
+    return `<article class="item-entry" data-open-library-item="${index}">
+      <div><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(detail)} · ${Number(item.cost || 0).toLocaleString()} cr · ${item.weight || 0} lb</span><small>${escapeHtml(description)}</small></div>
+      <span class="item-entry-actions">
+        <button class="library-entry-map" data-open-library-item="${index}" title="Open item sheet" aria-label="Open ${escapeHtml(item.name)}">⌕</button>
+        <button class="library-entry-add" data-add-item="${index}" title="Add to inventory" aria-label="Add ${escapeHtml(item.name)} to inventory">＋</button>
+      </span>
+    </article>`;
   }).join("") || '<p class="loading-line">No item matched these filters.</p>';
 }
 
@@ -2634,7 +2652,13 @@ document.querySelector("#add-custom-item").addEventListener("click", () => {
   document.querySelector("#inventory-dialog").showModal();
 });
 document.querySelector("#item-library-results").addEventListener("click", (event) => {
+  const open = event.target.closest("[data-open-library-item]");
+  if (open && !event.target.closest("[data-add-item]")) {
+    openItemDetail(itemCatalogCache[Number(open.dataset.openLibraryItem)]);
+    return;
+  }
   const button = event.target.closest("[data-add-item]");
+  if (!button) return;
   const source = itemCatalogCache[Number(button?.dataset.addItem)];
   if (!addCatalogItemToCharacter(source)) return;
   button.textContent = "✓";

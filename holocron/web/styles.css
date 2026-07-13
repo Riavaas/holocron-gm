@@ -479,11 +479,13 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .item-library-filters { display: grid; grid-template-columns: minmax(220px, 1fr) 190px 110px; gap: 8px; }
 .item-library-filters input, .item-library-filters select { margin: 0; }
 .item-library-results { overflow-y: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 6px; }
-.item-entry { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-raised); }
+.item-entry { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-raised); cursor: pointer; }
+.item-entry:hover { border-color: var(--accent); background: #fff; }
 .item-entry strong, .item-entry span, .item-entry small { display: block; }
 .item-entry strong { font-size: 11px; }
 .item-entry span, .item-entry small { color: var(--muted); font-size: 9px; line-height: 1.4; }
 .item-entry small { margin-top: 5px; }
+.item-entry-actions { display: grid; gap: 5px; }
 .item-entry button { align-self: start; width: 30px; height: 30px; }
 #note-pin-dialog textarea { width: 100%; margin-top: 4px; padding: 8px; resize: vertical; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--text); font: inherit; }
 .assistant-drawer { position: fixed; z-index: 20; top: 58px; right: 0; bottom: 0; width: 360px; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 10px; padding: 16px; border-left: 1px solid var(--line); background: rgba(255,255,255,.98); box-shadow: -12px 0 30px rgba(0,0,0,.18); }
