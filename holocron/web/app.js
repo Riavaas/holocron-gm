@@ -4060,6 +4060,14 @@ function itemNoteLine(item) {
   return `- **${item.name}**${detail ? ` (${detail})` : ""}${costText}`;
 }
 
+function shopkeeperShelvesMarkdown(payload) {
+  const shelves = payload.department_wares || [];
+  if (!shelves.length) return generatedShopWares.map(itemNoteLine).join("\n");
+  return shelves.map((department) => `### ${catalogLabel(department.category)}
+
+${department.items.map(itemNoteLine).join("\n")}`).join("\n\n");
+}
+
 function saveLootAsNote() {
   if (!lastLootPayload || !generatedLootItems.length) return;
   const cr = Math.max(0, Number(document.querySelector("#toolkit-cr").value) || 0);
@@ -4082,6 +4090,7 @@ function saveShopkeeperAsNote() {
   const departments = (lastShopkeeperPayload.departments || [])
     .map(([name, count]) => `- ${catalogLabel(name)}: ${count}`)
     .join("\n");
+  const rareStock = (lastShopkeeperPayload.rare_stock || []).map(itemNoteLine).join("\n");
   createNote(`${lastShopkeeperPayload.name} · wares · ${noteTimestamp()}`, `# ${lastShopkeeperPayload.name}
 
 - Settlement: ${lastShopkeeperPayload.settlement}
@@ -4099,9 +4108,13 @@ ${lastShopkeeperPayload.policy || "No special policy."}
 
 ${departments || "- Mixed stock"}
 
-## Wares
+${rareStock ? `## Rare shelf
 
-${generatedShopWares.map(itemNoteLine).join("\n")}
+${rareStock}
+
+` : ""}## Wares by shelf
+
+${shopkeeperShelvesMarkdown(lastShopkeeperPayload)}
 `);
   document.querySelector('[data-view="notes"]').click();
 }
