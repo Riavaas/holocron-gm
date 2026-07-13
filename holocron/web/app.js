@@ -3926,6 +3926,44 @@ const realmSoundBoards = [
   { name: "Jedi & Rebellion", url: "https://www.realmofdarkness.net/sb/category/sw/jedi-rebellion" },
   { name: "Empire & Villains", url: "https://www.realmofdarkness.net/sb/category/sw/empire-villains" },
 ];
+const ambiancePresets = [
+  {
+    id: "combat",
+    name: "Combat",
+    tracks: [
+      ["Battle tempo", "sw5e star wars combat music"],
+      ["Duel pressure", "star wars duel ambience music"],
+      ["Extraction chase", "star wars chase music ambience"],
+    ],
+  },
+  {
+    id: "cantina",
+    name: "Cantina",
+    tracks: [
+      ["Cantina crowd", "star wars cantina ambience"],
+      ["Underworld lounge", "sci fi cantina music"],
+      ["Sabacc table", "star wars cantina jazz ambience"],
+    ],
+  },
+  {
+    id: "exploration",
+    name: "Exploration",
+    tracks: [
+      ["Ancient ruins", "star wars ancient temple ambience"],
+      ["Outer Rim wilderness", "sci fi alien planet ambience"],
+      ["Investigation pulse", "sci fi detective ambience"],
+    ],
+  },
+  {
+    id: "space",
+    name: "Space travel",
+    tracks: [
+      ["Hyperspace drift", "star wars hyperspace ambience"],
+      ["Starship interior", "sci fi spaceship ambience"],
+      ["Deep space tension", "deep space ambient music sci fi"],
+    ],
+  },
+];
 
 function youtubeIdFromUrl(url) {
   try {
@@ -3955,22 +3993,53 @@ function renderSoundAmbiance() {
     <a href="${escapeHtml(board.url)}" target="_blank" rel="noopener">
       <strong>${escapeHtml(board.name)}</strong><span>Open source board</span>
     </a>`).join("");
+  document.querySelector("#ambiance-presets").innerHTML = ambiancePresets.map((preset) => `
+    <button type="button" data-ambiance-preset="${escapeHtml(preset.id)}">
+      <strong>${escapeHtml(preset.name)}</strong><span>${preset.tracks.length} tracks</span>
+    </button>`).join("");
   const activeTrack = state.soundPlaylist.find((track) => track.id === state.activeTrackId) || state.soundPlaylist[0];
   if (activeTrack) {
     state.activeTrackId = activeTrack.id;
-    document.querySelector("#youtube-player").src = `https://www.youtube.com/embed/${escapeHtml(activeTrack.videoId)}?rel=0`;
+    if (activeTrack.videoId) {
+      document.querySelector("#youtube-player").removeAttribute("srcdoc");
+      document.querySelector("#youtube-player").src = `https://www.youtube.com/embed/${escapeHtml(activeTrack.videoId)}?rel=0`;
+    } else {
+      document.querySelector("#youtube-player").removeAttribute("src");
+      document.querySelector("#youtube-player").srcdoc = `<body style="margin:0;background:#070909;color:#f5f5f5;font:16px system-ui;display:grid;place-items:center;text-align:center"><div><strong>${escapeHtml(activeTrack.title)}</strong><br><span style="color:#a9b0b6">Open the playlist search result, then paste the chosen video link.</span></div></body>`;
+    }
   } else {
     document.querySelector("#youtube-player").removeAttribute("src");
+    document.querySelector("#youtube-player").removeAttribute("srcdoc");
   }
   document.querySelector("#youtube-playlist").innerHTML = state.soundPlaylist.map((track) => `
     <article class="playlist-track ${track.id === state.activeTrackId ? "active" : ""}">
-      <button data-play-track="${track.id}"><strong>${escapeHtml(track.title)}</strong><span>YouTube</span></button>
+      <button data-play-track="${track.id}"><strong>${escapeHtml(track.title)}</strong><span>${track.videoId ? "YouTube video" : "YouTube search"}</span></button>
       <button class="icon-button" data-move-track="${track.id}" data-direction="-1" title="Move up">↑</button>
       <button class="icon-button" data-move-track="${track.id}" data-direction="1" title="Move down">↓</button>
       <button class="icon-button" data-rename-track="${track.id}" title="Rename track">T</button>
       <button class="icon-button" data-remove-track="${track.id}" title="Remove track">×</button>
     </article>`).join("") || '<p class="loading-line">Add curated music links when ready.</p>';
   persist();
+}
+
+function addAmbiancePreset(presetId) {
+  const preset = ambiancePresets.find((item) => item.id === presetId);
+  if (!preset) return;
+  const existingUrls = new Set(state.soundPlaylist.map((track) => track.url));
+  for (const [title, query] of preset.tracks) {
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+    if (existingUrls.has(url)) continue;
+    state.soundPlaylist.push({
+      id: crypto.randomUUID(),
+      title,
+      url,
+      videoId: "",
+      searchQuery: query,
+    });
+    existingUrls.add(url);
+  }
+  state.activeTrackId = state.soundPlaylist.find((track) => track.searchQuery === preset.tracks[0][1])?.id || state.soundPlaylist[0]?.id || null;
+  renderSoundAmbiance();
 }
 
 document.querySelector("#youtube-form").addEventListener("submit", async (event) => {
@@ -3990,12 +4059,20 @@ document.querySelector("#youtube-form").addEventListener("submit", async (event)
 });
 
 document.querySelector("#add-youtube-track").addEventListener("click", () => document.querySelector("#youtube-url").focus());
+document.querySelector("#ambiance-presets").addEventListener("click", (event) => {
+  const preset = event.target.closest("[data-ambiance-preset]");
+  if (preset) addAmbiancePreset(preset.dataset.ambiancePreset);
+});
 document.querySelector("#youtube-playlist").addEventListener("click", (event) => {
   const play = event.target.closest("[data-play-track]");
   const remove = event.target.closest("[data-remove-track]");
   const rename = event.target.closest("[data-rename-track]");
   const move = event.target.closest("[data-move-track]");
-  if (play) state.activeTrackId = play.dataset.playTrack;
+  if (play) {
+    state.activeTrackId = play.dataset.playTrack;
+    const track = state.soundPlaylist.find((item) => item.id === play.dataset.playTrack);
+    if (track && !track.videoId && track.url) window.open(track.url, "_blank", "noopener");
+  }
   if (remove) {
     state.soundPlaylist = state.soundPlaylist.filter((track) => track.id !== remove.dataset.removeTrack);
     if (state.activeTrackId === remove.dataset.removeTrack) state.activeTrackId = state.soundPlaylist[0]?.id || null;
