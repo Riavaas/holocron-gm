@@ -3729,6 +3729,166 @@ function renderQuests() {
   persist();
 }
 
+function questFileTemplate(folder, questTitle = "Episode") {
+  const templates = {
+    NPC: `# NPC
+
+## Recurring cast
+- Name: role, leverage, visible tell, secret.
+
+## New faces
+- [[Bounty Hunter]] contact:
+- [[Officer]] opposition:
+- Local civilian witness:
+
+## Use at table
+- Voice / posture:
+- What they want:
+- What they know:
+- What they hide:`,
+    Loot: `# Loot
+
+## Planned rewards
+- Credits:
+- Equipment:
+- Enhanced or special item:
+
+## Encounter drops
+- Combat loot:
+- Salvage:
+- Clues hidden in inventory:
+
+## References
+Use [[equipment]], [[weapon properties]], or item names from the compendium.`,
+    "Encounters detail": `# Encounters detail
+
+## Encounter name
+- Goal:
+- Enemy plan:
+- Terrain feature:
+- Complication:
+- Reinforcement trigger:
+
+## Mechanical notes
+- Conditions:
+- Cover / hazards:
+- Victory beyond destruction:
+
+## Stat blocks
+Link templates with [[stormtrooper]], [[droid]], or specific creature names.`,
+    "Main Quest": `# ${questTitle}
+
+## Premise
+The party is pulled into the problem because...
+
+## Objective
+- Primary objective:
+- Secondary objective:
+- Optional moral pressure:
+
+## Beats
+1. Opening pressure:
+2. Investigation / travel:
+3. Escalation:
+4. Confrontation:
+5. Fallout:
+
+## Clues
+- Clue A:
+- Clue B:
+- Clue C:
+
+## Links
+[[NPC]] [[Encounters detail]] [[Locations]] [[Loot]]`,
+    "Side quests": `# Side quests
+
+## Side thread
+- Hook:
+- Who asks:
+- Risk:
+- Reward:
+- How it complicates the main quest:
+
+## Optional scenes
+- Social:
+- Exploration:
+- Combat:
+- Downtime:`,
+    Activities: `# Activities
+
+## Downtime
+- Crafting:
+- Shopping:
+- Gambling / cantina:
+- Training:
+- Travel montage:
+
+## Skill scenes
+- Skill:
+- DC:
+- Consequence on failure:
+- Cool success detail:`,
+    "Random Events": `# Random Events
+
+Roll or pick when pace slows.
+
+1. Patrol, checkpoint, or inspection.
+2. Distress signal.
+3. Rival crew appears.
+4. Environmental hazard.
+5. Market opportunity.
+6. Personal message for a character.
+
+## Escalation dial
+- Quiet:
+- Tense:
+- Dangerous:`,
+    Locations: `# Locations
+
+## Location
+- First impression:
+- Sensory detail:
+- Security:
+- Hidden route:
+- Useful NPC:
+
+## Map notes
+- Grid on map already:
+- Fill viewport:
+- Lighting / fog:
+- Tokens to pre-place:`,
+    "Points of interest": `# Points of interest
+
+## POI
+- What players see:
+- What investigation reveals:
+- What it connects to:
+- Treasure / clue:
+- Danger:
+
+## Compendium links
+Use [[conditions]], [[skills]], [[cover]], or item/rule names.`,
+  };
+  return templates[folder] || `# ${folder}
+
+Link NPCs, loot, compendium entries or other files with [[double brackets]].`;
+}
+
+function addQuestFile(quest, folder, title = `${folder} notes`) {
+  quest.files.push({
+    id: crypto.randomUUID(),
+    title,
+    content: questFileTemplate(folder, quest.title),
+  });
+}
+
+function isGenericQuestFile(file) {
+  const content = String(file?.content || "").trim();
+  return !content
+    || /^# New quest file\s*$/i.test(content)
+    || /Link NPCs, loot, compendium entries or other files with \[\[double brackets\]\]\./i.test(content);
+}
+
 document.querySelector("#new-quest-episode").addEventListener("click", () => {
   const title = prompt("Episode title", `Episode ${state.quests.length + 1}: Untitled Quest`);
   if (!title) return;
@@ -3753,11 +3913,7 @@ document.querySelector("#quest-list").addEventListener("click", (event) => {
   const quest = state.quests.find((item) => item.id === questId);
   if (!quest) return;
   state.activeQuestId = quest.id;
-  quest.files.push({
-    id: crypto.randomUUID(),
-    title: `${folder} notes`,
-    content: `# ${folder}\n\nLink NPCs, loot, compendium entries or other files with [[double brackets]].`,
-  });
+  addQuestFile(quest, folder);
   renderQuests();
 });
 document.querySelector("#quest-file-windows").addEventListener("click", (event) => {
@@ -3802,6 +3958,17 @@ document.querySelector("#open-quest-file").addEventListener("click", () => {
     title: "New quest file",
     content: "# New quest file\n\n",
   });
+  renderQuests();
+});
+document.querySelector("#scaffold-quest-files").addEventListener("click", () => {
+  ensureQuestState();
+  const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
+  for (const folder of quest.folders) {
+    const title = `${folder} notes`;
+    const existing = quest.files.find((file) => file.title.toLowerCase() === title.toLowerCase());
+    if (existing && isGenericQuestFile(existing)) existing.content = questFileTemplate(folder, quest.title);
+    else if (!existing) addQuestFile(quest, folder, title);
+  }
   renderQuests();
 });
 
