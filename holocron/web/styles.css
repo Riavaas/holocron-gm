@@ -908,6 +908,25 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .character-notes-shell label { display: grid; gap: 4px; color: var(--muted); font-size: 9px; }
 .character-notes-shell textarea { width: 100%; resize: none; border: 1px solid var(--line); background: #fff; color: var(--text); font: inherit; }
 .character-roster .stash-item { width: 100%; flex: initial; }
+.selected-item-panel { margin-top: 12px; }
+.selected-item-panel article, .selected-item-empty {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-raised);
+}
+.selected-item-panel small { color: var(--accent); font-size: 8px; font-weight: 800; }
+.selected-item-panel h3 { margin: 0; color: var(--text); font-size: 13px; }
+.selected-item-panel p, .selected-item-empty span { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.selected-item-panel dl { display: grid; grid-template-columns: 56px 1fr; gap: 3px 8px; margin: 0; font-size: 9px; }
+.selected-item-panel dt { color: var(--muted); }
+.selected-item-panel dd { margin: 0; color: var(--text); }
+.selected-item-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.selected-item-actions button { min-height: 28px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--text); cursor: pointer; }
+.selected-item-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.selected-item-actions button:not(:disabled):hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .secret-note-actions { display: grid; grid-template-columns: minmax(0, 1fr) 66px 76px; gap: 6px; }
 .secret-note-actions input, .secret-note-actions button { margin: 0; min-height: 30px; }
 .character-tracker input[type="text"] { width: 100%; margin: 5px 0 8px; }

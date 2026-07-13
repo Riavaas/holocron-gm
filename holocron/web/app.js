@@ -2407,6 +2407,48 @@ function renderCharacterProgression(character) {
     <ul>${profile.prompts.map((prompt) => `<li>${escapeHtml(prompt)}</li>`).join("")}</ul>`;
 }
 
+function selectedCharacterItem(character = currentCharacter()) {
+  return character?.inventory.find((item) => item.id === characterState.selectedItemId) || null;
+}
+
+function itemEquippedSlot(character, item) {
+  if (!character || !item) return "";
+  return Object.entries(character.equipped || {}).find(([, id]) => id === item.id)?.[0] || "";
+}
+
+function renderSelectedItemPanel(character, item) {
+  const panel = document.querySelector("#selected-item-panel");
+  if (!item) {
+    panel.innerHTML = `
+      <div class="selected-item-empty">
+        <strong>No item selected</strong>
+        <span>Pick cargo, then click a matching anatomy slot or use quick actions here.</span>
+      </div>`;
+    return;
+  }
+  const equippedSlot = itemEquippedSlot(character, item);
+  const targetSlot = item.slot || equippedSlot || "";
+  const detail = [item.category, item.rarity, item.damage, item.armorClass].filter(Boolean).join(" · ");
+  panel.innerHTML = `
+    <article>
+      <small>SELECTED ITEM</small>
+      <h3>${escapeHtml(item.name)}</h3>
+      <p>${escapeHtml(detail || item.description || "Cargo item")}</p>
+      <dl>
+        <dt>Slot</dt><dd>${escapeHtml(equippedSlot || targetSlot || "Cargo")}</dd>
+        <dt>Weight</dt><dd>${Number(item.weight || 0)} lb</dd>
+        <dt>Value</dt><dd>${Number(item.value || 0).toLocaleString()} cr</dd>
+        <dt>Status</dt><dd>${equippedSlot ? "Equipped" : "In stash"}</dd>
+      </dl>
+      <div class="selected-item-actions">
+        <button data-character-item-action="equip" ${targetSlot && !equippedSlot ? "" : "disabled"}>Equip</button>
+        <button data-character-item-action="unequip" ${equippedSlot ? "" : "disabled"}>Unequip</button>
+        <button data-character-item-action="open">Sheet</button>
+        <button data-character-item-action="sell">Sell</button>
+      </div>
+    </article>`;
+}
+
 function bytesToBase64(bytes) {
   return btoa(String.fromCharCode(...bytes));
 }
@@ -2468,6 +2510,8 @@ function renderCharacters() {
   const weight = character.inventory.reduce((total, item) => total + item.weight, 0);
   const equippedIds = new Set(Object.values(character.equipped));
   const cargoItems = character.inventory.filter((item) => !equippedIds.has(item.id));
+  const selectedItem = selectedCharacterItem(character);
+  if (characterState.selectedItemId && !selectedItem) characterState.selectedItemId = null;
   document.querySelector("#character-ac").textContent = ac;
   document.querySelector("#character-attack").textContent = `${attack >= 0 ? "+" : ""}${attack}`;
   document.querySelector("#character-weight").textContent = weight;
@@ -2493,6 +2537,7 @@ function renderCharacters() {
       </button>`).join("") || `<p class="stash-empty">${character.inventory.length ? "All carried gear is currently equipped." : "No cargo yet. Add gear from the SW5e catalog or create a custom item."}</p>`;
   document.querySelector("#stash-summary").textContent = `${equippedItems.length} equipped · ${cargoItems.length} cargo`;
   document.querySelector(".character-roster .notes-sidebar-header").title = `${equippedItems.length} equipped · ${cargoItems.length} cargo`;
+  renderSelectedItemPanel(character, selectedItem);
   document.querySelector("#resource-rings").innerHTML = Object.entries(character.resources).map(([key, resource]) => `
     <div class="resource-ring" style="--fill:${Math.max(0, Math.min(100, resource.value / resource.max * 100))}%;--ring-color:${resource.color}">
       <div class="resource-ring-inner">
@@ -2755,9 +2800,23 @@ function addCatalogItemToCharacter(source) {
     properties: source.properties || [],
   };
   character.inventory.push(item);
+  characterState.selectedItemId = item.id;
   saveCharacters();
   renderCharacters();
   return item;
+}
+
+function sellSelectedCharacterItem() {
+  const character = currentCharacter();
+  const item = selectedCharacterItem(character);
+  if (!character || !item) return;
+  const equippedSlot = itemEquippedSlot(character, item);
+  if (equippedSlot) delete character.equipped[equippedSlot];
+  character.credits = (character.credits || 0) + Math.floor((item.value || 0) / 2);
+  character.inventory = character.inventory.filter((candidate) => candidate.id !== item.id);
+  characterState.selectedItemId = null;
+  saveCharacters();
+  renderCharacters();
 }
 
 function renderItemCatalog(items, total) {
@@ -2853,13 +2912,15 @@ document.querySelector("#character-form").addEventListener("submit", (event) => 
 document.querySelector("#inventory-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(event.currentTarget).entries());
-  currentCharacter().inventory.push({
+  const item = {
     id: crypto.randomUUID(),
     name: data.name,
     weight: Number(data.weight),
     value: Number(data.value),
     slot: data.slot || null,
-  });
+  };
+  currentCharacter().inventory.push(item);
+  characterState.selectedItemId = item.id;
   saveCharacters();
   renderCharacters();
   event.currentTarget.reset();
@@ -2872,15 +2933,32 @@ document.querySelector(".credit-control").addEventListener("click", (event) => {
   saveCharacters();
   renderCharacters();
 });
-document.querySelector("#sell-selected-item").addEventListener("click", () => {
+document.querySelector("#selected-item-panel").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-character-item-action]");
   const character = currentCharacter();
-  const item = character.inventory.find((candidate) => candidate.id === characterState.selectedItemId);
-  if (!item) return;
-  character.credits = (character.credits || 0) + Math.floor((item.value || 0) / 2);
-  character.inventory = character.inventory.filter((candidate) => candidate.id !== item.id);
-  characterState.selectedItemId = null;
-  saveCharacters();
-  renderCharacters();
+  const item = selectedCharacterItem(character);
+  if (!button || !character || !item) return;
+  const action = button.dataset.characterItemAction;
+  if (action === "equip") {
+    const slot = item.slot || itemEquippedSlot(character, item);
+    if (!slot) return;
+    character.equipped[slot] = item.id;
+    characterState.selectedItemId = item.id;
+    saveCharacters();
+    renderCharacters();
+  }
+  if (action === "unequip") {
+    const slot = itemEquippedSlot(character, item);
+    if (slot) delete character.equipped[slot];
+    characterState.selectedItemId = item.id;
+    saveCharacters();
+    renderCharacters();
+  }
+  if (action === "open") openItemDetail(item);
+  if (action === "sell") sellSelectedCharacterItem();
+});
+document.querySelector("#sell-selected-item").addEventListener("click", () => {
+  sellSelectedCharacterItem();
 });
 
 renderCharacters();
