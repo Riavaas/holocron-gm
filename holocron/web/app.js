@@ -5564,7 +5564,7 @@ function renderPlayerIdentity() {
   document.querySelector("#player-tactical-readout").innerHTML = `
     <div><span>Linked token</span><strong>${escapeHtml(originToken?.name || "None")}</strong></div>
     <div><span>Vision</span><strong>${visionDistance} ${escapeHtml(state.unitName)}</strong></div>
-    <div><span>Grid</span><strong>${state.showGrid ? `${escapeHtml(String(state.gridSize))} px` : "Hidden"}</strong></div>
+    <div><span>Grid</span><strong>${state.layers.grid ? `${escapeHtml(String(state.gridSize))} px` : "Hidden"}</strong></div>
     <div><span>Turn visibility</span><strong>${activeCombatant ? (activeVisible ? "Visible" : "Hidden") : "No combat"}</strong></div>`;
   document.querySelector("#player-visible-list").innerHTML = visibleEntries.length ? `
     <small>Visible actors</small>
