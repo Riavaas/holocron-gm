@@ -2695,6 +2695,13 @@ async function decryptPlayerNote(password, sealed) {
   return new TextDecoder().decode(plaintext);
 }
 
+function setPlayerNoteStatus(message, mode = "open") {
+  const status = document.querySelector("#player-note-status");
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.status = mode;
+}
+
 function renderCharacters() {
   const character = currentCharacter();
   if (!character) return;
@@ -2776,6 +2783,14 @@ function renderCharacters() {
   document.querySelector("#player-secret-note").disabled = Boolean(character.playerSecretSealed);
   document.querySelector("#seal-player-note").disabled = Boolean(character.playerSecretSealed);
   document.querySelector("#unlock-player-note").disabled = !character.playerSecretSealed;
+  setPlayerNoteStatus(
+    character.playerSecretSealed
+      ? "Sealed with player password. GM reset clears the private text."
+      : character.playerSecretNote
+        ? "Open draft. Seal it before sharing the dashboard."
+        : "Open player note",
+    character.playerSecretSealed ? "sealed" : "open"
+  );
   renderCharacterProgression(character);
 }
 
@@ -2914,9 +2929,11 @@ document.querySelector("#seal-player-note").addEventListener("click", async () =
     document.querySelector("#player-note-password").value = "";
     saveCharacters();
     renderCharacters();
+    setPlayerNoteStatus("Player note sealed.", "sealed");
   } catch {
     document.querySelector("#player-note-password").value = "";
     document.querySelector("#player-note-password").placeholder = "Encryption unavailable";
+    setPlayerNoteStatus("Encryption unavailable in this browser context.", "error");
   }
 });
 document.querySelector("#unlock-player-note").addEventListener("click", async () => {
@@ -2931,9 +2948,11 @@ document.querySelector("#unlock-player-note").addEventListener("click", async ()
     passwordInput.placeholder = "Player note password";
     saveCharacters();
     renderCharacters();
+    setPlayerNoteStatus("Player note unlocked into the editable field.", "open");
   } catch {
     passwordInput.value = "";
     passwordInput.placeholder = "Seal unreadable";
+    setPlayerNoteStatus("Wrong password or unreadable seal.", "error");
   }
 });
 document.querySelector("#clear-player-note-seal").addEventListener("click", () => {
@@ -2943,6 +2962,7 @@ document.querySelector("#clear-player-note-seal").addEventListener("click", () =
   character.playerSecretNote = "";
   saveCharacters();
   renderCharacters();
+  setPlayerNoteStatus("GM reset cleared the sealed player note.", "open");
 });
 document.querySelector("#new-character").addEventListener("click", () => document.querySelector("#character-dialog").showModal());
 document.querySelector("#import-pregen").addEventListener("click", () => {

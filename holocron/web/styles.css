@@ -1033,6 +1033,9 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .secret-note-actions { display: grid; grid-template-columns: minmax(0, 1fr) 66px 76px; gap: 6px; }
 .secret-note-actions input, .secret-note-actions button { margin: 0; min-height: 30px; }
 .character-tracker input[type="text"] { width: 100%; margin: 5px 0 8px; }
+.player-note-status { margin: 7px 0 4px; padding: 6px 8px; border-left: 2px solid var(--line-strong); background: var(--panel-raised); color: var(--muted); font-size: 9px; line-height: 1.4; }
+.player-note-status[data-status="sealed"] { border-left-color: var(--accent); color: var(--text); }
+.player-note-status[data-status="error"] { border-left-color: var(--danger); color: var(--danger); }
 .character-progression { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
 .progression-stat { padding: 7px; border: 1px solid var(--line); background: var(--panel-raised); }
 .progression-stat span { display: block; color: var(--muted); font-size: 8px; text-transform: uppercase; }
