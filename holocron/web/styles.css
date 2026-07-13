@@ -613,8 +613,15 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .player-resource-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 14px; }
 .player-resource { padding: 7px; border-left: 2px solid var(--resource-color); background: var(--panel-raised); }
 .player-resource strong, .player-resource span { display: block; }.player-resource strong { font-size: 12px; }.player-resource span { color: var(--muted); font-size: 8px; }
-.player-inventory { display: grid; gap: 3px; }
-.player-inventory-item { padding: 6px; background: var(--panel-raised); color: var(--muted); font-size: 9px; }
+.player-inventory { display: grid; gap: 8px; }
+.player-inventory-group { display: grid; gap: 3px; }
+.player-inventory-group h3 { display: flex; justify-content: space-between; margin: 0; color: var(--muted); font-size: 8px; text-transform: uppercase; }
+.player-inventory-group h3 span { color: var(--accent); }
+.player-inventory-item { padding: 6px; border-left: 2px solid var(--line-strong); background: var(--panel-raised); color: var(--muted); font-size: 9px; }
+.player-inventory-item.equipped { border-left-color: var(--accent); background: #fff; }
+.player-inventory-item strong, .player-inventory-item span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-inventory-item strong { color: var(--ink); font-size: 9px; }
+.player-inventory-item span { color: var(--muted); font-size: 8px; }
 .notes-workspace {
   display: grid;
   grid-template-columns: 240px minmax(500px, 1fr) 230px;

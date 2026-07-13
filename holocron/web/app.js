@@ -5522,9 +5522,28 @@ function renderPlayerIdentity() {
       <strong>${resource.value}/${resource.max}</strong><span>${escapeHtml(resource.label)}</span>
     </div>`).join("") || '<p class="loading-line">No tracked resources.</p>';
   const equippedIds = new Set(Object.values(player.equipped || {}));
-  document.querySelector("#player-inventory").innerHTML = (player.inventory || []).map((item) => `
-    <div class="player-inventory-item">${equippedIds.has(item.id) ? "Equipped · " : ""}${escapeHtml(item.name)} · ${item.weight} lb</div>
-  `).join("") || '<p class="loading-line">No visible inventory yet.</p>';
+  const slotByItem = Object.fromEntries(Object.entries(player.equipped || {}).map(([slot, id]) => [id, slot]));
+  const inventoryGroups = [
+    ["Equipped", (player.inventory || []).filter((item) => equippedIds.has(item.id))],
+    ["Cargo", (player.inventory || []).filter((item) => !equippedIds.has(item.id))],
+  ];
+  document.querySelector("#player-inventory").innerHTML = inventoryGroups.map(([label, items]) => items.length ? `
+    <section class="player-inventory-group">
+      <h3>${escapeHtml(label)} <span>${items.length}</span></h3>
+      ${items.map((item) => {
+        const detail = [
+          slotByItem[item.id] || item.slot || item.category || "Cargo",
+          item.damage,
+          item.armorClass ? `AC ${item.armorClass}` : "",
+          item.attack ? `+${item.attack} atk` : "",
+          `${Number(item.weight || 0)} lb`,
+        ].filter(Boolean).join(" · ");
+        return `<div class="player-inventory-item ${equippedIds.has(item.id) ? "equipped" : ""}">
+          <strong>${escapeHtml(item.name)}</strong>
+          <span>${escapeHtml(detail)}</span>
+        </div>`;
+      }).join("")}
+    </section>` : "").join("") || '<p class="loading-line">No visible inventory yet.</p>';
 }
 
 document.querySelector("#join-as-player").addEventListener("click", () => {
