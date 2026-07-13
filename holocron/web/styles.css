@@ -755,8 +755,13 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .loot-actions button { width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--accent); cursor: pointer; }
 .encounter-tool-heading { margin: 18px 0 8px; }
 .encounter-output { display: grid; gap: 5px; }
-.encounter-suggestion { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; border-left: 2px solid var(--accent); background: var(--panel-raised); }
-.encounter-suggestion strong { font-size: 10px; }.encounter-suggestion span { color: var(--muted); font-size: 9px; }
+.encounter-suggestion { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px; border-left: 2px solid var(--accent); background: var(--panel-raised); cursor: pointer; }
+.encounter-suggestion:hover { background: #fff; }
+.encounter-suggestion strong, .encounter-suggestion small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.encounter-suggestion strong { color: var(--text); font-size: 10px; }.encounter-suggestion small { color: var(--muted); font-size: 9px; }
+.encounter-token { width: 30px; height: 30px; font-size: 9px; border: 1px solid var(--line-strong); }
+.encounter-actions-mini { display: flex; gap: 4px; }
+.encounter-actions-mini button { width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--accent); cursor: pointer; }
 .flavor-output { min-height: 190px; margin: 16px 0 10px; padding: 20px; border: 0; border-left: 2px solid var(--accent); background: var(--panel-raised); color: var(--text); font: 14px/1.7 Georgia, serif; }
 .quick-prompts { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
 .quick-prompts p { color: var(--muted); font-size: 11px; line-height: 1.6; }

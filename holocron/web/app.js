@@ -3398,8 +3398,15 @@ async function generateEncounter() {
     const candidates = payload.items.filter((item) => Number(item.cr) <= Math.max(1, targetCr));
     const count = Math.max(1, Math.min(6, Math.ceil(partySize / 2)));
     generatedEncounter = Array.from({ length: count }, () => randomItem(candidates));
-    document.querySelector("#encounter-output").innerHTML = generatedEncounter.map((item) => `
-      <div class="encounter-suggestion"><strong>${escapeHtml(item.name)}</strong><span>CR ${escapeHtml(item.cr)} · HP ${item.hp}</span></div>`
+    document.querySelector("#encounter-output").innerHTML = generatedEncounter.map((item, index) => `
+      <div class="encounter-suggestion" data-open-encounter-creature="${index}">
+        ${tokenMarkup(item, "encounter-token")}
+        <span><strong>${escapeHtml(item.name)}</strong><small>CR ${escapeHtml(item.cr)} · HP ${item.hp} · AC ${item.ac}</small></span>
+        <span class="encounter-actions-mini">
+          <button data-open-encounter-creature="${index}" title="Open stat block" type="button">⌕</button>
+          <button data-add-encounter-creature="${index}" title="Add this creature" type="button">＋</button>
+        </span>
+      </div>`
     ).join("");
     document.querySelector("#send-encounter").disabled = false;
   } catch {
@@ -3453,6 +3460,23 @@ document.querySelector("#generate-loot").addEventListener("click", generateLoot)
 document.querySelector("#generate-shopkeeper").addEventListener("click", generateShopkeeper);
 document.querySelector("#generate-encounter").addEventListener("click", generateEncounter);
 document.querySelector("#generate-flavor").addEventListener("click", generateFlavor);
+document.querySelector("#encounter-output").addEventListener("click", (event) => {
+  const add = event.target.closest("[data-add-encounter-creature]");
+  const open = event.target.closest("[data-open-encounter-creature]");
+  if (add) {
+    event.stopPropagation();
+    const creature = generatedEncounter[Number(add.dataset.addEncounterCreature)];
+    if (!creature) return;
+    addCombatant(creature, mapCenterPoint());
+    add.textContent = "✓";
+    add.disabled = true;
+    return;
+  }
+  if (open) {
+    const creature = generatedEncounter[Number(open.dataset.openEncounterCreature)];
+    if (creature) openCreatureDetail(creature);
+  }
+});
 document.querySelector("#loot-output").addEventListener("click", (event) => {
   const add = event.target.closest("[data-add-loot-item]");
   const open = event.target.closest("[data-open-loot-item]");
