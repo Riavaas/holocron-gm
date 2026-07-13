@@ -4313,6 +4313,54 @@ const soundScenes = {
     { at: 900, type: "alarm" },
     { at: 1550, type: "hyperdrive" },
   ],
+  hangar: [
+    { at: 0, type: "door" },
+    { at: 420, type: "comms" },
+    { at: 1000, type: "hyperdrive" },
+    { at: 2100, type: "alarm" },
+  ],
+  chase: [
+    { at: 0, type: "blaster" },
+    { at: 180, type: "hyperdrive" },
+    { at: 820, type: "comms" },
+    { at: 1400, type: "blaster" },
+    { at: 2300, type: "alarm" },
+  ],
+  market: [
+    { at: 0, type: "cantina" },
+    { at: 700, type: "comms" },
+    { at: 1500, tone: [520, 410, .22, "triangle", .09] },
+    { at: 2500, type: "cantina" },
+  ],
+  temple: [
+    { at: 0, tone: [96, 64, 1.8, "sine", .18] },
+    { at: 900, tone: [260, 392, 1.2, "triangle", .1] },
+    { at: 2100, type: "storm" },
+  ],
+  medbay: [
+    { at: 0, type: "comms" },
+    { at: 650, tone: [880, 880, .12, "sine", .08] },
+    { at: 1300, tone: [880, 880, .12, "sine", .08] },
+    { at: 2200, type: "door" },
+  ],
+  prison: [
+    { at: 0, type: "door" },
+    { at: 800, type: "alarm" },
+    { at: 1600, type: "comms" },
+    { at: 2600, type: "door" },
+  ],
+  council: [
+    { at: 0, type: "comms" },
+    { at: 850, tone: [330, 330, .35, "triangle", .08] },
+    { at: 1800, type: "comms" },
+    { at: 3000, tone: [220, 196, .8, "sine", .09] },
+  ],
+  desert: [
+    { at: 0, type: "storm" },
+    { at: 1000, tone: [180, 120, 1.3, "triangle", .07] },
+    { at: 2200, type: "comms" },
+    { at: 3300, type: "storm" },
+  ],
 };
 
 function ensureSoundboard() {
@@ -4396,6 +4444,10 @@ function playSoundEffect(type) {
 function renderSoundSceneState() {
   document.querySelectorAll("[data-sound-scene]").forEach((button) => {
     button.classList.toggle("active", button.dataset.soundScene === activeSoundSceneId);
+  });
+  document.querySelectorAll("[data-apply-sound-kit]").forEach((button) => {
+    const kit = soundSceneKits.find((item) => item.id === button.dataset.applySoundKit);
+    button.classList.toggle("active", kit?.scene === activeSoundSceneId);
   });
 }
 
@@ -4513,6 +4565,37 @@ const ambiancePresets = [
       ["Deep space tension", "deep space ambient music sci fi"],
     ],
   },
+  {
+    id: "intrigue",
+    name: "Intrigue",
+    tracks: [
+      ["Council tension", "star wars senate intrigue ambience"],
+      ["Covert meeting", "sci fi noir investigation ambience"],
+      ["Spy corridor", "star wars stealth mission ambience"],
+    ],
+  },
+  {
+    id: "hazard",
+    name: "Hazard",
+    tracks: [
+      ["Meltdown alarm", "sci fi reactor alarm ambience"],
+      ["Medical emergency", "sci fi medbay ambience"],
+      ["Prison lockdown", "sci fi prison ambience alarm"],
+    ],
+  },
+];
+
+const soundSceneKits = [
+  { id: "dock-start", name: "Arrival under watch", scene: "docking", ambiance: "space", flavorScene: "hangar", tone: "tense", cues: ["door", "comms", "hyperdrive"] },
+  { id: "cantina-meet", name: "Cantina deal", scene: "cantina", ambiance: "cantina", flavorScene: "cantina", tone: "lively", cues: ["cantina", "comms", "door"] },
+  { id: "street-chase", name: "Urban chase", scene: "chase", ambiance: "combat", flavorScene: "chase", tone: "chaotic", cues: ["blaster", "hyperdrive", "alarm"] },
+  { id: "temple-reveal", name: "Temple reveal", scene: "temple", ambiance: "exploration", flavorScene: "temple", tone: "mysterious", cues: ["storm", "saber", "comms"] },
+  { id: "market-heat", name: "Market pressure", scene: "market", ambiance: "intrigue", flavorScene: "market", tone: "lively", cues: ["cantina", "comms", "blaster"] },
+  { id: "medbay-triage", name: "Medbay triage", scene: "medbay", ambiance: "hazard", flavorScene: "medbay", tone: "grim", cues: ["comms", "alarm", "door"] },
+  { id: "prison-break", name: "Prison break", scene: "prison", ambiance: "hazard", flavorScene: "prison", tone: "chaotic", cues: ["door", "alarm", "blaster"] },
+  { id: "war-room", name: "Council pressure", scene: "council", ambiance: "intrigue", flavorScene: "council", tone: "ominous", cues: ["comms", "alarm", "saber"] },
+  { id: "desert-wreck", name: "Desert wreck", scene: "desert", ambiance: "exploration", flavorScene: "desert", tone: "serene", cues: ["storm", "comms", "door"] },
+  { id: "open-battle", name: "Open battle", scene: "battle", ambiance: "combat", flavorScene: "battlefield", tone: "chaotic", cues: ["blaster", "alarm", "hyperdrive"] },
 ];
 
 function youtubeIdFromUrl(url) {
@@ -4543,6 +4626,14 @@ function renderSoundAmbiance() {
     <a href="${escapeHtml(board.url)}" target="_blank" rel="noopener">
       <strong>${escapeHtml(board.name)}</strong><span>Open source board</span>
     </a>`).join("");
+  document.querySelector("#sound-scene-kits").innerHTML = soundSceneKits.map((kit) => `
+    <article class="sound-scene-kit">
+      <button type="button" data-apply-sound-kit="${escapeHtml(kit.id)}" class="${kit.scene === activeSoundSceneId ? "active" : ""}">
+        <strong>${escapeHtml(kit.name)}</strong>
+        <span>${escapeHtml(kit.flavorScene)} · ${escapeHtml(kit.tone)} · ${escapeHtml(kit.cues.join(" / "))}</span>
+      </button>
+      <div>${kit.cues.map((cue) => `<button type="button" data-sound="${escapeHtml(cue)}">${escapeHtml(cue)}</button>`).join("")}</div>
+    </article>`).join("");
   document.querySelector("#ambiance-presets").innerHTML = ambiancePresets.map((preset) => `
     <button type="button" data-ambiance-preset="${escapeHtml(preset.id)}">
       <strong>${escapeHtml(preset.name)}</strong><span>${preset.tracks.length} tracks</span>
@@ -4592,6 +4683,18 @@ function addAmbiancePreset(presetId) {
   renderSoundAmbiance();
 }
 
+function applySoundSceneKit(kitId) {
+  const kit = soundSceneKits.find((item) => item.id === kitId);
+  if (!kit) return;
+  playSoundScene(kit.scene);
+  addAmbiancePreset(kit.ambiance);
+  const sceneSelect = document.querySelector("#flavor-scene");
+  const toneSelect = document.querySelector("#flavor-tone");
+  if (sceneSelect && [...sceneSelect.options].some((option) => option.value === kit.flavorScene)) sceneSelect.value = kit.flavorScene;
+  if (toneSelect && [...toneSelect.options].some((option) => option.value === kit.tone)) toneSelect.value = kit.tone;
+  document.querySelector("#session-spark").textContent = `Audio scene ready: ${kit.name}.`;
+}
+
 document.querySelector("#youtube-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const input = document.querySelector("#youtube-url");
@@ -4612,6 +4715,12 @@ document.querySelector("#add-youtube-track").addEventListener("click", () => doc
 document.querySelector("#ambiance-presets").addEventListener("click", (event) => {
   const preset = event.target.closest("[data-ambiance-preset]");
   if (preset) addAmbiancePreset(preset.dataset.ambiancePreset);
+});
+document.querySelector("#sound-scene-kits").addEventListener("click", (event) => {
+  const kit = event.target.closest("[data-apply-sound-kit]");
+  const cue = event.target.closest("[data-sound]");
+  if (kit) applySoundSceneKit(kit.dataset.applySoundKit);
+  else if (cue) playSoundEffect(cue.dataset.sound);
 });
 document.querySelector("#youtube-playlist").addEventListener("click", (event) => {
   const play = event.target.closest("[data-play-track]");

@@ -906,6 +906,36 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .sound-scenes button:hover, .sound-scenes button.active { border-color: var(--accent); background: var(--accent-soft); }
 .sound-scenes strong { font-size: 10px; }
 .sound-scenes span { color: var(--muted); font-size: 8px; line-height: 1.3; }
+.scene-mixer { margin: 12px 0; padding: 10px 0; border-block: 1px solid var(--line); }
+.sound-scene-kits { display: grid; gap: 6px; max-height: 310px; overflow-y: auto; padding-right: 2px; }
+.sound-scene-kit { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: stretch; }
+.sound-scene-kit > button {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel-raised);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.sound-scene-kit > button:hover, .sound-scene-kit > button.active { border-color: var(--accent); background: var(--accent-soft); }
+.sound-scene-kit strong { font-size: 10px; }
+.sound-scene-kit span { color: var(--muted); font-size: 8px; line-height: 1.35; }
+.sound-scene-kit div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; width: 92px; }
+.sound-scene-kit div button {
+  flex: 1 1 42px;
+  min-height: 23px;
+  padding: 2px 4px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 8px;
+  cursor: pointer;
+}
+.sound-scene-kit div button:hover { border-color: var(--accent); color: var(--accent); }
 .resource-filters { display: grid; grid-template-columns: minmax(120px, 1fr) 105px minmax(150px, 220px); gap: 6px; margin-bottom: 8px; }
 .resource-filters input, .resource-filters select { margin: 0; }
 .external-resource-summary { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
