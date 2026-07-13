@@ -2364,6 +2364,46 @@ function renderCharacterProgression(character) {
     <ul>${profile.prompts.map((prompt) => `<li>${escapeHtml(prompt)}</li>`).join("")}</ul>`;
 }
 
+function bytesToBase64(bytes) {
+  return btoa(String.fromCharCode(...bytes));
+}
+
+function base64ToBytes(encoded) {
+  return Uint8Array.from(atob(encoded), (char) => char.charCodeAt(0));
+}
+
+async function derivePlayerNoteKey(password, salt) {
+  const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations: 120000, hash: "SHA-256" },
+    material,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function encryptPlayerNote(password, note) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await derivePlayerNoteKey(password, salt);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(note));
+  return `aesgcm:${JSON.stringify({ salt: bytesToBase64(salt), iv: bytesToBase64(iv), data: bytesToBase64(new Uint8Array(ciphertext)) })}`;
+}
+
+async function decryptPlayerNote(password, sealed) {
+  if (!sealed.startsWith("aesgcm:")) {
+    const decoded = decodeURIComponent(escape(atob(sealed)));
+    const [storedPassword, ...noteParts] = decoded.split(":");
+    if (storedPassword !== password) throw new Error("Wrong password");
+    return noteParts.join(":");
+  }
+  const payload = JSON.parse(sealed.slice("aesgcm:".length));
+  const key = await derivePlayerNoteKey(password, base64ToBytes(payload.salt));
+  const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(payload.iv) }, key, base64ToBytes(payload.data));
+  return new TextDecoder().decode(plaintext);
+}
+
 function renderCharacters() {
   const character = currentCharacter();
   if (!character) return;
@@ -2550,30 +2590,28 @@ document.querySelector("#player-secret-note").addEventListener("input", (event) 
   currentCharacter().playerSecretNote = event.target.value;
   saveCharacters();
 });
-document.querySelector("#seal-player-note").addEventListener("click", () => {
+document.querySelector("#seal-player-note").addEventListener("click", async () => {
   const character = currentCharacter();
   const password = document.querySelector("#player-note-password").value;
   if (!character || !password || !character.playerSecretNote) return;
-  character.playerSecretSealed = btoa(unescape(encodeURIComponent(`${password}:${character.playerSecretNote}`)));
-  character.playerSecretNote = "";
-  document.querySelector("#player-note-password").value = "";
-  saveCharacters();
-  renderCharacters();
+  try {
+    character.playerSecretSealed = await encryptPlayerNote(password, character.playerSecretNote);
+    character.playerSecretNote = "";
+    document.querySelector("#player-note-password").value = "";
+    saveCharacters();
+    renderCharacters();
+  } catch {
+    document.querySelector("#player-note-password").value = "";
+    document.querySelector("#player-note-password").placeholder = "Encryption unavailable";
+  }
 });
-document.querySelector("#unlock-player-note").addEventListener("click", () => {
+document.querySelector("#unlock-player-note").addEventListener("click", async () => {
   const character = currentCharacter();
   const passwordInput = document.querySelector("#player-note-password");
   const password = passwordInput.value;
   if (!character || !password || !character.playerSecretSealed) return;
   try {
-    const decoded = decodeURIComponent(escape(atob(character.playerSecretSealed)));
-    const [storedPassword, ...noteParts] = decoded.split(":");
-    if (storedPassword !== password) {
-      passwordInput.value = "";
-      passwordInput.placeholder = "Wrong password";
-      return;
-    }
-    character.playerSecretNote = noteParts.join(":");
+    character.playerSecretNote = await decryptPlayerNote(password, character.playerSecretSealed);
     character.playerSecretSealed = "";
     passwordInput.value = "";
     passwordInput.placeholder = "Player note password";
