@@ -3526,6 +3526,7 @@ document.querySelector("#flavor-to-note").addEventListener("click", () => {
 let soundAudioContext;
 let soundMasterGain;
 const activeSoundNodes = new Set();
+const activeAudioElements = new Set();
 
 function ensureSoundboard() {
   soundAudioContext ||= new AudioContext();
@@ -3605,18 +3606,34 @@ function playSoundEffect(type) {
   }
 }
 
+function playSoundFile(url) {
+  const audio = new Audio(url);
+  audio.volume = Number(document.querySelector("#soundboard-volume").value) / 100;
+  audio.addEventListener("ended", () => activeAudioElements.delete(audio), { once: true });
+  activeAudioElements.add(audio);
+  audio.play().catch(() => activeAudioElements.delete(audio));
+}
+
 document.querySelector(".soundboard-grid").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-sound]");
-  if (button) playSoundEffect(button.dataset.sound);
+  const fileButton = event.target.closest("[data-sound-url]");
+  const synthButton = event.target.closest("[data-sound]");
+  if (fileButton) playSoundFile(fileButton.dataset.soundUrl);
+  else if (synthButton) playSoundEffect(synthButton.dataset.sound);
 });
 document.querySelector("#soundboard-volume").addEventListener("input", (event) => {
   if (soundMasterGain) soundMasterGain.gain.value = Number(event.target.value) / 100;
+  for (const audio of activeAudioElements) audio.volume = Number(event.target.value) / 100;
 });
 document.querySelector("#stop-sounds").addEventListener("click", () => {
   for (const node of activeSoundNodes) {
     try { node.stop(); } catch { /* Already stopped. */ }
   }
   activeSoundNodes.clear();
+  for (const audio of activeAudioElements) {
+    audio.pause();
+    audio.currentTime = 0;
+  }
+  activeAudioElements.clear();
 });
 
 const realmSoundBoards = [

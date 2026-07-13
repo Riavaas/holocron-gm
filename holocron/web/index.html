@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Holocron GM</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20260713-compendium-v1">
+  <link rel="stylesheet" href="/static/styles.css?v=20260713-sound-v1">
 </head>
 <body>
   <header class="topbar">
@@ -480,10 +480,18 @@
       <header class="toolkit-heading"><div><small>AUDIO</small><h1>Soundboard</h1></div><button id="stop-sounds" class="secondary-button" type="button">Stop</button></header>
       <div class="soundboard-controls"><label>Volume<input id="soundboard-volume" type="range" min="0" max="100" value="55"></label><span>Realm of Darkness refs</span></div>
       <div class="soundboard-grid">
-        <button data-sound="blaster">Blaster</button><button data-sound="saber">Lightsaber</button>
-        <button data-sound="alarm">Alarm</button><button data-sound="door">Blast door</button>
-        <button data-sound="hyperdrive">Hyperdrive</button><button data-sound="comms">Comms</button>
-        <button data-sound="storm">Ion storm</button><button data-sound="cantina">Cantina sting</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/blaster/stormtrooper.mp3">Stormtrooper blaster</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/blaster/clonetrooper.mp3">Clone blaster</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/blaster/battledroid.mp3">Battle droid shot</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/lightsaber/powerup.mp3">Saber ignite</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/lightsaber/swing-med.mp3">Saber swing</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/lightsaber/crash.mp3">Saber clash</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/tie/1.mp3">TIE flyby</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/xwing/fly.mp3">X-Wing flyby</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/xwing/blast.mp3">X-Wing cannon</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/vader/breath.mp3">Vader breathing</button>
+        <button data-sound-url="https://www.realmofdarkness.net/audio/sw/vader/noooo.mp3">Vader no</button>
+        <button data-sound="alarm">Ship alarm</button>
       </div>
       <div id="realm-sound-links" class="realm-sound-links"></div>
     </section>
@@ -625,7 +633,7 @@
       </div>
     </form>
   </aside>
-  <script src="/static/app.js?v=20260713-compendium-v1"></script>
+  <script src="/static/app.js?v=20260713-sound-v1"></script>
   <script type="module" src="/static/dice.js?v=20260712-audit-v3"></script>
 </body>
 </html>
