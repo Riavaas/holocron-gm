@@ -572,7 +572,8 @@ function draw() {
   const height = shell.clientHeight;
   ctx.clearRect(0, 0, width, height);
   updateMapEmptyState();
-  drawBackdrop(width, height);
+  const imageOnly = Boolean(state.mapImmersive && state.image);
+  if (!imageOnly) drawBackdrop(width, height);
   if (state.image && state.layers.background) {
     ctx.save();
     ctx.translate(state.offset.x, state.offset.y);
@@ -580,6 +581,7 @@ function draw() {
     ctx.drawImage(state.image, 0, 0);
     ctx.restore();
   }
+  if (imageOnly) return;
   if (state.layers.grid) drawGrid(width, height);
   drawPersistentFog(width, height);
   drawLighting(width, height);
