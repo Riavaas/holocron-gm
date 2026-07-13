@@ -5561,10 +5561,15 @@ function renderPlayerIdentity() {
   visionWarning.hidden = Boolean(originToken);
   visionWarning.textContent = originToken ? "" : "No linked token on the battlemap yet. Ask the GM to deploy your character.";
   const visionDistance = state.visionRange * state.unitValue;
+  const activeMapEffects = [
+    state.layers.lighting ? "Lighting" : "",
+    state.layers.fog ? "Fog" : "",
+  ].filter(Boolean).join(" / ") || "Open";
   document.querySelector("#player-tactical-readout").innerHTML = `
     <div><span>Linked token</span><strong>${escapeHtml(originToken?.name || "None")}</strong></div>
     <div><span>Vision</span><strong>${visionDistance} ${escapeHtml(state.unitName)}</strong></div>
     <div><span>Grid</span><strong>${state.layers.grid ? `${escapeHtml(String(state.gridSize))} px` : "Hidden"}</strong></div>
+    <div><span>Map effects</span><strong>${escapeHtml(activeMapEffects)}</strong></div>
     <div><span>Turn visibility</span><strong>${activeCombatant ? (activeVisible ? "Visible" : "Hidden") : "No combat"}</strong></div>`;
   document.querySelector("#player-visible-list").innerHTML = visibleEntries.length ? `
     <small>Visible actors</small>
@@ -5645,7 +5650,7 @@ if (isPlayerView) {
         creatureCache: state.creatureCache,
       };
       Object.assign(state, mapState, transient);
-      state.layers = { ...defaults.layers, ...(mapState.layers || {}), lighting: true, fog: true };
+      state.layers = { ...defaults.layers, ...(mapState.layers || {}) };
       if (mapState.mapImageUrl) loadMapFromUrl(mapState.mapImageUrl);
       renderPlayerIdentity();
       syncMapActionControls();
