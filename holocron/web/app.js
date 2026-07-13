@@ -235,8 +235,8 @@ function tokenColor(type) {
   return "#757575";
 }
 
-function snapPoint(point) {
-  if (!state.snapToGrid) return { x: point.x, y: point.y };
+function snapPoint(point, options = {}) {
+  if (options.free || !state.snapToGrid) return { x: point.x, y: point.y };
   return {
     x: Math.round(point.x / state.gridSize) * state.gridSize + state.gridSize / 2,
     y: Math.round(point.y / state.gridSize) * state.gridSize + state.gridSize / 2,
@@ -1391,7 +1391,7 @@ canvas.addEventListener("pointermove", (event) => {
   const point = worldPoint(event);
   if (state.measurement) state.measurement.end = point;
   if (state.draggedToken) {
-    const destination = snapPoint(point);
+    const destination = snapPoint(point, { free: event.altKey });
     state.draggedToken.x = destination.x;
     state.draggedToken.y = destination.y;
     if (state.layers.fog) state.explored.push({ x: state.draggedToken.x, y: state.draggedToken.y });

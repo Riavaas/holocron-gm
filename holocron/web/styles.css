@@ -212,6 +212,7 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; }
 .drop-zone small { font-size: 10px; }
 .upload-icon { color: var(--accent); font-size: 22px; }
 .control-label { display: block; margin: 10px 0 5px; color: var(--muted); font-size: 11px; }
+.control-hint { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; line-height: 1.4; }
 input[type="range"] { width: 100%; accent-color: var(--accent); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
 label { color: var(--muted); font-size: 11px; }
