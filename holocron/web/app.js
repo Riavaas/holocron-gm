@@ -2770,6 +2770,7 @@ document.querySelector("#delete-character").addEventListener("click", () => {
 let itemCatalogCache = [];
 let itemCatalogTimer;
 let compendiumItemCache = [];
+let compendiumSearchCache = [];
 let activeDetailItem = null;
 const equipmentBrowser = { offset: 0, limit: 48, total: 0, categoriesLoaded: false };
 
@@ -3009,10 +3010,11 @@ async function searchCompendium(query) {
     const response = await fetch(`/api/rules/search?q=${encodeURIComponent(query)}&limit=30`);
     if (!response.ok) throw new Error("Search failed");
     const items = await response.json();
+    compendiumSearchCache = items;
     document.querySelector("#results-count").textContent = `${items.length} result${items.length === 1 ? "" : "s"}`;
-    results.innerHTML = items.map((item) => `
+    results.innerHTML = items.map((item, index) => `
       <article class="search-result">
-        <header><h3>${escapeHtml(compendiumResultTitle(item))}</h3></header>
+        <header><h3>${escapeHtml(compendiumResultTitle(item))}</h3><button class="text-button" data-save-rule-result="${index}" type="button">Save</button></header>
         <div class="result-meta">${compendiumResultMeta(item).map((label) => `<span>${escapeHtml(label)}</span>`).join("")}</div>
         <div class="markdown-body">${compendiumExcerptHtml(item.excerpt)}</div>
         <footer>${escapeHtml(citationLabel(item))}</footer>
@@ -3114,6 +3116,50 @@ function openItemDetail(item) {
   document.querySelector("#item-detail-dialog").showModal();
 }
 
+function saveRuleResultAsNote(index) {
+  const item = compendiumSearchCache[Number(index)];
+  if (!item) return;
+  const title = compendiumResultTitle(item);
+  createNote(`Rule · ${title}`, `# ${title}
+
+${item.excerpt || ""}
+
+## Source
+
+${citationLabel(item)}
+`);
+  document.querySelector('[data-view="notes"]').click();
+}
+
+function saveCompendiumItemAsNote(index) {
+  const item = compendiumItemCache[Number(index)];
+  if (!item) return;
+  const properties = (item.properties || []).map(itemPropertyLabel).filter(Boolean);
+  const lines = [
+    `- Category: ${catalogLabel(item.category)}`,
+    item.kind ? `- Kind: ${item.kind}` : "",
+    item.rarity ? `- Rarity: ${item.rarity}` : "",
+    `- Cost: ${Number(item.cost || 0).toLocaleString()} cr`,
+    `- Weight: ${item.weight || 0} lb`,
+    item.damage ? `- Damage: ${item.damage}` : "",
+    item.armor_class ? `- Armor class: ${item.armor_class}` : "",
+    item.source ? `- Source: ${item.source}` : "",
+  ].filter(Boolean).join("\n");
+  createNote(`Item · ${item.name}`, `# ${item.name}
+
+${lines}
+
+## Properties
+
+${properties.length ? properties.map((property) => `- **${property}:** ${itemPropertyHelp(property)}`).join("\n") : "- No listed properties"}
+
+## Description
+
+${item.description || "No description available in the local SW5e catalog."}
+`);
+  document.querySelector('[data-view="notes"]').click();
+}
+
 async function renderEquipmentCompendium() {
   const input = document.querySelector("#compendium-search");
   const category = document.querySelector("#compendium-item-category").value;
@@ -3134,6 +3180,7 @@ async function renderEquipmentCompendium() {
     const payload = await response.json();
     equipmentBrowser.total = payload.total;
     compendiumItemCache = payload.items;
+    compendiumSearchCache = [];
     if (!equipmentBrowser.categoriesLoaded) {
       const select = document.querySelector("#compendium-item-category");
       for (const value of payload.categories) select.add(new Option(catalogLabel(value), value));
@@ -3153,6 +3200,7 @@ async function renderEquipmentCompendium() {
         <dl><dt>Cost</dt><dd>${Number(item.cost || 0).toLocaleString()} cr</dd><dt>Weight</dt><dd>${item.weight || 0} lb</dd></dl>
         <div class="property-chips">${properties.slice(0, 8).map(propertyChipMarkup).join("")}</div>
         <small>${escapeHtml((item.description || "").replace(/\s+/g, " ").slice(0, 260))}</small>
+        <footer><button class="secondary-button" data-save-item-result="${index}" type="button">Save item note</button></footer>
       </article>`;
     }).join("") || '<p class="loading-line">No matching equipment.</p>';
   } catch {
@@ -3208,6 +3256,18 @@ document.querySelector("#equipment-next").addEventListener("click", () => {
   renderEquipmentCompendium();
 });
 document.querySelector("#compendium-results").addEventListener("click", (event) => {
+  const saveRule = event.target.closest("[data-save-rule-result]");
+  if (saveRule) {
+    event.stopPropagation();
+    saveRuleResultAsNote(saveRule.dataset.saveRuleResult);
+    return;
+  }
+  const saveItem = event.target.closest("[data-save-item-result]");
+  if (saveItem) {
+    event.stopPropagation();
+    saveCompendiumItemAsNote(saveItem.dataset.saveItemResult);
+    return;
+  }
   const property = event.target.closest("[data-property-search]");
   if (property) {
     searchCompendium(`weapon property ${property.dataset.propertySearch}`);

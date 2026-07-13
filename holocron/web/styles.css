@@ -723,6 +723,7 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .search-result header { display: flex; justify-content: space-between; gap: 12px; }
 .search-result h3 { margin: 0; color: var(--text); font-size: 13px; }
 .search-result header span { flex: 0 0 auto; color: var(--accent); font-size: 9px; }
+.search-result header .text-button { height: 22px; min-width: 44px; padding: 0 6px; border-left: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); font-size: 9px; }
 .result-meta { display: flex; flex-wrap: wrap; gap: 4px; }
 .result-meta span { padding: 3px 6px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 8px; text-transform: uppercase; }
 .search-result p { margin: 7px 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
@@ -945,6 +946,8 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .equipment-card dl { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 4px 8px; margin: 0; font-size: 9px; }
 .equipment-card dt { color: var(--muted); }
 .equipment-card dd { margin: 0; color: var(--text); }
+.equipment-card footer { display: flex; justify-content: flex-end; }
+.equipment-card footer .secondary-button { min-height: 26px; padding: 0 8px; font-size: 9px; }
 .property-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .property-chips button { padding: 2px 6px; border: 0; border-bottom: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 9px; font-weight: 700; cursor: pointer; }
 .item-detail-content { overflow-y: auto; display: grid; gap: 12px; color: var(--muted); line-height: 1.55; }
