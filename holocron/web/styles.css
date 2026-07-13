@@ -855,6 +855,10 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .item-detail-stats dt:nth-last-child(2), .item-detail-stats dd:last-child { border-bottom: 0; }
 .property-chips.detail { padding: 8px 0; border-block: 1px solid var(--line); }
 .property-chips span { color: var(--muted); font-size: 10px; }
+.property-help-list { display: grid; gap: 6px; padding: 8px; border-left: 2px solid var(--accent); background: var(--panel-raised); }
+.property-help-list p { display: grid; grid-template-columns: 90px 1fr; gap: 8px; margin: 0; font-size: 10px; }
+.property-help-list strong { color: var(--accent); }
+.property-help-list span { color: var(--muted); }
 
 .toolkit-output.compact { min-height: 120px; max-height: 220px; overflow-y: auto; }
 .shopkeeper-tool { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }

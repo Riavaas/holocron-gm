@@ -2905,6 +2905,53 @@ function itemPropertyLabel(property) {
   return property.name || property.content || property.description || String(property);
 }
 
+const itemPropertyGlossary = {
+  ammunition: "Consumes ammunition; track shots or power cells when scarcity matters.",
+  auto: "Can fire bursts or sustained volleys when the weapon rules allow it.",
+  burst: "Targets an area rather than a single creature; usually calls for a saving throw.",
+  cartridge: "Consumes a cartridge or magazine; track reloads when ammunition matters.",
+  cell: "Uses an energy cell or similar power source as ammunition.",
+  brutal: "Extra damage dice from critical hits or similar triggers are more dangerous.",
+  conceal: "Can be hidden on the body more easily than a normal weapon.",
+  dexterity: "Can use Dexterity for attack and damage when the rules allow finesse handling.",
+  disarming: "Can pressure, knock loose, or interact with held objects.",
+  double: "Has two striking ends or attack surfaces.",
+  finesse: "Can use Strength or Dexterity for attack and damage.",
+  fixed: "Designed for mounted, braced, or emplacement use.",
+  heavy: "Awkward for smaller creatures and usually requires more commitment to wield.",
+  keen: "Improves critical threat or precision depending on the weapon entry.",
+  light: "Easy to handle in the off hand or with two-weapon fighting rules.",
+  luminous: "Emits light or has a visible energy signature.",
+  piercing: "Built to punch through defenses or cover more effectively.",
+  penetrating: "Ignores or reduces defenses according to the property value.",
+  powercell: "Uses a power cell; the range in parentheses is normal/long range.",
+  range: "Uses a normal and long range; attacks beyond normal range are harder.",
+  reach: "Extends melee reach beyond adjacent targets.",
+  reload: "Can fire a limited number of shots before an action or interaction reloads it.",
+  returning: "Can come back to the wielder after being thrown.",
+  special: "Has item-specific rules; open the compendium/source entry for the full text.",
+  strength: "Uses Strength for attack and damage or has a Strength requirement.",
+  thrown: "Can be used as a ranged attack by throwing it.",
+  twohanded: "Requires two hands while attacking.",
+  versatile: "Can be wielded one-handed or two-handed, often changing damage.",
+};
+
+function propertyKey(property) {
+  return String(property || "").toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function itemPropertyHelp(property) {
+  const normalized = propertyKey(property);
+  const key = Object.keys(itemPropertyGlossary).find((candidate) => normalized.startsWith(candidate));
+  return key ? itemPropertyGlossary[key] : "Open this property in the compendium for the full rule text.";
+}
+
+function propertyChipMarkup(property) {
+  const label = itemPropertyLabel(property);
+  const help = itemPropertyHelp(label);
+  return `<button data-property-search="${escapeHtml(label)}" title="${escapeHtml(help)}" aria-label="${escapeHtml(`${label}: ${help}`)}">${escapeHtml(label)}</button>`;
+}
+
 function catalogLabel(value) {
   return String(value || "")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -2930,9 +2977,8 @@ function itemDetailMarkup(item) {
   ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "");
   return `
     <dl class="item-detail-stats">${lines.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>
-    <div class="property-chips detail">${properties.map((property) =>
-      `<button data-property-search="${escapeHtml(property)}" title="Open property in compendium">${escapeHtml(property)}</button>`
-    ).join("") || '<span>No listed properties</span>'}</div>
+    <div class="property-chips detail">${properties.map(propertyChipMarkup).join("") || '<span>No listed properties</span>'}</div>
+    ${properties.length ? `<div class="property-help-list">${properties.map((property) => `<p><strong>${escapeHtml(property)}</strong><span>${escapeHtml(itemPropertyHelp(property))}</span></p>`).join("")}</div>` : ""}
     <p>${escapeHtml(description)}</p>`;
 }
 
@@ -2980,9 +3026,7 @@ async function renderEquipmentCompendium() {
         <header><h3>${escapeHtml(item.name)}</h3><span>${escapeHtml(item.kind)}</span></header>
         <p>${escapeHtml(detail || item.source || "SW5e catalog")}</p>
         <dl><dt>Cost</dt><dd>${Number(item.cost || 0).toLocaleString()} cr</dd><dt>Weight</dt><dd>${item.weight || 0} lb</dd></dl>
-        <div class="property-chips">${properties.slice(0, 8).map((property) =>
-          `<button data-property-search="${escapeHtml(property)}" title="Open property in compendium">${escapeHtml(property)}</button>`
-        ).join("")}</div>
+        <div class="property-chips">${properties.slice(0, 8).map(propertyChipMarkup).join("")}</div>
         <small>${escapeHtml((item.description || "").replace(/\s+/g, " ").slice(0, 260))}</small>
       </article>`;
     }).join("") || '<p class="loading-line">No matching equipment.</p>';
