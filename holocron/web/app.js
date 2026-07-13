@@ -975,7 +975,10 @@ function selectedCombatant() {
 }
 
 function listText(value) {
-  if (Array.isArray(value) && value.length) return value.join(", ");
+  if (Array.isArray(value) && value.length) return value.map((item) => {
+    if (item && typeof item === "object") return [item.name, item.text || item.description].filter(Boolean).join(": ");
+    return String(item);
+  }).join(", ");
   if (value && typeof value === "object") return Object.entries(value).map(([key, item]) => `${key.toUpperCase()} ${item}`).join(", ");
   return value ? String(value) : "—";
 }
@@ -3043,6 +3046,14 @@ const npcRoleTerms = {
   "Informant": ["spy", "scout", "agent", "crime"],
   "Force Adept": ["jedi", "sith", "force", "adept"],
 };
+const npcRoleTemplates = {
+  "Smuggler": { ac: 14, hp: 28, cr: "1", actions: ["Hold-out Blaster", "Dirty Trick", "Cunning Escape"], abilities: { str: "10", dex: "16", con: "12", int: "13", wis: "11", cha: "15" } },
+  "Bounty Hunter": { ac: 16, hp: 45, cr: "3", actions: ["Multiattack", "Carbine Shot", "Wrist Launcher", "Net Snare"], abilities: { str: "13", dex: "16", con: "14", int: "12", wis: "14", cha: "10" } },
+  "Officer": { ac: 15, hp: 36, cr: "2", actions: ["Commanding Shot", "Tactical Order", "Call Reinforcements"], abilities: { str: "11", dex: "14", con: "13", int: "15", wis: "12", cha: "16" } },
+  "Mechanic": { ac: 13, hp: 24, cr: "1/2", actions: ["Ion Spanner", "Patch Droid", "Overload Device"], abilities: { str: "10", dex: "13", con: "12", int: "16", wis: "12", cha: "10" } },
+  "Informant": { ac: 13, hp: 18, cr: "1/4", actions: ["Concealed Holdout", "Disengage", "Signal Contact"], abilities: { str: "8", dex: "15", con: "10", int: "14", wis: "14", cha: "13" } },
+  "Force Adept": { ac: 15, hp: 38, cr: "3", actions: ["Saber Strike", "Force Push", "Mind Trick", "Deflect"], abilities: { str: "11", dex: "15", con: "13", int: "12", wis: "16", cha: "14" } },
+};
 const npcQuirks = [
   "Never sits with their back to a door.",
   "Collects obsolete navigation chips.",
@@ -3189,7 +3200,6 @@ async function loadNpcPortraitAsset(species, role) {
   const queries = [
     `${species} ${role}`,
     species,
-    role,
   ].filter(Boolean);
   for (const query of queries) {
     try {
@@ -3209,6 +3219,30 @@ async function loadNpcPortraitAsset(species, role) {
   return null;
 }
 
+function roleTemplate(role) {
+  const template = npcRoleTemplates[role] || npcRoleTemplates.Smuggler;
+  return {
+    name: `${role} profile`,
+    type: "humanoid",
+    hp: template.hp,
+    ac: template.ac,
+    cr: template.cr,
+    actions: [...template.actions],
+    abilities: { ...template.abilities },
+    stat_block: {
+      size: "Medium",
+      type: "humanoid",
+      alignment: "unaligned",
+      armor_class: template.ac,
+      hit_points: template.hp,
+      challenge_rating: template.cr,
+      abilities: { ...template.abilities },
+      actions: template.actions.map((name) => ({ name, text: `${name} follows the generated NPC's role profile.` })),
+    },
+    source: "Generated role profile",
+  };
+}
+
 async function generateNpc() {
   const species = document.querySelector("#npc-species").value || randomItem(Object.keys(speciesNamePatterns));
   const role = document.querySelector("#npc-role").value || randomItem(npcRoles);
@@ -3216,27 +3250,22 @@ async function generateNpc() {
   const catalog = await loadNpcBestiary();
   const terms = npcRoleTerms[role] || [];
   const humanoidTypes = new Set(["human", "humanoid"]);
-  const roleMatches = catalog.filter((item) => terms.some((term) => item.name.toLowerCase().includes(term)));
-  const humanoids = catalog.filter((item) => humanoidTypes.has(item.type));
+  const roleMatches = catalog.filter((item) => {
+    const haystack = `${item.name} ${item.type} ${(item.roles || []).join(" ")} ${(item.factions || []).join(" ")}`.toLowerCase();
+    return terms.some((term) => haystack.includes(term));
+  });
   const humanoidRoleMatches = roleMatches.filter((item) => humanoidTypes.has(item.type));
   const speciesMatches = catalog.filter((item) => item.name.toLowerCase().includes(species.toLowerCase()) || String(item.type || "").toLowerCase().includes(species.toLowerCase()));
-  const candidatePool = speciesMatches.length ? speciesMatches : humanoidRoleMatches.length ? humanoidRoleMatches : humanoids.length ? humanoids : roleMatches.length ? roleMatches : catalog;
-  const illustratedRoleMatches = humanoidRoleMatches.filter((item) => imageUrlFor(item));
-  const illustratedHumanoids = humanoids.filter((item) => imageUrlFor(item));
-  const candidate = illustratedRoleMatches.length
-    ? randomItem(illustratedRoleMatches)
-    : speciesMatches.filter((item) => imageUrlFor(item)).length
-      ? randomItem(speciesMatches.filter((item) => imageUrlFor(item)))
-      : illustratedHumanoids.length
-      ? randomItem(illustratedHumanoids)
-      : candidatePool.length ? randomItem(candidatePool) : null;
+  const speciesRoleMatches = speciesMatches.filter((item) => roleMatches.includes(item));
+  const candidatePool = speciesRoleMatches.length ? speciesRoleMatches : humanoidRoleMatches;
+  const candidate = candidatePool.length ? randomItem(candidatePool) : roleTemplate(role);
   const abilities = candidate?.abilities || candidate?.stat_block?.abilities || {};
   const attributes = ["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((label) => {
     const parsed = Number.parseInt(String(abilities[label.toLowerCase()] || ""), 10);
     return { label, value: Number.isFinite(parsed) ? parsed : 8 + Math.floor(Math.random() * 11) };
   });
   const portraitAsset = await loadNpcPortraitAsset(species, role);
-  const portraitUrl = imageUrlFor(portraitAsset) || imageUrlFor(candidate);
+  const portraitUrl = imageUrlFor(portraitAsset) || (candidate.source === "Generated role profile" ? "" : imageUrlFor(candidate));
   const actions = candidate?.actions?.slice(0, 4) || ["Blaster attack"];
   const quirk = randomItem(npcQuirks);
   const hook = randomItem(npcHooks);
