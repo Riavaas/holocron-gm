@@ -2580,13 +2580,17 @@ function renderCharacters() {
   const weight = character.inventory.reduce((total, item) => total + item.weight, 0);
   const equippedIds = new Set(Object.values(character.equipped));
   const cargoItems = character.inventory.filter((item) => !equippedIds.has(item.id));
+  const capacity = character.cargoCapacity || 100;
+  const loadPercent = Math.min(100, Math.round(weight / capacity * 100));
+  const overloaded = weight > capacity;
   const selectedItem = selectedCharacterItem(character);
   if (characterState.selectedItemId && !selectedItem) characterState.selectedItemId = null;
   document.querySelector("#character-ac").textContent = ac;
   document.querySelector("#character-attack").textContent = `${attack >= 0 ? "+" : ""}${attack}`;
   document.querySelector("#character-weight").textContent = weight;
   document.querySelector("#character-credits").textContent = `${character.credits || 0} cr`;
-  document.querySelector("#cargo-capacity").textContent = `${weight} / ${character.cargoCapacity || 100} lb`;
+  document.querySelector("#cargo-capacity").textContent = `${weight} / ${capacity} lb`;
+  document.querySelector("#cargo-capacity").classList.toggle("overloaded", overloaded);
   document.querySelector("#sell-selected-item").disabled = !characterState.selectedItemId;
   document.querySelectorAll("[data-slot]").forEach((slot) => {
     const item = character.inventory.find((candidate) => candidate.id === character.equipped[slot.dataset.slot]);
@@ -2598,15 +2602,25 @@ function renderCharacters() {
     const slots = part.dataset.bodyFill === "hands" ? ["hands", "mainHand", "offHand"] : [part.dataset.bodyFill];
     part.classList.toggle("filled", slots.some((slot) => Boolean(character.equipped[slot])));
   });
-  document.querySelector("#character-stash").innerHTML = character.inventory
-    .filter((item) => !equippedIds.has(item.id))
-    .map((item) => `
+  document.querySelector("#cargo-load-meter").innerHTML = `
+    <div><span style="width:${loadPercent}%"></span></div>
+    <p class="${overloaded ? "overloaded" : ""}">${overloaded ? "Over capacity" : "Load"} · ${weight}/${capacity} lb</p>`;
+  const stashButton = (item, status = item.slot ? item.slot : "cargo") => `
       <button class="stash-item ${item.id === characterState.selectedItemId ? "selected" : ""}" data-item-id="${item.id}">
         <strong>${escapeHtml(item.name)}</strong>
-        <span>${item.slot ? escapeHtml(item.slot) : "cargo"} · ${item.weight} lb${item.ac ? ` · +${item.ac} AC` : ""}${item.attack ? ` · +${item.attack} attack` : ""}</span>
-      </button>`).join("") || `<p class="stash-empty">${character.inventory.length ? "All carried gear is currently equipped." : "No cargo yet. Add gear from the SW5e catalog or create a custom item."}</p>`;
+        <span>${escapeHtml(status)} · ${item.weight} lb${item.ac ? ` · +${item.ac} AC` : ""}${item.attack ? ` · +${item.attack} attack` : ""}</span>
+      </button>`;
+  document.querySelector("#character-stash").innerHTML = `
+    <section class="stash-group">
+      <h3>Equipped</h3>
+      ${equippedItems.map((item) => stashButton(item, itemEquippedSlot(character, item))).join("") || '<p class="stash-empty">No equipped gear yet.</p>'}
+    </section>
+    <section class="stash-group">
+      <h3>Cargo</h3>
+      ${cargoItems.map((item) => stashButton(item)).join("") || `<p class="stash-empty">${character.inventory.length ? "All carried gear is currently equipped." : "No cargo yet. Add gear from the SW5e catalog or create a custom item."}</p>`}
+    </section>`;
   document.querySelector("#stash-summary").textContent = `${equippedItems.length} equipped · ${cargoItems.length} cargo`;
-  document.querySelector(".character-roster .notes-sidebar-header").title = `${equippedItems.length} equipped · ${cargoItems.length} cargo`;
+  document.querySelector(".character-roster .notes-sidebar-header").title = `${equippedItems.length} equipped · ${cargoItems.length} cargo · ${weight}/${capacity} lb`;
   renderSelectedItemPanel(character, selectedItem);
   document.querySelector("#resource-rings").innerHTML = Object.entries(character.resources).map(([key, resource]) => `
     <div class="resource-ring" style="--fill:${Math.max(0, Math.min(100, resource.value / resource.max * 100))}%;--ring-color:${resource.color}">

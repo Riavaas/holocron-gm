@@ -926,6 +926,14 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 
 .characters-workspace { grid-template-columns: 250px minmax(650px, 1fr) 280px; }
 .character-roster #character-stash { display: grid; gap: 6px; overflow: visible; padding-bottom: 0; }
+.cargo-load-meter { display: grid; gap: 4px; margin: 10px 0 12px; }
+.cargo-load-meter div { height: 7px; overflow: hidden; border: 1px solid var(--line); border-radius: 999px; background: var(--panel-raised); }
+.cargo-load-meter span { display: block; height: 100%; max-width: 100%; background: var(--accent); }
+.cargo-load-meter p { margin: 0; color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.cargo-load-meter p.overloaded, #cargo-capacity.overloaded { color: var(--danger); font-weight: 800; }
+.stash-group { display: grid; gap: 6px; }
+.stash-group + .stash-group { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.stash-group h3 { margin: 0; color: var(--muted); font-size: 9px; text-transform: uppercase; }
 .character-main { grid-template-rows: 92px minmax(430px, 1fr) 130px; }
 .character-header { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(180px, 240px) repeat(4, auto) auto auto auto; gap: 8px; align-items: center; }
 .character-header label { margin-left: 0; }
