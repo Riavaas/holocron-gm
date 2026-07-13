@@ -8,8 +8,8 @@ renderer.setPixelRatio(pixelRatio);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(42, 1, .1, 100);
-camera.position.set(0, .95, 6.8);
+const camera = new THREE.PerspectiveCamera(36, 1, .1, 100);
+camera.position.set(0, 1.05, 7.8);
 camera.lookAt(0, .05, 0);
 scene.add(new THREE.HemisphereLight(0xafc6d6, 0x20262a, 2.4));
 const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
@@ -39,23 +39,23 @@ function geometryFor(sides) {
   return new THREE.IcosahedronGeometry(1.22);
 }
 
-function numberedTexture(value) {
+function numberedTexture(value, sides) {
   const label = document.createElement("canvas");
-  label.width = 192;
-  label.height = 192;
+  label.width = 256;
+  label.height = 256;
   const labelContext = label.getContext("2d");
-  labelContext.fillStyle = "rgba(10, 12, 14, .82)";
+  labelContext.fillStyle = sides === 6 ? "rgba(255, 255, 255, .9)" : "rgba(10, 12, 14, .88)";
   labelContext.beginPath();
-  labelContext.arc(96, 96, 66, 0, Math.PI * 2);
+  labelContext.arc(128, 128, 88, 0, Math.PI * 2);
   labelContext.fill();
-  labelContext.strokeStyle = "rgba(255, 255, 255, .95)";
-  labelContext.lineWidth = 7;
+  labelContext.strokeStyle = sides === 6 ? "rgba(10, 12, 14, .92)" : "rgba(255, 255, 255, .95)";
+  labelContext.lineWidth = 9;
   labelContext.stroke();
-  labelContext.fillStyle = "#ffffff";
-  labelContext.font = "900 84px Arial";
+  labelContext.fillStyle = sides === 6 ? "#101418" : "#ffffff";
+  labelContext.font = `900 ${value >= 10 ? 92 : 110}px Arial`;
   labelContext.textAlign = "center";
   labelContext.textBaseline = "middle";
-  labelContext.fillText(String(value), 96, 101);
+  labelContext.fillText(String(value), 128, 135);
   const texture = new THREE.CanvasTexture(label);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
@@ -90,10 +90,31 @@ function disposeDie() {
   if (!die) return;
   die.traverse((child) => {
     child.geometry?.dispose?.();
-    if (child.material?.map) child.material.map.dispose();
-    child.material?.dispose?.();
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.filter(Boolean).forEach((material) => {
+      material.map?.dispose?.();
+      material.dispose?.();
+    });
   });
   scene.remove(die);
+}
+
+function faceLabel(center, value, sides, scale) {
+  const normal = center.clone().normalize();
+  const label = new THREE.Mesh(
+    new THREE.PlaneGeometry(scale, scale),
+    new THREE.MeshBasicMaterial({
+      map: numberedTexture(value, sides),
+      transparent: true,
+      depthTest: true,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+    }),
+  );
+  label.position.copy(normal.multiplyScalar(center.length() * 1.018));
+  label.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
+  return label;
 }
 
 function setDie(sides) {
@@ -105,17 +126,9 @@ function setDie(sides) {
     new THREE.MeshStandardMaterial({ color: 0xa90d0d, metalness: .36, roughness: .34, flatShading: true }),
   );
   die.add(mesh);
-  const labelScale = sides >= 20 ? .52 : sides >= 12 ? .56 : .62;
+  const labelScale = sides >= 20 ? .46 : sides >= 12 ? .5 : sides === 8 ? .54 : .62;
   faceCenters(geometry).slice(0, sides).forEach((center, index) => {
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: numberedTexture(index + 1),
-      transparent: true,
-      depthTest: true,
-      depthWrite: false,
-    }));
-    sprite.position.copy(center.multiplyScalar(1.045));
-    sprite.scale.set(labelScale, labelScale, 1);
-    die.add(sprite);
+    die.add(faceLabel(center, index + 1, sides, labelScale));
   });
   die.userData.sides = sides;
   die.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
