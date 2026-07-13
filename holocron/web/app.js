@@ -5039,6 +5039,16 @@ function renderPlayerIdentity() {
   const activeCombatant = state.combatants[state.activeTurn];
   const activeToken = activeCombatant ? state.tokens.find((token) => token.combatantId === activeCombatant.id) : null;
   const activeVisible = activeCombatant && (!activeToken || tokenVisibleToPlayer(activeToken));
+  const visibleEntries = visibleTokens.map((token) => {
+    const combatant = state.combatants.find((item) => item.id === token.combatantId);
+    const squares = originToken ? Math.hypot(token.x - originToken.x, token.y - originToken.y) / state.gridSize : null;
+    return { token, combatant, squares };
+  }).sort((left, right) => {
+    if (left.squares === null && right.squares === null) return left.token.name.localeCompare(right.token.name);
+    if (left.squares === null) return 1;
+    if (right.squares === null) return -1;
+    return left.squares - right.squares;
+  });
   document.querySelector("#player-name").textContent = player.name;
   document.querySelector("#player-round").textContent = state.round || 1;
   document.querySelector("#player-visible-count").textContent = `${visibleTokens.length} visible`;
@@ -5051,20 +5061,30 @@ function renderPlayerIdentity() {
   sharedNote.hidden = !String(player.sharedNote || "").trim();
   sharedNote.innerHTML = player.sharedNote ? `<small>Player / GM note</small><p>${escapeHtml(player.sharedNote)}</p>` : "";
   const turnCard = document.querySelector("#player-turn-card");
-  turnCard.hidden = !activeVisible;
-  if (activeVisible) turnCard.innerHTML = `<span>Current turn</span><strong>${escapeHtml(activeCombatant.name)}</strong>`;
+  turnCard.hidden = !activeCombatant;
+  turnCard.classList.toggle("muted", Boolean(activeCombatant && !activeVisible));
+  if (activeCombatant) {
+    turnCard.innerHTML = `<span>Current turn${activeVisible ? "" : " · outside vision"}</span><strong>${escapeHtml(activeCombatant.name)}</strong>`;
+  }
   const visionWarning = document.querySelector("#player-vision-warning");
   visionWarning.hidden = Boolean(originToken);
   visionWarning.textContent = originToken ? "" : "No linked token on the battlemap yet. Ask the GM to deploy your character.";
-  document.querySelector("#player-visible-list").innerHTML = visibleTokens.length ? `
+  const visionDistance = state.visionRange * state.unitValue;
+  document.querySelector("#player-tactical-readout").innerHTML = `
+    <div><span>Linked token</span><strong>${escapeHtml(originToken?.name || "None")}</strong></div>
+    <div><span>Vision</span><strong>${visionDistance} ${escapeHtml(state.unitName)}</strong></div>
+    <div><span>Grid</span><strong>${state.showGrid ? `${escapeHtml(String(state.gridSize))} px` : "Hidden"}</strong></div>
+    <div><span>Turn visibility</span><strong>${activeCombatant ? (activeVisible ? "Visible" : "Hidden") : "No combat"}</strong></div>`;
+  document.querySelector("#player-visible-list").innerHTML = visibleEntries.length ? `
     <small>Visible actors</small>
-    ${visibleTokens.map((token) => {
-      const combatant = state.combatants.find((item) => item.id === token.combatantId);
+    ${visibleEntries.map(({ token, combatant, squares }) => {
       const conditions = (combatant?.conditions || []).join(", ");
       const active = combatant && activeCombatant?.id === combatant.id;
+      const distance = squares === null ? "" : squares < 0.05 ? "Self" : `${Math.round(squares * state.unitValue)} ${escapeHtml(state.unitName)} · ${squares.toFixed(1)} sq`;
       return `<div class="player-visible-token ${active ? "active" : ""}">
         <strong>${escapeHtml(token.name)}</strong>
         <span>${escapeHtml(token.type || "token")}${conditions ? ` · ${escapeHtml(conditions)}` : ""}</span>
+        ${distance ? `<em>${distance}</em>` : ""}
       </div>`;
     }).join("")}` : "";
   document.querySelector("#player-credits").textContent = `${player.credits || 0} cr`;

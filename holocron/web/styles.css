@@ -552,15 +552,22 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .player-character-summary strong { color: var(--ink); font-size: 12px; }
 .player-shared-note p { margin: 4px 0 0; color: var(--ink); font-size: 10px; line-height: 1.45; }
 .player-turn-card { margin-bottom: 10px; text-transform: none; }
+.player-turn-card.muted { opacity: .72; }
 .player-turn-card strong { display: block; color: var(--ink); font-size: 11px; }
 .player-vision-warning { margin-bottom: 10px; padding: 8px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); font-size: 10px; line-height: 1.4; }
+.player-tactical-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+.player-tactical-readout div { min-width: 0; padding: 6px; border: 1px solid var(--line); background: var(--panel-raised); }
+.player-tactical-readout span, .player-tactical-readout strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-tactical-readout span { color: var(--muted); font-size: 8px; text-transform: uppercase; }
+.player-tactical-readout strong { color: var(--ink); font-size: 10px; }
 .player-visible-list { display: grid; gap: 4px; margin-bottom: 12px; }
 .player-visible-list small { color: var(--accent); font-size: 8px; }
 .player-visible-token { padding: 6px; border: 1px solid var(--line); background: var(--panel-raised); }
 .player-visible-token.active { border-color: var(--accent); background: #fff; }
-.player-visible-token strong, .player-visible-token span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-visible-token strong, .player-visible-token span, .player-visible-token em { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .player-visible-token strong { color: var(--ink); font-size: 10px; }
 .player-visible-token span { color: var(--muted); font-size: 8px; }
+.player-visible-token em { color: var(--accent); font-size: 8px; font-style: normal; }
 .player-resource-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 14px; }
 .player-resource { padding: 7px; border-left: 2px solid var(--resource-color); background: var(--panel-raised); }
 .player-resource strong, .player-resource span { display: block; }.player-resource strong { font-size: 12px; }.player-resource span { color: var(--muted); font-size: 8px; }
