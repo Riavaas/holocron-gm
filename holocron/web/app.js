@@ -3412,6 +3412,8 @@ let generatedEncounter = [];
 let generatedNpc = null;
 let generatedLootItems = [];
 let generatedShopWares = [];
+let lastLootPayload = null;
+let lastShopkeeperPayload = null;
 let npcBestiaryCache = null;
 const npcPortraitCache = new Map();
 
@@ -3646,7 +3648,9 @@ async function generateLoot() {
     const response = await fetch(`/api/catalog/items/loot?${params}`);
     if (!response.ok) throw new Error("Loot catalog unavailable");
     const payload = await response.json();
+    lastLootPayload = payload;
     generatedLootItems = payload.items || [];
+    document.querySelector("#save-loot-note").disabled = generatedLootItems.length === 0;
     const summaryChips = [
       ...(payload.summary?.rarities || []).map(([name, count]) => `${name} ${count}`),
       ...(payload.summary?.categories || []).slice(0, 3).map(([name, count]) => `${catalogLabel(name)} ${count}`),
@@ -3669,7 +3673,9 @@ async function generateLoot() {
       <div class="loot-line"><span>Field supplies</span><strong>${1 + Math.floor(cr / 4)}× ${escapeHtml(randomItem(consumables))}</strong></div>
       <div class="loot-line"><span>Salvage lead</span><strong>${escapeHtml(randomItem(lootMods))}</strong></div>`;
   } catch {
+    lastLootPayload = null;
     generatedLootItems = [];
+    document.querySelector("#save-loot-note").disabled = true;
     output.innerHTML = '<p class="loading-line">The SW5e loot catalog is unavailable.</p>';
   }
 }
@@ -3686,7 +3692,9 @@ async function generateShopkeeper() {
     const response = await fetch(`/api/catalog/items/shopkeeper?${params}`);
     if (!response.ok) throw new Error("Shop unavailable");
     const payload = await response.json();
+    lastShopkeeperPayload = payload;
     generatedShopWares = payload.wares || [];
+    document.querySelector("#save-shopkeeper-note").disabled = generatedShopWares.length === 0;
     const departments = (payload.departments || []).map(([name, count]) => `<span>${escapeHtml(catalogLabel(name))}<strong>${count}</strong></span>`).join("");
     const priceLabel = payload.price_modifier ? `${Math.round(Number(payload.price_modifier) * 100)}% street price` : "table price";
     output.innerHTML = `
@@ -3707,9 +3715,64 @@ async function generateShopkeeper() {
         </div>`;
       }).join("")}`;
   } catch {
+    lastShopkeeperPayload = null;
     generatedShopWares = [];
+    document.querySelector("#save-shopkeeper-note").disabled = true;
     output.innerHTML = '<p class="loading-line">Shopkeeper catalog unavailable.</p>';
   }
+}
+
+function itemNoteLine(item) {
+  const detail = [catalogLabel(item.category), item.rarity, item.damage].filter(Boolean).join(" | ");
+  const cost = item.shop_cost ?? item.cost;
+  const costText = Number(cost || 0) > 0 ? ` | ${Number(cost).toLocaleString()} cr` : "";
+  return `- **${item.name}**${detail ? ` (${detail})` : ""}${costText}`;
+}
+
+function saveLootAsNote() {
+  if (!lastLootPayload || !generatedLootItems.length) return;
+  const cr = Math.max(0, Number(document.querySelector("#toolkit-cr").value) || 0);
+  const summary = lastLootPayload.summary?.rarities?.map(([name, count]) => `${name} ${count}`).join(", ") || "mixed";
+  createNote(`Loot parcel · CR ${cr} · ${noteTimestamp()}`, `# Loot parcel
+
+- Target CR: ${cr}
+- Credits: ${Number(lastLootPayload.credits || 0).toLocaleString()} cr
+- Summary: ${summary}
+
+## Items
+
+${generatedLootItems.map(itemNoteLine).join("\n")}
+`);
+  document.querySelector('[data-view="notes"]').click();
+}
+
+function saveShopkeeperAsNote() {
+  if (!lastShopkeeperPayload || !generatedShopWares.length) return;
+  const departments = (lastShopkeeperPayload.departments || [])
+    .map(([name, count]) => `- ${catalogLabel(name)}: ${count}`)
+    .join("\n");
+  createNote(`${lastShopkeeperPayload.name} · wares · ${noteTimestamp()}`, `# ${lastShopkeeperPayload.name}
+
+- Settlement: ${lastShopkeeperPayload.settlement}
+- Allegiance: ${lastShopkeeperPayload.allegiance}
+- Wealth: ${lastShopkeeperPayload.wealth}
+- Price modifier: ${Math.round(Number(lastShopkeeperPayload.price_modifier || 1) * 100)}%
+
+${lastShopkeeperPayload.pitch || ""}
+
+## Policy
+
+${lastShopkeeperPayload.policy || "No special policy."}
+
+## Departments
+
+${departments || "- Mixed stock"}
+
+## Wares
+
+${generatedShopWares.map(itemNoteLine).join("\n")}
+`);
+  document.querySelector('[data-view="notes"]').click();
 }
 
 async function generateEncounter() {
@@ -3790,7 +3853,9 @@ Actions: ${(generatedNpc.actions || ["Blaster attack"]).join(", ")}`;
   document.querySelector('[data-view="notes"]').click();
 });
 document.querySelector("#generate-loot").addEventListener("click", generateLoot);
+document.querySelector("#save-loot-note").addEventListener("click", saveLootAsNote);
 document.querySelector("#generate-shopkeeper").addEventListener("click", generateShopkeeper);
+document.querySelector("#save-shopkeeper-note").addEventListener("click", saveShopkeeperAsNote);
 document.querySelector("#generate-encounter").addEventListener("click", generateEncounter);
 document.querySelector("#generate-flavor").addEventListener("click", generateFlavor);
 document.querySelector("#encounter-output").addEventListener("click", (event) => {
