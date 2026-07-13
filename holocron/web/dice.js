@@ -9,7 +9,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(42, 1, .1, 100);
-camera.position.set(0, 1.05, 5.8);
+camera.position.set(0, .95, 6.8);
 camera.lookAt(0, .05, 0);
 scene.add(new THREE.HemisphereLight(0xafc6d6, 0x20262a, 2.4));
 const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
@@ -46,13 +46,13 @@ function numberedTexture(value) {
   const labelContext = label.getContext("2d");
   labelContext.fillStyle = "rgba(10, 12, 14, .82)";
   labelContext.beginPath();
-  labelContext.arc(96, 96, 58, 0, Math.PI * 2);
+  labelContext.arc(96, 96, 66, 0, Math.PI * 2);
   labelContext.fill();
-  labelContext.strokeStyle = "rgba(255, 255, 255, .75)";
-  labelContext.lineWidth = 5;
+  labelContext.strokeStyle = "rgba(255, 255, 255, .95)";
+  labelContext.lineWidth = 7;
   labelContext.stroke();
   labelContext.fillStyle = "#ffffff";
-  labelContext.font = "800 76px system-ui";
+  labelContext.font = "900 84px Arial";
   labelContext.textAlign = "center";
   labelContext.textBaseline = "middle";
   labelContext.fillText(String(value), 96, 101);
@@ -102,10 +102,10 @@ function setDie(sides) {
   const geometry = geometryFor(sides);
   const mesh = new THREE.Mesh(
     geometry,
-    new THREE.MeshStandardMaterial({ color: 0xc40f0f, metalness: .42, roughness: .3, flatShading: true }),
+    new THREE.MeshStandardMaterial({ color: 0xa90d0d, metalness: .36, roughness: .34, flatShading: true }),
   );
   die.add(mesh);
-  const labelScale = sides >= 20 ? .34 : sides >= 12 ? .39 : .46;
+  const labelScale = sides >= 20 ? .52 : sides >= 12 ? .56 : .62;
   faceCenters(geometry).slice(0, sides).forEach((center, index) => {
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
       map: numberedTexture(index + 1),
