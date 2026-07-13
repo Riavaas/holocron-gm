@@ -1111,6 +1111,7 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .quest-entry div { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
 .quest-entry div button { min-height: 28px; border: 1px solid var(--line); background: #fff; color: var(--muted); font-size: 9px; cursor: pointer; }
 .quest-windows { display: grid; grid-template-rows: 58px 1fr; min-width: 0; }
+.quest-active-meta { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; }
 .quest-file-windows { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); align-content: start; gap: 12px; overflow-y: auto; padding: 16px; }
 .quest-file-window { display: grid; grid-template-rows: auto auto 140px minmax(160px, 1fr); min-height: 390px; border: 1px solid var(--line); background: var(--panel); }
 .quest-file-window.quest-link-target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }

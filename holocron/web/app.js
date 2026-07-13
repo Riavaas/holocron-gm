@@ -4909,10 +4909,14 @@ function renderQuests() {
   ensureQuestState();
   const active = state.quests.find((quest) => quest.id === state.activeQuestId) || state.quests[0];
   state.activeQuestId = active?.id || null;
+  const questLinkTotal = (quest) => (quest.files || []).reduce((total, file) => total + wikiLinksInMarkdown(file.content).length, 0);
   document.querySelector("#quest-active-title").textContent = active?.title || "Episode workspace";
+  document.querySelector("#quest-active-meta").textContent = active
+    ? `${active.folders.length} folders · ${active.files.length} files · ${questLinkTotal(active)} links`
+    : "No active episode";
   document.querySelector("#quest-list").innerHTML = state.quests.map((quest) => `
     <article class="quest-entry">
-      <button data-quest-id="${quest.id}" class="${quest.id === state.activeQuestId ? "active" : ""}"><strong>${escapeHtml(quest.title)}</strong><span>${quest.folders.length} folders · ${quest.files.length} files</span></button>
+      <button data-quest-id="${quest.id}" class="${quest.id === state.activeQuestId ? "active" : ""}"><strong>${escapeHtml(quest.title)}</strong><span>${quest.folders.length} folders · ${quest.files.length} files · ${questLinkTotal(quest)} links</span></button>
       <div>${quest.folders.map((folder) => `<button data-open-quest-folder="${quest.id}:${escapeHtml(folder)}">${escapeHtml(folder)}</button>`).join("")}</div>
     </article>`).join("");
   document.querySelector("#quest-file-windows").innerHTML = active.files.map((file) => `
