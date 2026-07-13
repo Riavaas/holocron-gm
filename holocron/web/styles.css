@@ -840,6 +840,22 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .soundboard-controls label { color: var(--muted); font-size: 9px; }
 .soundboard-controls input { margin: 5px 0 0; }
 .soundboard-controls button { min-height: 30px; }
+.sound-scenes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0 12px; }
+.sound-scenes button {
+  display: grid;
+  gap: 2px;
+  min-height: 48px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.sound-scenes button:hover, .sound-scenes button.active { border-color: var(--accent); background: var(--accent-soft); }
+.sound-scenes strong { font-size: 10px; }
+.sound-scenes span { color: var(--muted); font-size: 8px; line-height: 1.3; }
 .resource-filters { display: grid; grid-template-columns: minmax(120px, 1fr) 105px minmax(150px, 220px); gap: 6px; margin-bottom: 8px; }
 .resource-filters input, .resource-filters select { margin: 0; }
 .external-resource-summary { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }

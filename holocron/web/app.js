@@ -3851,8 +3851,51 @@ document.querySelector("#flavor-to-note").addEventListener("click", () => {
 
 let soundAudioContext;
 let soundMasterGain;
+let activeSoundSceneId = null;
 const activeSoundNodes = new Set();
 const activeAudioElements = new Set();
+const activeSceneTimers = new Set();
+
+const soundScenes = {
+  docking: [
+    { at: 0, type: "door" },
+    { at: 650, type: "comms" },
+    { at: 1500, type: "hyperdrive" },
+    { at: 3200, type: "comms" },
+  ],
+  duel: [
+    { at: 0, type: "saber" },
+    { at: 450, type: "saber" },
+    { at: 1050, type: "saber" },
+    { at: 1600, tone: [110, 42, .55, "sawtooth", .2] },
+    { at: 2300, type: "saber" },
+  ],
+  cantina: [
+    { at: 0, type: "cantina" },
+    { at: 950, type: "cantina" },
+    { at: 1800, type: "comms" },
+    { at: 2900, type: "cantina" },
+  ],
+  crisis: [
+    { at: 0, type: "alarm" },
+    { at: 600, type: "storm" },
+    { at: 1350, type: "alarm" },
+    { at: 2350, type: "hyperdrive" },
+  ],
+  wilderness: [
+    { at: 0, type: "storm" },
+    { at: 1200, tone: [260, 190, .32, "triangle", .08] },
+    { at: 2100, type: "comms" },
+    { at: 3400, type: "storm" },
+  ],
+  battle: [
+    { at: 0, type: "blaster" },
+    { at: 220, type: "blaster" },
+    { at: 520, type: "blaster" },
+    { at: 900, type: "alarm" },
+    { at: 1550, type: "hyperdrive" },
+  ],
+};
 
 function ensureSoundboard() {
   soundAudioContext ||= new AudioContext();
@@ -3932,6 +3975,45 @@ function playSoundEffect(type) {
   }
 }
 
+function renderSoundSceneState() {
+  document.querySelectorAll("[data-sound-scene]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.soundScene === activeSoundSceneId);
+  });
+}
+
+function stopSoundSceneTimers() {
+  for (const timer of activeSceneTimers) clearTimeout(timer);
+  activeSceneTimers.clear();
+  activeSoundSceneId = null;
+  renderSoundSceneState();
+}
+
+function scheduleSoundSceneStep(step) {
+  const timer = setTimeout(() => {
+    activeSceneTimers.delete(timer);
+    if (step.type) playSoundEffect(step.type);
+    if (step.tone) soundTone(...step.tone);
+    if (step.noise) soundNoise(...step.noise);
+  }, step.at);
+  activeSceneTimers.add(timer);
+}
+
+function playSoundScene(sceneId) {
+  const scene = soundScenes[sceneId];
+  if (!scene) return;
+  stopSoundSceneTimers();
+  activeSoundSceneId = sceneId;
+  renderSoundSceneState();
+  for (const step of scene) scheduleSoundSceneStep(step);
+  const endAt = Math.max(...scene.map((step) => step.at)) + 2200;
+  const doneTimer = setTimeout(() => {
+    activeSceneTimers.delete(doneTimer);
+    activeSoundSceneId = null;
+    renderSoundSceneState();
+  }, endAt);
+  activeSceneTimers.add(doneTimer);
+}
+
 function playSoundFile(url) {
   const audio = new Audio(url);
   audio.volume = Number(document.querySelector("#soundboard-volume").value) / 100;
@@ -3946,11 +4028,16 @@ document.querySelector(".soundboard-grid").addEventListener("click", (event) => 
   if (fileButton) playSoundFile(fileButton.dataset.soundUrl);
   else if (synthButton) playSoundEffect(synthButton.dataset.sound);
 });
+document.querySelector(".sound-scenes").addEventListener("click", (event) => {
+  const sceneButton = event.target.closest("[data-sound-scene]");
+  if (sceneButton) playSoundScene(sceneButton.dataset.soundScene);
+});
 document.querySelector("#soundboard-volume").addEventListener("input", (event) => {
   if (soundMasterGain) soundMasterGain.gain.value = Number(event.target.value) / 100;
   for (const audio of activeAudioElements) audio.volume = Number(event.target.value) / 100;
 });
 document.querySelector("#stop-sounds").addEventListener("click", () => {
+  stopSoundSceneTimers();
   for (const node of activeSoundNodes) {
     try { node.stop(); } catch { /* Already stopped. */ }
   }
