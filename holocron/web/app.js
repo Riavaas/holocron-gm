@@ -2774,11 +2774,18 @@ function itemPropertyLabel(property) {
   return property.name || property.content || property.description || String(property);
 }
 
+function catalogLabel(value) {
+  return String(value || "")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/SW5e/g, "SW5e")
+    .trim();
+}
+
 function itemDetailMarkup(item) {
   const properties = (item.properties || []).map(itemPropertyLabel).filter(Boolean);
   const description = (item.description || "").replace(/\s+/g, " ").trim() || "No description available in the local SW5e catalog.";
   const lines = [
-    ["Category", item.category],
+    ["Category", catalogLabel(item.category)],
     ["Kind", item.kind],
     ["Rarity", item.rarity],
     ["Cost", `${Number(item.cost || 0).toLocaleString()} cr`],
@@ -2827,7 +2834,7 @@ async function renderEquipmentCompendium() {
     compendiumItemCache = payload.items;
     if (!equipmentBrowser.categoriesLoaded) {
       const select = document.querySelector("#compendium-item-category");
-      for (const value of payload.categories) select.add(new Option(value, value));
+      for (const value of payload.categories) select.add(new Option(catalogLabel(value), value));
       equipmentBrowser.categoriesLoaded = true;
     }
     const start = payload.total ? equipmentBrowser.offset + 1 : 0;
@@ -2837,7 +2844,7 @@ async function renderEquipmentCompendium() {
     document.querySelector("#equipment-next").disabled = equipmentBrowser.offset + equipmentBrowser.limit >= payload.total;
     results.innerHTML = payload.items.map((item, index) => {
       const properties = (item.properties || []).map(itemPropertyLabel).filter(Boolean);
-      const detail = [item.category, item.rarity, item.damage, item.armor_class].filter(Boolean).join(" · ");
+      const detail = [catalogLabel(item.category), item.rarity, item.damage, item.armor_class].filter(Boolean).join(" · ");
       return `<article class="equipment-card" data-open-item="${index}">
         <header><h3>${escapeHtml(item.name)}</h3><span>${escapeHtml(item.kind)}</span></header>
         <p>${escapeHtml(detail || item.source || "SW5e catalog")}</p>
@@ -2876,6 +2883,7 @@ document.querySelector(".compendium-nav").addEventListener("click", (event) => {
   if (!target) return;
   document.querySelectorAll(".compendium-preset").forEach((item) => item.classList.toggle("active", item === target));
   if (modePreset?.dataset.compendiumMode === "equipment") {
+    document.querySelector("#compendium-search").value = "";
     equipmentBrowser.offset = 0;
     renderEquipmentCompendium();
     return;
