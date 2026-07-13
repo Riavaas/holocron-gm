@@ -722,6 +722,7 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
   cursor: pointer;
 }
 .equipment-slot:hover, .equipment-slot.target { border-color: var(--accent); }
+.equipment-slot.selected-slot { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 2px var(--accent-soft); }
 .equipment-slot small { display: block; color: var(--muted); font-size: 8px; }
 .equipment-slot strong { display: block; overflow: hidden; margin-top: 2px; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .equipment-slot.head { left: calc(50% - 260px); top: 35px; }.equipment-slot.shoulders { right: calc(50% - 260px); top: 35px; }

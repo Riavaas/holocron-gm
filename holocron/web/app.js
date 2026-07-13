@@ -2720,8 +2720,10 @@ function renderCharacters() {
   document.querySelectorAll("[data-slot]").forEach((slot) => {
     const item = character.inventory.find((candidate) => candidate.id === character.equipped[slot.dataset.slot]);
     slot.querySelector("strong").textContent = item?.name || "Empty";
+    slot.title = item ? `${item.name} equipped. Click to inspect.` : "Empty slot";
     slot.classList.toggle("filled", Boolean(item));
     slot.classList.toggle("target", Boolean(characterState.selectedItemId && character.inventory.find((candidate) => candidate.id === characterState.selectedItemId)?.slot === slot.dataset.slot));
+    slot.classList.toggle("selected-slot", Boolean(item && item.id === characterState.selectedItemId));
   });
   document.querySelectorAll("[data-body-fill]").forEach((part) => {
     const slots = part.dataset.bodyFill === "hands" ? ["hands", "mainHand", "offHand"] : [part.dataset.bodyFill];
@@ -2830,7 +2832,7 @@ document.querySelector(".paper-doll").addEventListener("click", (event) => {
     character.equipped[slot.dataset.slot] = selected.id;
     characterState.selectedItemId = null;
   } else if (!selected && character.equipped[slot.dataset.slot]) {
-    delete character.equipped[slot.dataset.slot];
+    characterState.selectedItemId = character.equipped[slot.dataset.slot];
   }
   saveCharacters();
   renderCharacters();
