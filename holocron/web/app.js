@@ -68,6 +68,7 @@ state.pendingNotePin = null;
 state.panStart = null;
 state.assetFilterMode = null;
 state.imageBookFilters = null;
+state.eraserTarget = null;
   state.panelLayout = {
   ...defaults.panelLayout,
   ...(state.panelLayout || {}),
@@ -136,6 +137,7 @@ function sessionSnapshot() {
   delete clean.panStart;
   delete clean.assetFilterMode;
   delete clean.imageBookFilters;
+  delete clean.eraserTarget;
   delete clean.mapImmersive;
   return clean;
 }
@@ -497,6 +499,63 @@ function drawNotePins() {
   }
 }
 
+function eraserTargetLabel(target) {
+  const labels = {
+    tokens: "Token",
+    notePins: "Note pin",
+    pings: "Ping",
+    walls: "Wall",
+    doors: "Door",
+  };
+  return labels[target?.type] || "Object";
+}
+
+function drawEraserTarget() {
+  if (state.tool !== "eraser" || !state.eraserTarget) return;
+  const { type, item } = state.eraserTarget;
+  if (!item) return;
+  ctx.save();
+  ctx.strokeStyle = "#c40f0f";
+  ctx.fillStyle = "rgba(196, 15, 15, .12)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  let labelPoint;
+  if (type === "walls" || type === "doors") {
+    const start = screenPoint(item.start);
+    const end = screenPoint(item.end);
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+    labelPoint = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+  } else {
+    const point = screenPoint(item);
+    const radius = type === "tokens" ? Math.max(16, state.gridSize * state.zoom * .55) : Math.max(12, 18 * state.zoom);
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    labelPoint = { x: point.x, y: point.y - radius - 10 };
+  }
+  ctx.setLineDash([]);
+  ctx.font = "800 10px system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const label = `Erase ${eraserTargetLabel(state.eraserTarget)}`;
+  const metrics = ctx.measureText(label);
+  const labelX = labelPoint.x - metrics.width / 2 - 7;
+  const labelY = labelPoint.y - 10;
+  const labelWidth = metrics.width + 14;
+  ctx.fillStyle = "rgba(255,255,255,.94)";
+  ctx.strokeStyle = "rgba(196,15,15,.35)";
+  ctx.lineWidth = 1;
+  ctx.fillRect(labelX, labelY, labelWidth, 20);
+  ctx.strokeRect(labelX, labelY, labelWidth, 20);
+  ctx.fillStyle = "#c40f0f";
+  ctx.fillText(label, labelPoint.x, labelPoint.y);
+  ctx.restore();
+}
+
 function updateMapEmptyState() {
   emptyState.hidden = Boolean(
     state.image
@@ -534,6 +593,7 @@ function draw() {
   }
   if (state.layers.tokens) state.tokens.forEach(drawToken);
   drawMeasurement();
+  drawEraserTarget();
 }
 
 function measurementResult() {
@@ -1385,8 +1445,10 @@ function syncMapActionControls() {
 
 document.querySelectorAll("[data-tool]").forEach((button) => button.addEventListener("click", () => {
   state.tool = button.dataset.tool;
+  state.eraserTarget = null;
   document.querySelectorAll("[data-tool]").forEach((item) => item.classList.toggle("active", item === button));
   updateMapCursor();
+  draw();
   persist();
 }));
 
@@ -1411,6 +1473,7 @@ canvas.addEventListener("pointerdown", (event) => {
   state.pointer = point;
   if (state.tool === "eraser") {
     eraseMapElement(point);
+    state.eraserTarget = null;
     state.pointer = null;
     persist();
     draw();
@@ -1463,6 +1526,11 @@ canvas.addEventListener("pointermove", (event) => {
     draw();
     return;
   }
+  if (state.tool === "eraser") {
+    state.eraserTarget = findEraserTarget(worldPoint(event));
+    draw();
+    return;
+  }
   if (!state.pointer) return;
   const point = worldPoint(event);
   if (state.measurement) state.measurement.end = point;
@@ -1503,7 +1571,15 @@ canvas.addEventListener("pointercancel", () => {
   state.pointer = null;
   state.draggedToken = null;
   state.panStart = null;
+  state.eraserTarget = null;
   updateMapCursor();
+  draw();
+});
+
+canvas.addEventListener("pointerleave", () => {
+  if (state.tool !== "eraser" || !state.eraserTarget) return;
+  state.eraserTarget = null;
+  draw();
 });
 
 canvas.addEventListener("wheel", (event) => {
@@ -1640,24 +1716,30 @@ function distanceToSegment(point, segment) {
   return Math.hypot(point.x - (segment.start.x + t * (segment.end.x - segment.start.x)), point.y - (segment.start.y + t * (segment.end.y - segment.start.y)));
 }
 
-function eraseMapElement(point) {
+function findEraserTarget(point) {
   const threshold = Math.max(16 / state.zoom, state.gridSize * .22);
   const targets = [
-    ...state.tokens.map((item, index) => ({ type: "tokens", index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
-    ...state.notePins.map((item, index) => ({ type: "notePins", index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
-    ...state.pings.map((item, index) => ({ type: "pings", index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
-    ...state.walls.map((item, index) => ({ type: "walls", index, distance: distanceToSegment(point, item) })),
-    ...state.doors.map((item, index) => ({ type: "doors", index, distance: distanceToSegment(point, item) })),
+    ...state.tokens.map((item, index) => ({ type: "tokens", item, index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
+    ...state.notePins.map((item, index) => ({ type: "notePins", item, index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
+    ...state.pings.map((item, index) => ({ type: "pings", item, index, distance: Math.hypot(item.x - point.x, item.y - point.y) })),
+    ...state.walls.map((item, index) => ({ type: "walls", item, index, distance: distanceToSegment(point, item) })),
+    ...state.doors.map((item, index) => ({ type: "doors", item, index, distance: distanceToSegment(point, item) })),
   ].sort((a, b) => a.distance - b.distance);
   const target = targets[0];
-  if (!target || target.distance > threshold) return;
+  return target?.distance <= threshold ? target : null;
+}
+
+function eraseMapElement(point) {
+  const target = findEraserTarget(point);
+  if (!target) return false;
   if (target.type === "tokens") {
     const [token] = state.tokens.splice(target.index, 1);
     if (token?.combatantId) state.combatants = state.combatants.filter((combatant) => combatant.id !== token.combatantId);
     renderInitiative();
-    return;
+    return true;
   }
   state[target.type].splice(target.index, 1);
+  return true;
 }
 document.querySelector("#token-library").addEventListener("click", (event) => {
   const detailButton = event.target.closest("[data-open-creature]");
