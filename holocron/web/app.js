@@ -3580,13 +3580,18 @@ async function generateShopkeeper() {
     if (!response.ok) throw new Error("Shop unavailable");
     const payload = await response.json();
     generatedShopWares = payload.wares || [];
+    const departments = (payload.departments || []).map(([name, count]) => `<span>${escapeHtml(catalogLabel(name))}<strong>${count}</strong></span>`).join("");
+    const priceLabel = payload.price_modifier ? `${Math.round(Number(payload.price_modifier) * 100)}% street price` : "table price";
     output.innerHTML = `
-      <div class="shopkeeper-title"><strong>${escapeHtml(payload.name)}</strong><span>${escapeHtml(payload.settlement)} · ${escapeHtml(payload.allegiance)} · ${escapeHtml(payload.wealth)}</span></div>
+      <div class="shopkeeper-title"><strong>${escapeHtml(payload.name)}</strong><span>${escapeHtml(payload.settlement)} · ${escapeHtml(payload.allegiance)} · ${escapeHtml(payload.wealth)} · ${escapeHtml(priceLabel)}</span></div>
+      <p class="shopkeeper-pitch">${escapeHtml(payload.pitch || "A practical merchant with a rotating stock of local wares.")}</p>
+      ${departments ? `<div class="shopkeeper-departments">${departments}</div>` : ""}
       ${generatedShopWares.map((item, index) => {
         const detail = [catalogLabel(item.category), item.rarity, item.damage].filter(Boolean).join(" · ");
+        const cost = item.shop_cost ?? item.cost;
         return `<div class="loot-line interactive-loot" data-open-shop-item="${index}">
           <span>${escapeHtml(item.name)}</span>
-          <strong>${escapeHtml(detail || `${Number(item.cost || 0).toLocaleString()} cr`)}</strong>
+          <strong>${escapeHtml(detail || "SW5e")} · ${Number(cost || 0).toLocaleString()} cr</strong>
           <span class="loot-actions">
             <button data-open-shop-item="${index}" title="Open item sheet" type="button">⌕</button>
             <button data-add-shop-item="${index}" title="Add to active character" type="button">＋</button>

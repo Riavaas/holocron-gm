@@ -244,6 +244,34 @@ def test_item_catalog_caps_enhanced_loot_rarity(monkeypatch):
     assert rarities <= {"Unenhanced", "Standard", "Premium"}
 
 
+def test_shopkeeper_adds_identity_departments_and_prices(monkeypatch):
+    from holocron.api.routes import catalog
+
+    monkeypatch.setattr(
+        catalog,
+        "load_item_catalog",
+        lambda: (
+            {"id": "blaster", "name": "Hold-out Blaster", "category": "Weapon", "kind": "equipment", "cost": 1000, "description": "stealth weapon"},
+            {"id": "medpac", "name": "Medpac", "category": "Medical", "kind": "equipment", "cost": 50, "description": "field med tool"},
+            {"id": "cloak", "name": "Stealth Field", "category": "Gadget", "kind": "enhanced", "rarity": "Premium", "description": "stealth"},
+        ),
+    )
+    client = TestClient(app)
+
+    response = client.get(
+        "/api/catalog/items/shopkeeper",
+        params={"settlement": "city", "allegiance": "outlaws", "wealth": "black-market", "seed": 4},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["name"] == "Back-Room Exchange"
+    assert payload["price_modifier"] == 1.45
+    assert payload["pitch"]
+    assert payload["departments"]
+    assert any(item.get("shop_cost") == 1450 for item in payload["wares"] if item["id"] == "blaster")
+
+
 def test_books_library_and_inline_reader(tmp_path, monkeypatch):
     books = tmp_path / "Books"
     books.mkdir()

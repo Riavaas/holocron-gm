@@ -80,6 +80,12 @@ def shopkeeper_items(
     catalog = _catalog_or_503()
     size_counts = {"outpost": 8, "village": 12, "town": 20, "city": 32, "metropolis": 48}
     wealth_caps = {"poor": 500, "modest": 3000, "wealthy": 18000, "black-market": 60000}
+    price_modifiers = {
+        "poor": .75,
+        "modest": 1.0,
+        "wealthy": 1.15,
+        "black-market": 1.45,
+    }
     allowed = [
         item for item in catalog
         if int(item.get("cost") or 0) <= wealth_caps.get(wealth, 3000)
@@ -102,6 +108,10 @@ def shopkeeper_items(
     rng = random.Random(seed)
     count = size_counts.get(settlement, 20)
     wares = rng.sample(allowed, min(count, len(allowed))) if allowed else []
+    departments: dict[str, int] = {}
+    for item in wares:
+        category = str(item.get("category") or item.get("kind") or "Misc")
+        departments[category] = departments.get(category, 0) + 1
     shop_names = {
         "empire": "Quartermaster Annex",
         "republic": "Relief Depot",
@@ -109,12 +119,29 @@ def shopkeeper_items(
         "poor": "Scrap Counter",
         "neutral": "Dockside Provisions",
     }
+    pitch_templates = {
+        "empire": "Clean ledgers, serialized gear, and a clerk who notices forged permits.",
+        "republic": "Relief crates, field repairs, and a preference for buyers with a cause.",
+        "outlaws": "No questions, no refunds, and a quiet surcharge for anything traceable.",
+        "poor": "Salvaged shelves, barter welcome, and every working component already has a story.",
+        "neutral": "Practical wares for travelers who need to leave before docking fees climb.",
+    }
+    adjusted_wares = []
+    price_modifier = price_modifiers.get(wealth, 1.0)
+    for item in wares:
+        priced = dict(item)
+        if priced.get("kind") == "equipment":
+            priced["shop_cost"] = max(1, round(int(priced.get("cost") or 0) * price_modifier))
+        adjusted_wares.append(priced)
     return {
         "name": shop_names.get(allegiance, "Dockside Provisions"),
         "settlement": settlement,
         "allegiance": allegiance,
         "wealth": wealth,
-        "wares": wares,
+        "price_modifier": price_modifier,
+        "pitch": pitch_templates.get(allegiance, pitch_templates["neutral"]),
+        "departments": sorted(departments.items(), key=lambda item: (-item[1], item[0])),
+        "wares": adjusted_wares,
     }
 
 
