@@ -3225,7 +3225,12 @@ function compendiumExcerptHtml(excerpt) {
   if (/\|\s*:?-{3,}/.test(excerpt)) {
     return "<p>This result is a reference index. Use the source citation to open the corresponding structured entry.</p>";
   }
-  return markdownToHtml(excerpt);
+  const normalized = String(excerpt || "")
+    .replace(/\s+(#{1,3}\s+)/g, "\n$1")
+    .replace(/\s+([*-]\s+)/g, "\n$1")
+    .replace(/^(#{2,3}\s+(?:Source|Summary|Key Rules|Search Tags|GM Notes|Quick Identity|Stat Summary|Actions|Traits|Defenses|When Used|Quick Rule|Quick Effect|Mechanical Effects|GM Use))\s+/gm, "$1\n")
+    .trim();
+  return markdownToHtml(normalized);
 }
 
 function compendiumResultMeta(item) {
