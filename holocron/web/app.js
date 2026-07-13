@@ -3672,6 +3672,23 @@ const npcRoleTemplates = {
   "Informant": { ac: 13, hp: 18, cr: "1/4", actions: ["Concealed Holdout", "Disengage", "Signal Contact"], abilities: { str: "8", dex: "15", con: "10", int: "14", wis: "14", cha: "13" } },
   "Force Adept": { ac: 15, hp: 38, cr: "3", actions: ["Saber Strike", "Force Push", "Mind Trick", "Deflect"], abilities: { str: "11", dex: "15", con: "13", int: "12", wis: "16", cha: "14" } },
 };
+const npcSpeciesTerms = {
+  Human: ["human", "near-human"],
+  Zabrak: ["zabrak", "dathomirian", "iridonian"],
+  Duros: ["duros"],
+  "Twi'lek": ["twi'lek", "twilek", "rutian", "lethan"],
+  Wookiee: ["wookiee", "wookie", "kashyyyk"],
+  Rodian: ["rodian"],
+  Chiss: ["chiss"],
+  Bothan: ["bothan"],
+  "Mon Calamari": ["mon calamari", "mon cala", "calamari"],
+  Nautolan: ["nautolan"],
+  Mirialan: ["mirialan"],
+  Togruta: ["togruta"],
+  Trandoshan: ["trandoshan", "trandosha"],
+  Weequay: ["weequay"],
+  Ithorian: ["ithorian"],
+};
 const npcQuirks = [
   "Never sits with their back to a door.",
   "Collects obsolete navigation chips.",
@@ -3906,6 +3923,8 @@ async function loadNpcBestiary() {
 async function loadNpcPortraitAsset(species, role) {
   const cacheKey = `${species}:${role}`;
   if (npcPortraitCache.has(cacheKey)) return npcPortraitCache.get(cacheKey);
+  const speciesTerms = npcSpeciesTerms[species] || [species.toLowerCase()];
+  const roleTerms = npcRoleTerms[role] || [role.toLowerCase()];
   const queries = [
     `${species} ${role}`,
     species,
@@ -3915,8 +3934,16 @@ async function loadNpcPortraitAsset(species, role) {
       const response = await fetch(`/api/assets/external?asset_type=tokens&q=${encodeURIComponent(query)}&limit=12`);
       const payload = response.ok ? await response.json() : { items: [] };
       const illustrated = (payload.items || []).filter((item) => imageUrlFor(item));
-      if (illustrated.length) {
-        const picked = randomItem(illustrated);
+      const speciesMatches = illustrated.filter((item) => {
+        const haystack = `${item.name || ""} ${item.resource || ""} ${item.tags || ""} ${item.source_id || ""}`.toLowerCase();
+        return speciesTerms.some((term) => haystack.includes(term));
+      });
+      const roleSpeciesMatches = speciesMatches.filter((item) => {
+        const haystack = `${item.name || ""} ${item.resource || ""} ${item.tags || ""} ${item.source_id || ""}`.toLowerCase();
+        return roleTerms.some((term) => haystack.includes(term));
+      });
+      const picked = randomItem(roleSpeciesMatches.length ? roleSpeciesMatches : speciesMatches);
+      if (picked) {
         npcPortraitCache.set(cacheKey, picked);
         return picked;
       }
@@ -3952,6 +3979,12 @@ function roleTemplate(role) {
   };
 }
 
+function npcCatalogMatchesSpecies(item, species) {
+  const terms = npcSpeciesTerms[species] || [String(species || "").toLowerCase()];
+  const haystack = `${item.name || ""} ${item.type || ""} ${(item.roles || []).join(" ")} ${(item.factions || []).join(" ")} ${(item.environments || []).join(" ")}`.toLowerCase();
+  return terms.some((term) => haystack.includes(term));
+}
+
 async function generateNpc() {
   const species = document.querySelector("#npc-species").value || randomItem(Object.keys(speciesNamePatterns));
   const role = document.querySelector("#npc-role").value || randomItem(npcRoles);
@@ -3964,9 +3997,13 @@ async function generateNpc() {
     return terms.some((term) => haystack.includes(term));
   });
   const humanoidRoleMatches = roleMatches.filter((item) => humanoidTypes.has(item.type));
-  const speciesMatches = catalog.filter((item) => item.name.toLowerCase().includes(species.toLowerCase()) || String(item.type || "").toLowerCase().includes(species.toLowerCase()));
+  const speciesMatches = catalog.filter((item) => npcCatalogMatchesSpecies(item, species));
   const speciesRoleMatches = speciesMatches.filter((item) => roleMatches.includes(item));
-  const candidatePool = speciesRoleMatches.length ? speciesRoleMatches : humanoidRoleMatches;
+  const candidatePool = speciesRoleMatches.length ? speciesRoleMatches : speciesMatches.length ? speciesMatches : humanoidRoleMatches;
+  const candidateMatch = speciesRoleMatches.length ? "species + role"
+    : speciesMatches.length ? "species stat block"
+      : humanoidRoleMatches.length ? "role stat block"
+        : "generated role profile";
   const candidate = candidatePool.length ? randomItem(candidatePool) : roleTemplate(role);
   const abilities = candidate?.abilities || candidate?.stat_block?.abilities || {};
   const attributes = ["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((label) => {
@@ -3981,11 +4018,11 @@ async function generateNpc() {
   const distinction = randomItem(npcDistinctions);
   const secret = randomItem(npcSecrets);
   generatedNpc = candidate
-    ? { ...candidate, name, type: "enemy", creatureType: candidate.type, npcRole: role, npcSpecies: species, npcQuirk: quirk, npcHook: hook, npcDistinction: distinction, npcSecret: secret, imageUrl: portraitUrl }
-    : { name, type: "enemy", hp: 12, ac: 12, cr: "1/4", actions, abilities, npcRole: role, npcSpecies: species, npcQuirk: quirk, npcHook: hook, npcDistinction: distinction, npcSecret: secret, imageUrl: portraitUrl };
+    ? { ...candidate, name, type: "enemy", creatureType: candidate.type, npcRole: role, npcSpecies: species, npcTemplateMatch: candidateMatch, npcPortraitMatch: portraitAsset?.name || "", npcQuirk: quirk, npcHook: hook, npcDistinction: distinction, npcSecret: secret, imageUrl: portraitUrl }
+    : { name, type: "enemy", hp: 12, ac: 12, cr: "1/4", actions, abilities, npcRole: role, npcSpecies: species, npcTemplateMatch: candidateMatch, npcPortraitMatch: portraitAsset?.name || "", npcQuirk: quirk, npcHook: hook, npcDistinction: distinction, npcSecret: secret, imageUrl: portraitUrl };
   document.querySelector("#npc-output").innerHTML = `
     ${portraitUrl ? `<img class="npc-portrait" src="${escapeHtml(portraitUrl)}" alt="${escapeHtml(name)}">` : '<canvas id="npc-portrait-canvas" class="npc-portrait" width="144" height="144"></canvas>'}
-    <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(quirk)}</p>${candidate ? `<small>Template: ${escapeHtml(candidate.name)} · CR ${escapeHtml(candidate.cr || "—")}</small>` : "<small>Template: local fallback</small>"}</div>`;
+    <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(species)} · ${escapeHtml(role)}</p><p>${escapeHtml(quirk)}</p>${candidate ? `<small>Template: ${escapeHtml(candidate.name)} · ${escapeHtml(candidateMatch)} · CR ${escapeHtml(candidate.cr || "—")}</small>` : "<small>Template: local fallback</small>"}</div>`;
   if (!portraitUrl) drawNpcPortrait(species, name);
   document.querySelector("#npc-attributes").innerHTML = attributes.map((attribute) =>
     `<span>${attribute.label}<strong>${attribute.value}</strong></span>`
@@ -3996,7 +4033,8 @@ async function generateNpc() {
   document.querySelector("#npc-hook").textContent = hook;
   document.querySelector("#npc-storyline").innerHTML = `
     <p><strong>Distinction</strong> ${escapeHtml(distinction)}</p>
-    <p><strong>GM secret</strong> ${escapeHtml(secret)}</p>`;
+    <p><strong>GM secret</strong> ${escapeHtml(secret)}</p>
+    <p><strong>Asset match</strong> ${escapeHtml(portraitAsset?.name || (portraitUrl ? "matched creature art" : "generated species portrait"))}</p>`;
   document.querySelector("#npc-open-sheet").disabled = false;
   document.querySelector("#npc-save-note").disabled = false;
   document.querySelector("#npc-to-encounter").disabled = false;
