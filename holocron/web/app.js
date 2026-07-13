@@ -2445,6 +2445,8 @@ function renderCharacters() {
   const ac = characterArmorClass(character, equippedItems);
   const attack = equippedItems.reduce((total, item) => total + (item.attack || 0), 0);
   const weight = character.inventory.reduce((total, item) => total + item.weight, 0);
+  const equippedIds = new Set(Object.values(character.equipped));
+  const cargoItems = character.inventory.filter((item) => !equippedIds.has(item.id));
   document.querySelector("#character-ac").textContent = ac;
   document.querySelector("#character-attack").textContent = `${attack >= 0 ? "+" : ""}${attack}`;
   document.querySelector("#character-weight").textContent = weight;
@@ -2462,12 +2464,14 @@ function renderCharacters() {
     part.classList.toggle("filled", slots.some((slot) => Boolean(character.equipped[slot])));
   });
   document.querySelector("#character-stash").innerHTML = character.inventory
-    .filter((item) => !Object.values(character.equipped).includes(item.id))
+    .filter((item) => !equippedIds.has(item.id))
     .map((item) => `
       <button class="stash-item ${item.id === characterState.selectedItemId ? "selected" : ""}" data-item-id="${item.id}">
         <strong>${escapeHtml(item.name)}</strong>
         <span>${item.slot ? escapeHtml(item.slot) : "cargo"} · ${item.weight} lb${item.ac ? ` · +${item.ac} AC` : ""}${item.attack ? ` · +${item.attack} attack` : ""}</span>
-      </button>`).join("");
+      </button>`).join("") || `<p class="stash-empty">${character.inventory.length ? "All carried gear is currently equipped." : "No cargo yet. Add gear from the SW5e catalog or create a custom item."}</p>`;
+  document.querySelector("#stash-summary").textContent = `${equippedItems.length} equipped · ${cargoItems.length} cargo`;
+  document.querySelector(".character-roster .notes-sidebar-header").title = `${equippedItems.length} equipped · ${cargoItems.length} cargo`;
   document.querySelector("#resource-rings").innerHTML = Object.entries(character.resources).map(([key, resource]) => `
     <div class="resource-ring" style="--fill:${Math.max(0, Math.min(100, resource.value / resource.max * 100))}%;--ring-color:${resource.color}">
       <div class="resource-ring-inner">

@@ -656,6 +656,7 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .stash-item.selected { border-color: var(--accent); background: var(--accent-soft); }
 .stash-item strong, .stash-item span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stash-item strong { font-size: 10px; }.stash-item span { color: var(--muted); font-size: 8px; }
+.stash-empty { min-width: 150px; margin: 0; padding: 10px; border: 1px dashed var(--line); color: var(--muted); font-size: 10px; line-height: 1.45; }
 .character-tracker section { padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
 .resource-rings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .resource-ring { display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%; background: conic-gradient(var(--ring-color) var(--fill), var(--line) 0); }

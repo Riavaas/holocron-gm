@@ -237,7 +237,7 @@
 
   <main id="characters-view" class="characters-workspace" hidden>
     <aside class="character-roster">
-      <div class="notes-sidebar-header"><h2>Stash & cargo</h2><button id="add-inventory-item" class="icon-button" title="Add item">＋</button></div>
+      <div class="notes-sidebar-header"><h2>Stash & cargo</h2><span id="stash-summary">0 equipped · 0 cargo</span><button id="add-inventory-item" class="icon-button" title="Add item">＋</button></div>
       <div id="character-stash" class="character-stash"></div>
     </aside>
     <section class="character-main">
@@ -628,7 +628,7 @@
       <div class="dialog-heading"><h2>Add inventory item</h2><button type="button" class="icon-button" data-close-dialog="inventory-dialog">×</button></div>
       <label>Name<input name="name" required maxlength="60"></label>
       <div class="field-row"><label>Weight<input name="weight" type="number" min="0" step=".1" value="1"></label><label>Value<input name="value" type="number" min="0" value="100"></label></div>
-      <label>Slot<select name="slot"><option value="">Cargo</option><option value="head">Head</option><option value="chest">Chest</option><option value="back">Back</option><option value="mainHand">Main hand</option><option value="offHand">Off hand</option><option value="cybernetic">Cybernetic</option></select></label>
+      <label>Slot<select name="slot"><option value="">Cargo</option><option value="head">Head</option><option value="shoulders">Shoulders</option><option value="chest">Chest</option><option value="back">Back</option><option value="hands">Hands</option><option value="belt">Belt</option><option value="legs">Legs</option><option value="feet">Feet</option><option value="mainHand">Main hand</option><option value="offHand">Off hand</option><option value="cybernetic">Cybernetic</option></select></label>
       <button class="primary-button">Add item</button>
     </form>
   </dialog>
