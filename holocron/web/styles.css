@@ -1033,7 +1033,7 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .equipment-card dl { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 4px 8px; margin: 0; font-size: 9px; }
 .equipment-card dt { color: var(--muted); }
 .equipment-card dd { margin: 0; color: var(--text); }
-.equipment-card footer { display: flex; justify-content: flex-end; }
+.equipment-card footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 .equipment-card footer .secondary-button { min-height: 26px; padding: 0 8px; font-size: 9px; }
 .property-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .property-chips button { padding: 2px 6px; border: 0; border-bottom: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 9px; font-weight: 700; cursor: pointer; }

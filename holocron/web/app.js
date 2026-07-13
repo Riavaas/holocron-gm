@@ -3409,7 +3409,10 @@ async function renderEquipmentCompendium() {
         <dl><dt>Cost</dt><dd>${Number(item.cost || 0).toLocaleString()} cr</dd><dt>Weight</dt><dd>${item.weight || 0} lb</dd></dl>
         <div class="property-chips">${properties.slice(0, 8).map(propertyChipMarkup).join("")}</div>
         <small>${escapeHtml((item.description || "").replace(/\s+/g, " ").slice(0, 260))}</small>
-        <footer><button class="secondary-button" data-save-item-result="${index}" type="button">Save item note</button></footer>
+        <footer>
+          <button class="secondary-button" data-add-compendium-item="${index}" type="button">Add to character</button>
+          <button class="secondary-button" data-save-item-result="${index}" type="button">Save item note</button>
+        </footer>
       </article>`;
     }).join("") || '<p class="loading-line">No matching equipment.</p>';
   } catch {
@@ -3475,6 +3478,15 @@ document.querySelector("#compendium-results").addEventListener("click", (event) 
   if (saveItem) {
     event.stopPropagation();
     saveCompendiumItemAsNote(saveItem.dataset.saveItemResult);
+    return;
+  }
+  const addItem = event.target.closest("[data-add-compendium-item]");
+  if (addItem) {
+    event.stopPropagation();
+    const item = compendiumItemCache[Number(addItem.dataset.addCompendiumItem)];
+    if (!addCatalogItemToCharacter(item)) return;
+    addItem.textContent = "Added";
+    addItem.disabled = true;
     return;
   }
   const property = event.target.closest("[data-property-search]");
