@@ -155,6 +155,17 @@ def shopkeeper_items(
         if priced.get("kind") == "equipment":
             priced["shop_cost"] = max(1, round(int(priced.get("cost") or 0) * price_modifier))
         adjusted_wares.append(priced)
+    departments_detail: dict[str, list[dict[str, object]]] = {}
+    for item in adjusted_wares:
+        category = str(item.get("category") or item.get("kind") or "Misc")
+        departments_detail.setdefault(category, []).append(item)
+    for entries in departments_detail.values():
+        entries.sort(key=lambda item: (str(item.get("rarity") or "Unenhanced"), str(item.get("name") or "")))
+    rare_stock = sorted(
+        [item for item in adjusted_wares if _rarity_index(item.get("rarity")) >= _rarity_index("Prototype")],
+        key=lambda item: (_rarity_index(item.get("rarity")), int(item.get("shop_cost") or item.get("cost") or 0)),
+        reverse=True,
+    )[:5]
     return {
         "name": shop_names.get(allegiance, "Dockside Provisions"),
         "settlement": settlement,
@@ -164,6 +175,11 @@ def shopkeeper_items(
         "pitch": pitch_templates.get(allegiance, pitch_templates["neutral"]),
         "policy": policies.get(allegiance, policies["neutral"]),
         "departments": sorted(departments.items(), key=lambda item: (-item[1], item[0])),
+        "department_wares": [
+            {"category": category, "items": items}
+            for category, items in sorted(departments_detail.items(), key=lambda item: (-len(item[1]), item[0]))
+        ],
+        "rare_stock": rare_stock,
         "wares": adjusted_wares,
     }
 

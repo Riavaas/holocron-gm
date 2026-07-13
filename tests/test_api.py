@@ -259,6 +259,7 @@ def test_shopkeeper_adds_identity_departments_and_prices(monkeypatch):
             {"id": "blaster", "name": "Hold-out Blaster", "category": "Weapon", "kind": "equipment", "cost": 1000, "description": "stealth weapon"},
             {"id": "medpac", "name": "Medpac", "category": "Medical", "kind": "equipment", "cost": 50, "description": "field med tool"},
             {"id": "cloak", "name": "Stealth Field", "category": "Gadget", "kind": "enhanced", "rarity": "Premium", "description": "stealth"},
+            {"id": "phase-cutter", "name": "Phase Cutter", "category": "Weapon", "kind": "enhanced", "rarity": "Prototype", "description": "stealth blade"},
         ),
     )
     client = TestClient(app)
@@ -275,6 +276,9 @@ def test_shopkeeper_adds_identity_departments_and_prices(monkeypatch):
     assert payload["pitch"]
     assert "favors" in payload["policy"]
     assert payload["departments"]
+    assert payload["department_wares"]
+    assert any(department["category"] == "Weapon" for department in payload["department_wares"])
+    assert any(item["id"] == "phase-cutter" for item in payload["rare_stock"])
     assert any(item.get("shop_cost") == 1450 for item in payload["wares"] if item["id"] == "blaster")
 
 

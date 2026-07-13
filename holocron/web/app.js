@@ -3977,23 +3977,39 @@ async function generateShopkeeper() {
     document.querySelector("#save-shopkeeper-note").disabled = generatedShopWares.length === 0;
     const departments = (payload.departments || []).map(([name, count]) => `<span>${escapeHtml(catalogLabel(name))}<strong>${count}</strong></span>`).join("");
     const priceLabel = payload.price_modifier ? `${Math.round(Number(payload.price_modifier) * 100)}% street price` : "table price";
+    const shopItemIndex = (item) => generatedShopWares.findIndex((candidate) =>
+      candidate.id === item.id
+      && candidate.name === item.name
+      && candidate.category === item.category
+      && candidate.kind === item.kind
+      && candidate.rarity === item.rarity
+    );
+    const shopLine = (item) => {
+      const index = shopItemIndex(item);
+      const detail = [catalogLabel(item.category), item.rarity, item.damage].filter(Boolean).join(" · ");
+      const cost = item.shop_cost ?? item.cost;
+      return `<div class="loot-line interactive-loot" data-open-shop-item="${index}">
+        <span>${escapeHtml(item.name)}</span>
+        <strong>${escapeHtml(detail || "SW5e")} · ${Number(cost || 0).toLocaleString()} cr</strong>
+        <span class="loot-actions">
+          <button data-open-shop-item="${index}" title="Open item sheet" type="button">⌕</button>
+          <button data-add-shop-item="${index}" title="Add to active character" type="button">＋</button>
+        </span>
+      </div>`;
+    };
+    const rareStock = (payload.rare_stock || []).map((item) => `<span>${escapeHtml(item.name)} <strong>${escapeHtml(item.rarity || "rare")}</strong></span>`).join("");
+    const departmentShelves = (payload.department_wares || []).map((department) => `
+      <section class="shopkeeper-shelf">
+        <h3>${escapeHtml(catalogLabel(department.category))}<span>${department.items.length}</span></h3>
+        ${department.items.slice(0, 8).map(shopLine).join("")}
+      </section>`).join("");
     output.innerHTML = `
       <div class="shopkeeper-title"><strong>${escapeHtml(payload.name)}</strong><span>${escapeHtml(payload.settlement)} · ${escapeHtml(payload.allegiance)} · ${escapeHtml(payload.wealth)} · ${escapeHtml(priceLabel)}</span></div>
       <p class="shopkeeper-pitch">${escapeHtml(payload.pitch || "A practical merchant with a rotating stock of local wares.")}</p>
       ${payload.policy ? `<p class="shopkeeper-policy">${escapeHtml(payload.policy)}</p>` : ""}
       ${departments ? `<div class="shopkeeper-departments">${departments}</div>` : ""}
-      ${generatedShopWares.map((item, index) => {
-        const detail = [catalogLabel(item.category), item.rarity, item.damage].filter(Boolean).join(" · ");
-        const cost = item.shop_cost ?? item.cost;
-        return `<div class="loot-line interactive-loot" data-open-shop-item="${index}">
-          <span>${escapeHtml(item.name)}</span>
-          <strong>${escapeHtml(detail || "SW5e")} · ${Number(cost || 0).toLocaleString()} cr</strong>
-          <span class="loot-actions">
-            <button data-open-shop-item="${index}" title="Open item sheet" type="button">⌕</button>
-            <button data-add-shop-item="${index}" title="Add to active character" type="button">＋</button>
-          </span>
-        </div>`;
-      }).join("")}`;
+      ${rareStock ? `<div class="shopkeeper-rare"><strong>Rare shelf</strong>${rareStock}</div>` : ""}
+      <div class="shopkeeper-shelves">${departmentShelves || generatedShopWares.map(shopLine).join("")}</div>`;
   } catch {
     lastShopkeeperPayload = null;
     generatedShopWares = [];
