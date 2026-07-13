@@ -4469,6 +4469,7 @@ function renderPlayerIdentity() {
   document.querySelector("#player-hud").hidden = !playerJoined || !player;
   if (!player) return;
   const visibleTokens = state.tokens.filter(tokenVisibleToPlayer);
+  const originToken = playerVisionToken();
   const activeCombatant = state.combatants[state.activeTurn];
   const activeToken = activeCombatant ? state.tokens.find((token) => token.combatantId === activeCombatant.id) : null;
   const activeVisible = activeCombatant && (!activeToken || tokenVisibleToPlayer(activeToken));
@@ -4486,6 +4487,20 @@ function renderPlayerIdentity() {
   const turnCard = document.querySelector("#player-turn-card");
   turnCard.hidden = !activeVisible;
   if (activeVisible) turnCard.innerHTML = `<span>Current turn</span><strong>${escapeHtml(activeCombatant.name)}</strong>`;
+  const visionWarning = document.querySelector("#player-vision-warning");
+  visionWarning.hidden = Boolean(originToken);
+  visionWarning.textContent = originToken ? "" : "No linked token on the battlemap yet. Ask the GM to deploy your character.";
+  document.querySelector("#player-visible-list").innerHTML = visibleTokens.length ? `
+    <small>Visible actors</small>
+    ${visibleTokens.map((token) => {
+      const combatant = state.combatants.find((item) => item.id === token.combatantId);
+      const conditions = (combatant?.conditions || []).join(", ");
+      const active = combatant && activeCombatant?.id === combatant.id;
+      return `<div class="player-visible-token ${active ? "active" : ""}">
+        <strong>${escapeHtml(token.name)}</strong>
+        <span>${escapeHtml(token.type || "token")}${conditions ? ` · ${escapeHtml(conditions)}` : ""}</span>
+      </div>`;
+    }).join("")}` : "";
   document.querySelector("#player-credits").textContent = `${player.credits || 0} cr`;
   document.querySelector("#player-resources").innerHTML = Object.values(player.resources || {}).map((resource) => `
     <div class="player-resource" style="--resource-color:${resource.color}">
