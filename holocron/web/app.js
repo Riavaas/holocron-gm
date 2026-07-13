@@ -3339,6 +3339,36 @@ const flavorTone = {
   hopeful: "One small sign of repair survives here, proof that somebody still expects a future.",
   chaotic: "Plans collapse into overlapping movement, shouted warnings, and opportunities that will last only seconds.",
 };
+const flavorDetails = [
+  "A smell of hot circuitry, old rain, and cheap disinfectant clings to everything.",
+  "One nearby surface vibrates in a rhythm that does not match the machinery around it.",
+  "A small crowd keeps glancing toward the same locked door, then away again.",
+  "The lighting flickers through a warning color for half a second before returning to normal.",
+  "A battered service droid pauses, records the party, and pretends it did not.",
+  "Someone has scratched a symbol into the nearest panel recently enough that the edges are bright.",
+];
+const flavorPressures = {
+  cantina: ["A patron recognizes a bounty code and starts quietly leaving.", "The music cuts out when a private booth overloads."],
+  location: ["A patrol route is due to cross this area in under a minute.", "A hidden speaker begins asking for obsolete clearance codes."],
+  hazard: ["The danger will spread unless someone sacrifices time or position.", "A safer route appears, but it leads away from the objective."],
+  starship: ["A subsystem failure forces a choice between speed, stealth, and shields.", "A docking clamp releases before anyone gives the command."],
+  temple: ["The chamber responds to emotion before it responds to touch.", "A sealed passage opens only while someone remains separated from the group."],
+  wilderness: ["Weather closes in fast enough to erase tracks and sensor returns.", "A territorial creature is close, but not yet committed to attacking."],
+  city: ["A public announcement names the wrong suspect with convincing evidence.", "Traffic control freezes the district for a security sweep."],
+  underworld: ["A broker offers help at exactly the wrong price.", "A rival crew arrives with proof they were invited too."],
+  battlefield: ["A dying transmission reveals a flanking route before it cuts out.", "The ground itself is unstable from repeated bombardment."],
+  space: ["A sensor ghost matches the party's vector too precisely.", "Power rationing turns every scan into a visible beacon."],
+  investigation: ["The clue is real, but it was planted to make the party move quickly.", "A witness is about to disappear into a crowd or transport queue."],
+  celebration: ["The crowd hides an extraction team moving in parade formation.", "A ceremonial countdown is also the timer on someone else's plan."],
+};
+const flavorObjects = [
+  "a locked datapad with one message preview still visible",
+  "a half-repaired astromech projecting corrupted route data",
+  "a crate marked with a faction stencil that has been chemically scrubbed",
+  "a comm bead broadcasting on a channel nobody admits using",
+  "a sabacc token warm enough to suggest a hidden transmitter",
+  "a broken holo-emitter looping the same three seconds of footage",
+];
 let generatedEncounter = [];
 let generatedNpc = null;
 let generatedLootItems = [];
@@ -3665,8 +3695,18 @@ async function generateEncounter() {
 function generateFlavor() {
   const scene = document.querySelector("#flavor-scene").value;
   const tone = document.querySelector("#flavor-tone").value;
-  document.querySelector("#flavor-output").textContent = `${randomItem(flavorParts[scene])} ${flavorTone[tone]}`;
-  document.querySelector("#session-spark").textContent = randomItem(npcHooks);
+  const hook = randomItem(npcHooks);
+  const lines = [
+    randomItem(flavorParts[scene]),
+    flavorTone[tone],
+    `Sensory tell: ${randomItem(flavorDetails)}`,
+    `Immediate pressure: ${randomItem(flavorPressures[scene] || flavorPressures.location)}`,
+    `Interactive object: ${randomItem(flavorObjects)}`,
+  ];
+  document.querySelector("#flavor-output").innerHTML = lines
+    .map((line, index) => index < 2 ? `<p>${escapeHtml(line)}</p>` : `<p><strong>${escapeHtml(line.split(":")[0])}:</strong>${escapeHtml(line.slice(line.indexOf(":") + 1))}</p>`)
+    .join("");
+  document.querySelector("#session-spark").textContent = hook;
 }
 
 document.querySelector("#generate-npc").addEventListener("click", generateNpc);
@@ -3757,7 +3797,8 @@ document.querySelector("#send-encounter").addEventListener("click", () => {
   document.querySelector('[data-view="battlemap"]').click();
 });
 document.querySelector("#flavor-to-note").addEventListener("click", () => {
-  const flavor = document.querySelector("#flavor-output").textContent.trim();
+  const output = document.querySelector("#flavor-output");
+  const flavor = [...output.querySelectorAll("p")].map((line) => line.textContent.trim()).join("\n\n") || output.textContent.trim();
   if (!flavor) return;
   createNote(`Scene flavor · ${noteTimestamp()}`, `# Scene flavor\n\n${flavor}`);
   document.querySelector('[data-view="notes"]').click();

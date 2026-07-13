@@ -783,6 +783,9 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .encounter-actions-mini { display: flex; gap: 4px; }
 .encounter-actions-mini button { width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--accent); cursor: pointer; }
 .flavor-output { min-height: 190px; margin: 16px 0 10px; padding: 20px; border: 0; border-left: 2px solid var(--accent); background: var(--panel-raised); color: var(--text); font: 14px/1.7 Georgia, serif; }
+.flavor-output p { margin: 0 0 10px; }
+.flavor-output p:last-child { margin-bottom: 0; }
+.flavor-output strong { color: var(--accent); font-family: Inter, system-ui, sans-serif; font-size: 11px; text-transform: uppercase; }
 .quick-prompts { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
 .quick-prompts p { color: var(--muted); font-size: 11px; line-height: 1.6; }
 .dice-tool, .soundboard, .resource-backlog { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
