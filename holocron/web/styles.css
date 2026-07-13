@@ -804,10 +804,11 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 
 .characters-workspace { grid-template-columns: 250px minmax(650px, 1fr) 280px; }
 .character-roster #character-stash { display: grid; gap: 6px; overflow: visible; padding-bottom: 0; }
-.character-main { grid-template-rows: 76px minmax(430px, 1fr) 130px; }
-.character-header { gap: 12px; }
+.character-main { grid-template-rows: 92px minmax(430px, 1fr) 130px; }
+.character-header { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(180px, 240px) repeat(4, auto) auto auto auto; gap: 8px; align-items: center; }
 .character-header label { margin-left: 0; }
 .character-header select { width: 130px; }
+.character-header input[type="number"] { width: 58px; height: 28px; margin-left: 6px; padding: 4px 6px; }
 #character-picker { min-width: 200px; max-width: 240px; }
 .paper-doll { min-height: 430px; background: #f6f8f8; }
 .inventory-template { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
@@ -827,6 +828,12 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .character-roster .stash-item { width: 100%; flex: initial; }
 .secret-note-actions { display: grid; grid-template-columns: minmax(0, 1fr) 66px 76px; gap: 6px; }
 .secret-note-actions input, .secret-note-actions button { margin: 0; min-height: 30px; }
+.character-tracker input[type="text"] { width: 100%; margin: 5px 0 8px; }
+.character-progression { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.progression-stat { padding: 7px; border: 1px solid var(--line); background: var(--panel-raised); }
+.progression-stat span { display: block; color: var(--muted); font-size: 8px; text-transform: uppercase; }
+.progression-stat strong { color: var(--text); font-size: 13px; }
+.character-progression ul { grid-column: 1 / -1; margin: 4px 0 0; padding-left: 16px; color: var(--muted); font-size: 10px; line-height: 1.5; }
 
 .compendium-results.equipment-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); align-content: start; gap: 10px; }
 .equipment-card { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel-raised); }

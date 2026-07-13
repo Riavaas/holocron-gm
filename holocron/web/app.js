@@ -2209,6 +2209,9 @@ const defaultCharacter = {
   id: "player-1",
   name: "Kira Venn",
   species: "Human",
+  className: "Sentinel",
+  subclass: "Path of Synthesis",
+  level: 7,
   baseAc: 10,
   resources: {
     hp: { label: "HP", value: 36, max: 42, color: "#c40f0f" },
@@ -2254,6 +2257,9 @@ function normalizeCharacter(character) {
   character.cargoCapacity ||= 100;
   character.baseAc ||= 10;
   character.gmHooks ||= "";
+  character.className ||= "Fighter";
+  character.subclass ||= "";
+  character.level = Math.max(1, Math.min(20, Number(character.level || 1)));
   return character;
 }
 
@@ -2312,6 +2318,52 @@ function characterArmorClass(character, equippedItems) {
   return armorBase + equippedItems.reduce((total, item) => total + Number(item.ac || item.acBonus || 0), 0);
 }
 
+function ensureSelectOption(select, value) {
+  if (!select || !value || [...select.options].some((option) => option.value === value)) return;
+  select.add(new Option(value, value));
+}
+
+function classProgressionProfile(character) {
+  const level = Math.max(1, Math.min(20, Number(character.level || 1)));
+  const className = String(character.className || "Fighter");
+  const lowerClass = className.toLowerCase();
+  const isForce = /consular|guardian|sentinel/.test(lowerClass);
+  const isTech = /engineer|scholar|scout|operative/.test(lowerClass);
+  const isManeuver = /berserker|fighter|monk|operative|scholar|sentinel|scout/.test(lowerClass);
+  const profBonus = 2 + Math.floor((level - 1) / 4);
+  const powerLevel = level >= 17 ? "5th" : level >= 13 ? "4th" : level >= 9 ? "3rd" : level >= 5 ? "2nd" : isForce || isTech ? "1st" : "None";
+  const maneuverDice = isManeuver ? Math.min(6, Math.max(2, 2 + Math.floor((level - 1) / 4))) : 0;
+  const hitDice = /consular|scholar/.test(lowerClass) ? "d6" : /engineer|operative|scout|sentinel/.test(lowerClass) ? "d8" : "d10";
+  const source = isForce && isTech ? "Force + Tech" : isForce ? "Force" : isTech ? "Tech" : "Martial";
+  const nextTier = level < 5 ? 5 : level < 9 ? 9 : level < 13 ? 13 : level < 17 ? 17 : 20;
+  return {
+    source,
+    level,
+    profBonus,
+    hitDice,
+    powerLevel,
+    maneuverDice,
+    prompts: [
+      `${source} chassis, proficiency +${profBonus}, ${level}${hitDice} hit dice.`,
+      isForce || isTech ? `Prepare ${source.toLowerCase()} powers up to ${powerLevel} level.` : "Track attacks, stances and equipment-driven actions.",
+      isManeuver ? `Reserve ${maneuverDice} maneuver dice; refresh rules depend on the exact archetype.` : "No default maneuver dice from this class profile.",
+      level < 20 ? `Next progression checkpoint: level ${nextTier}.` : "Level 20 capstone tier.",
+    ],
+  };
+}
+
+function renderCharacterProgression(character) {
+  const profile = classProgressionProfile(character);
+  document.querySelector("#character-build-source").textContent = profile.source;
+  document.querySelector("#character-progression").innerHTML = `
+    <div class="progression-stat"><span>Level</span><strong>${profile.level}</strong></div>
+    <div class="progression-stat"><span>Prof.</span><strong>+${profile.profBonus}</strong></div>
+    <div class="progression-stat"><span>Hit dice</span><strong>${profile.hitDice}</strong></div>
+    <div class="progression-stat"><span>Powers</span><strong>${profile.powerLevel}</strong></div>
+    <div class="progression-stat"><span>Maneuvers</span><strong>${profile.maneuverDice || "-"}</strong></div>
+    <ul>${profile.prompts.map((prompt) => `<li>${escapeHtml(prompt)}</li>`).join("")}</ul>`;
+}
+
 function renderCharacters() {
   const character = currentCharacter();
   if (!character) return;
@@ -2320,6 +2372,10 @@ function renderCharacters() {
   picker.value = character.id;
   document.querySelector("#character-name").textContent = character.name;
   document.querySelector("#character-species").value = character.species;
+  ensureSelectOption(document.querySelector("#character-class"), character.className);
+  document.querySelector("#character-class").value = character.className;
+  document.querySelector("#character-level").value = character.level || 1;
+  document.querySelector("#character-subclass").value = character.subclass || "";
   const template = safeCharacterTemplate(character);
   document.querySelector("#character-template").value = template;
   document.querySelector("#character-template-image").src = `/assets/character_templates/inventory-${template}.png`;
@@ -2366,6 +2422,7 @@ function renderCharacters() {
   document.querySelector("#player-secret-note").disabled = Boolean(character.playerSecretSealed);
   document.querySelector("#seal-player-note").disabled = Boolean(character.playerSecretSealed);
   document.querySelector("#unlock-player-note").disabled = !character.playerSecretSealed;
+  renderCharacterProgression(character);
 }
 
 function characterFromPregen(pregen) {
@@ -2448,6 +2505,21 @@ document.querySelector("#resource-rings").addEventListener("click", (event) => {
 });
 document.querySelector("#character-species").addEventListener("change", (event) => {
   currentCharacter().species = event.target.value;
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#character-class").addEventListener("change", (event) => {
+  currentCharacter().className = event.target.value;
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#character-level").addEventListener("input", (event) => {
+  currentCharacter().level = Math.max(1, Math.min(20, Number(event.target.value || 1)));
+  saveCharacters();
+  renderCharacters();
+});
+document.querySelector("#character-subclass").addEventListener("input", (event) => {
+  currentCharacter().subclass = event.target.value;
   saveCharacters();
   renderCharacters();
 });
@@ -2678,10 +2750,14 @@ document.querySelector("#character-form").addEventListener("submit", (event) => 
   character.id = crypto.randomUUID();
   character.name = data.name;
   character.species = data.species;
+  character.className = data.className || "Fighter";
+  character.subclass = data.subclass || "";
+  character.level = Math.max(1, Math.min(20, Number(data.level || 1)));
   character.template = data.species === "Zabrak" ? "zabrak-male" : "human-male";
   character.inventory = [];
   character.equipped = {};
   character.credits = 500;
+  character.sharedNote = `${character.species} ${character.className}${character.subclass ? ` - ${character.subclass}` : ""}, level ${character.level}.`;
   characterState.characters.push(character);
   characterState.activeId = character.id;
   saveCharacters();
