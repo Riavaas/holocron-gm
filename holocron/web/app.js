@@ -4527,9 +4527,10 @@ initializeCampaigns();
 function renderPlayerIdentity() {
   if (!isPlayerView) return;
   const select = document.querySelector("#player-character-select");
-  select.innerHTML = playerCharacters.map((character) =>
+  select.innerHTML = playerCharacters.length ? playerCharacters.map((character) =>
     `<option value="${character.id}">${escapeHtml(character.name)} · ${escapeHtml(character.species)}</option>`
-  ).join("");
+  ).join("") : '<option value="">Waiting for GM characters</option>';
+  document.querySelector("#join-as-player").disabled = !playerCharacters.length;
   if (playerCharacters.some((character) => character.id === selectedPlayerId)) select.value = selectedPlayerId;
   const player = playerCharacters.find((character) => character.id === selectedPlayerId);
   if (playerJoined && !player) playerJoined = false;
@@ -4573,11 +4574,11 @@ function renderPlayerIdentity() {
   document.querySelector("#player-resources").innerHTML = Object.values(player.resources || {}).map((resource) => `
     <div class="player-resource" style="--resource-color:${resource.color}">
       <strong>${resource.value}/${resource.max}</strong><span>${escapeHtml(resource.label)}</span>
-    </div>`).join("");
+    </div>`).join("") || '<p class="loading-line">No tracked resources.</p>';
   const equippedIds = new Set(Object.values(player.equipped || {}));
   document.querySelector("#player-inventory").innerHTML = (player.inventory || []).map((item) => `
     <div class="player-inventory-item">${equippedIds.has(item.id) ? "Equipped · " : ""}${escapeHtml(item.name)} · ${item.weight} lb</div>
-  `).join("");
+  `).join("") || '<p class="loading-line">No visible inventory yet.</p>';
 }
 
 document.querySelector("#join-as-player").addEventListener("click", () => {
@@ -4600,7 +4601,12 @@ if (isPlayerView) {
     try {
       const response = await fetch("/api/session/state");
       const payload = await response.json();
-      if (payload.version === playerStateVersion || !Object.keys(payload.state).length) return;
+      if (!Object.keys(payload.state).length) {
+        document.querySelector("#player-sync-status").textContent = "Waiting for GM";
+        renderPlayerIdentity();
+        return;
+      }
+      if (payload.version === playerStateVersion) return;
       playerStateVersion = payload.version;
       const bundle = payload.state;
       const mapState = bundle.map || bundle;
@@ -4618,6 +4624,7 @@ if (isPlayerView) {
       resizeCanvas();
     } catch {
       // Keep the last received state visible while the GM reconnects.
+      document.querySelector("#player-sync-status").textContent = "Connection lost";
     }
   }, 500);
 }
