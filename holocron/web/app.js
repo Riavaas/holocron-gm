@@ -2880,6 +2880,17 @@ function compendiumExcerptHtml(excerpt) {
   return markdownToHtml(excerpt);
 }
 
+function compendiumResultMeta(item) {
+  const page = item.page_start
+    ? `p. ${item.page_start}${item.page_end && item.page_end !== item.page_start ? `-${item.page_end}` : ""}`
+    : "page unknown";
+  return [
+    item.knowledge_type?.replaceAll("_", " "),
+    item.source_title,
+    page,
+  ].filter(Boolean);
+}
+
 async function searchCompendium(query) {
   const input = document.querySelector("#compendium-search");
   query = (query ?? input.value).trim();
@@ -2888,6 +2899,7 @@ async function searchCompendium(query) {
   const results = document.querySelector("#compendium-results");
   document.querySelector("#equipment-filters").hidden = true;
   results.classList.remove("equipment-card-grid");
+  results.classList.add("rules-card-grid");
   results.innerHTML = '<p class="loading-line">Searching local index…</p>';
   document.querySelector("#results-count").textContent = "Searching";
   try {
@@ -2897,7 +2909,8 @@ async function searchCompendium(query) {
     document.querySelector("#results-count").textContent = `${items.length} result${items.length === 1 ? "" : "s"}`;
     results.innerHTML = items.map((item) => `
       <article class="search-result">
-        <header><h3>${escapeHtml(compendiumResultTitle(item))}</h3><span>${escapeHtml(item.knowledge_type.replaceAll("_", " "))}</span></header>
+        <header><h3>${escapeHtml(compendiumResultTitle(item))}</h3></header>
+        <div class="result-meta">${compendiumResultMeta(item).map((label) => `<span>${escapeHtml(label)}</span>`).join("")}</div>
         <div class="markdown-body">${compendiumExcerptHtml(item.excerpt)}</div>
         <footer>${escapeHtml(citationLabel(item))}</footer>
       </article>`).join("") || '<p class="loading-line">No indexed source matched this query.</p>';
@@ -3009,6 +3022,7 @@ async function renderEquipmentCompendium() {
   const results = document.querySelector("#compendium-results");
   document.querySelector("#equipment-filters").hidden = false;
   results.classList.add("equipment-card-grid");
+  results.classList.remove("rules-card-grid");
   results.innerHTML = '<p class="loading-line">Loading SW5e equipment cards...</p>';
   document.querySelector("#results-count").textContent = "Loading equipment";
   try {
