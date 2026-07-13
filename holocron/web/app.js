@@ -4661,6 +4661,48 @@ function isGenericQuestFile(file) {
     || /Link NPCs, loot, compendium entries or other files with \[\[double brackets\]\]\./i.test(content);
 }
 
+function questBriefExcerpt(file) {
+  const content = String(file.content || "").split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .slice(0, 4)
+    .join("\n");
+  return content || "- No table notes yet.";
+}
+
+function saveQuestBriefAsNote() {
+  ensureQuestState();
+  const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];
+  if (!quest) return;
+  const filesByFolder = quest.folders.map((folder) => {
+    const files = quest.files.filter((file) => inferQuestFileFolder(file, quest.folders).toLowerCase() === folder.toLowerCase());
+    return `## ${folder}
+
+${files.length ? files.map((file) => `### [[${file.title}]]
+${questBriefExcerpt(file)}`).join("\n\n") : "- Not opened yet."}`;
+  }).join("\n\n");
+  const looseFiles = quest.files.filter((file) => !quest.folders.some((folder) => inferQuestFileFolder(file, quest.folders).toLowerCase() === folder.toLowerCase()));
+  const looseSection = looseFiles.length ? `
+
+## General files
+
+${looseFiles.map((file) => `### [[${file.title}]]
+${questBriefExcerpt(file)}`).join("\n\n")}` : "";
+  createNote(`Quest brief · ${quest.title}`, `# ${quest.title}
+
+- Folders: ${quest.folders.length}
+- Files: ${quest.files.length}
+- Prepared: ${noteTimestamp()}
+
+${filesByFolder}${looseSection}
+
+## Table links
+
+${quest.folders.map((folder) => `[[${folder}]]`).join(" ")}
+`);
+  document.querySelector('[data-view="notes"]').click();
+}
+
 document.querySelector("#new-quest-episode").addEventListener("click", () => {
   const title = prompt("Episode title", `Episode ${state.quests.length + 1}: Untitled Quest`);
   if (!title) return;
@@ -4734,6 +4776,7 @@ document.querySelector("#open-quest-file").addEventListener("click", () => {
   });
   renderQuests();
 });
+document.querySelector("#save-quest-brief").addEventListener("click", saveQuestBriefAsNote);
 document.querySelector("#scaffold-quest-files").addEventListener("click", () => {
   ensureQuestState();
   const quest = state.quests.find((item) => item.id === state.activeQuestId) || state.quests[0];

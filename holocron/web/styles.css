@@ -1006,6 +1006,8 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .quest-file-window header input { width: 100%; margin: 0; border: 0; background: transparent; color: var(--text); font-weight: 800; }
 .quest-file-window textarea { width: 100%; min-height: 140px; padding: 12px; resize: vertical; border: 0; border-bottom: 1px solid var(--line); background: #fff; color: var(--text); font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .quest-file-window .note-preview { overflow-y: auto; max-height: none; padding: 16px; }
+.quest-toolbar { flex-wrap: wrap; }
+.quest-toolbar .secondary-button { flex: 0 0 auto; }
 
 .dialog-view-controls { display: flex; gap: 4px; margin-left: auto; }
 .dialog-view-controls button { width: 26px; height: 26px; border: 1px solid var(--line); background: var(--panel-raised); color: var(--muted); cursor: pointer; }
