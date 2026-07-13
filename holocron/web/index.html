@@ -127,6 +127,7 @@
         <button id="zoom-out" class="icon-button" title="Zoom out">−</button>
         <output id="zoom-output">100%</output>
         <button id="zoom-in" class="icon-button" title="Zoom in">＋</button>
+        <button class="icon-button" data-map-action="immersive" title="Immersive map view">◈</button>
         <button class="icon-button" data-map-action="fit" title="Fit entire map">□</button>
         <button class="icon-button" data-map-action="fill" title="Fill viewport">▣</button>
         <button class="icon-button" data-map-action="grid" title="Toggle grid">#</button>
@@ -134,8 +135,10 @@
         <button class="icon-button" data-map-action="focus" title="Focus map">[]</button>
         <button id="clear-measurement" class="text-button">Clear marks</button>
       </div>
+      <div id="map-state-pill" class="map-state-pill"></div>
       <div id="measurement" class="measurement" hidden></div>
       <div id="map-context-menu" class="map-context-menu" hidden>
+        <button data-map-action="immersive">Immersive map view</button>
         <button data-map-action="fit">Fit entire map</button>
         <button data-map-action="fill">Fill viewport</button>
         <button data-map-action="center">Center at 100%</button>

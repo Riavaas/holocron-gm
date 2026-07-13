@@ -260,9 +260,25 @@ input:focus, select:focus { border-color: var(--accent); }
 #map-canvas[data-cursor="select"] { cursor: default; }
 #map-canvas[data-cursor="pan"] { cursor: grab; }
 #map-canvas[data-cursor="panning"] { cursor: grabbing; }
+#map-canvas[data-cursor="erase"] { cursor: cell; }
 .workspace.map-focus .left-panel, .workspace.map-focus .right-panel { display: none; }
 .workspace.map-focus { grid-template-columns: 1fr; }
 .workspace.map-focus .map-shell { grid-column: 1; }
+.map-shell.map-locked::after {
+  content: "LOCKED";
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  padding: 5px 8px;
+  border: 1px solid rgba(196, 15, 15, .28);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .88);
+  color: var(--danger);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  pointer-events: none;
+}
 .map-empty {
   position: absolute;
   inset: 0;
@@ -291,6 +307,21 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 .map-toolbar output { min-width: 42px; text-align: center; color: var(--muted); font-size: 11px; }
 .text-button { height: 28px; border: 0; border-left: 1px solid var(--line); background: none; color: var(--muted); cursor: pointer; }
+.map-state-pill {
+  position: absolute;
+  left: 12px;
+  bottom: 56px;
+  max-width: min(420px, calc(100% - 24px));
+  padding: 5px 8px;
+  border: 1px solid rgba(255,255,255,.38);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .86);
+  color: var(--muted);
+  font-size: 10px;
+  box-shadow: 0 8px 22px rgba(0,0,0,.14);
+  pointer-events: none;
+}
+.map-state-pill:empty, .map-state-pill[hidden] { display: none; }
 .map-context-menu { position: absolute; z-index: 18; width: 172px; padding: 5px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--panel); box-shadow: 0 12px 30px rgba(0,0,0,.28); }
 .map-context-menu button { width: 100%; min-height: 30px; padding: 0 9px; border: 0; background: none; color: var(--text); font-size: 10px; text-align: left; cursor: pointer; }
 .map-context-menu button:hover { background: var(--accent-soft); color: var(--accent); }
