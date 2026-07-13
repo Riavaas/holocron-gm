@@ -31,6 +31,7 @@ let die;
 let velocity = 0;
 let bounce = 0;
 let resultTimer;
+let settledResult = null;
 
 function geometryFor(sides) {
   if (sides === 6) return new THREE.BoxGeometry(1.55, 1.55, 1.55);
@@ -114,6 +115,7 @@ function faceLabel(center, value, sides, scale) {
   );
   label.position.copy(normal.multiplyScalar(center.length() * 1.018));
   label.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
+  label.userData.value = value;
   return label;
 }
 
@@ -150,24 +152,41 @@ function resize() {
 function roll(sides) {
   clearTimeout(resultTimer);
   setDie(sides);
+  settledResult = null;
   velocity = 1.15 + Math.random() * .8;
   bounce = 1.55;
   document.querySelector("#dice-result").textContent = "Rolling…";
   faceResult.textContent = "…";
   resultTimer = window.setTimeout(() => {
     const result = Math.floor(Math.random() * sides) + 1;
+    settledResult = result;
     document.querySelector("#dice-result").textContent = `D${sides} · ${result}`;
     faceResult.textContent = result;
   }, 900);
 }
 
+function settleToResult() {
+  if (!die || !settledResult) return;
+  const label = die.children.find((child) => child.userData?.value === settledResult);
+  if (!label) return;
+  const currentNormal = label.position.clone().normalize().applyQuaternion(die.quaternion);
+  const targetNormal = new THREE.Vector3(0, .25, 1).normalize();
+  const correction = new THREE.Quaternion().setFromUnitVectors(currentNormal, targetNormal);
+  const targetRotation = die.quaternion.clone().premultiply(correction);
+  die.quaternion.slerp(targetRotation, .08);
+}
+
 function animate() {
   const visible = resize();
   if (die) {
-    die.rotation.x += velocity * .07;
-    die.rotation.y += velocity * .11;
-    die.rotation.z += velocity * .04;
-    velocity *= .975;
+    if (velocity > .01) {
+      die.rotation.x += velocity * .07;
+      die.rotation.y += velocity * .11;
+      die.rotation.z += velocity * .04;
+      velocity *= .975;
+    } else {
+      settleToResult();
+    }
     bounce = Math.max(0, bounce - .04);
     die.position.y = -.05 + Math.abs(Math.sin(bounce * 5)) * bounce * .5;
   }
