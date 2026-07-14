@@ -1456,7 +1456,7 @@ function syncMapActionControls() {
 document.querySelectorAll("[data-tool]").forEach((button) => button.addEventListener("click", () => {
   state.tool = button.dataset.tool;
   state.eraserTarget = null;
-  document.querySelectorAll("[data-tool]").forEach((item) => item.classList.toggle("active", item === button));
+  document.querySelectorAll("[data-tool]").forEach((item) => item.classList.toggle("active", item.dataset.tool === state.tool));
   updateMapCursor();
   draw();
   persist();

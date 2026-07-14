@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Holocron GM</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20260714-polish-v1">
+  <link rel="stylesheet" href="/static/styles.css?v=20260714-desktop-qa-v1">
 </head>
 <body>
   <header class="topbar">
@@ -134,6 +134,16 @@
         <button class="icon-button" data-map-action="lock" title="Lock map image">L</button>
         <button class="icon-button" data-map-action="focus" title="Focus map">[]</button>
         <button id="clear-measurement" class="text-button">Clear marks</button>
+      </div>
+      <div class="quick-tool-dock" aria-label="Battlemap tools">
+        <button class="tool active" data-tool="select" title="Select and move tokens"><b>↖</b><span>Select</span></button>
+        <button class="tool" data-tool="pan" title="Pan around the battlemap"><b>✥</b><span>Hand</span></button>
+        <button class="tool" data-tool="measure" title="Measure map distance"><b>⌁</b><span>Measure</span></button>
+        <button class="tool" data-tool="wall" title="Draw line-of-sight walls"><b>╱</b><span>Wall</span></button>
+        <button class="tool" data-tool="ping" title="Place a map ping"><b>◎</b><span>Ping</span></button>
+        <button class="tool" data-tool="note" title="Attach a private GM note"><b>⌑</b><span>Note</span></button>
+        <button class="tool" data-tool="door" title="Draw an interactive door"><b>⊓</b><span>Door</span></button>
+        <button class="tool" data-tool="eraser" title="Erase drawings, doors, pins or tokens"><b>⌫</b><span>Eraser</span></button>
       </div>
       <div id="map-state-pill" class="map-state-pill"></div>
       <div id="measurement" class="measurement" hidden></div>
