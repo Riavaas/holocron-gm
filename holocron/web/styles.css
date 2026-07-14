@@ -1097,6 +1097,9 @@ dialog form { display: grid; gap: 14px; padding: 18px; }
 .ambiance-presets button:hover { border-color: var(--accent); background: var(--accent-soft); }
 .ambiance-presets span { color: var(--muted); font-size: 9px; }
 .youtube-playlist, .realm-sound-links { display: grid; gap: 6px; }
+.realm-sound-heading { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0 2px; color: var(--muted); font-size: 9px; }
+.realm-sound-heading strong { color: var(--accent); text-transform: uppercase; }
+.realm-sound-heading span { max-width: 190px; overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
 .playlist-track { display: grid; grid-template-columns: 1fr repeat(4, 32px); gap: 6px; align-items: center; }
 .playlist-track > button:first-child, .realm-sound-links a { display: grid; gap: 2px; padding: 9px; border: 1px solid var(--line); background: var(--panel); color: var(--text); text-align: left; text-decoration: none; }
 .playlist-track.active > button:first-child { border-color: var(--accent); background: #fff; }

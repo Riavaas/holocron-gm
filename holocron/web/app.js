@@ -4466,6 +4466,8 @@ document.querySelector("#flavor-to-note").addEventListener("click", () => {
 let soundAudioContext;
 let soundMasterGain;
 let activeSoundSceneId = null;
+let activeSoundKitId = null;
+let activeRealmCues = [];
 const activeSoundNodes = new Set();
 const activeAudioElements = new Set();
 const activeSceneTimers = new Set();
@@ -4643,7 +4645,7 @@ function renderSoundSceneState() {
   });
   document.querySelectorAll("[data-apply-sound-kit]").forEach((button) => {
     const kit = soundSceneKits.find((item) => item.id === button.dataset.applySoundKit);
-    button.classList.toggle("active", kit?.scene === activeSoundSceneId);
+    button.classList.toggle("active", kit?.id === activeSoundKitId || kit?.scene === activeSoundSceneId);
   });
 }
 
@@ -4651,6 +4653,7 @@ function stopSoundSceneTimers() {
   for (const timer of activeSceneTimers) clearTimeout(timer);
   activeSceneTimers.clear();
   activeSoundSceneId = null;
+  activeSoundKitId = null;
   renderSoundSceneState();
 }
 
@@ -4716,13 +4719,13 @@ document.querySelector("#stop-sounds").addEventListener("click", () => {
 });
 
 const realmSoundBoards = [
-  { name: "Darth Vader", url: "https://www.realmofdarkness.net/sb/sw-vader/" },
-  { name: "Sound Effects", url: "https://www.realmofdarkness.net/sb/category/sw/sw-sfx" },
-  { name: "Droids", url: "https://www.realmofdarkness.net/sb/category/sw/droids" },
-  { name: "Creatures", url: "https://www.realmofdarkness.net/sb/category/sw/creatures" },
-  { name: "Podracers", url: "https://www.realmofdarkness.net/sb/category/sw/podracers" },
-  { name: "Jedi & Rebellion", url: "https://www.realmofdarkness.net/sb/category/sw/jedi-rebellion" },
-  { name: "Empire & Villains", url: "https://www.realmofdarkness.net/sb/category/sw/empire-villains" },
+  { name: "Blasters & SFX", url: "https://www.realmofdarkness.net/sb/category/sw/sw-sfx", cues: ["blaster", "alarm", "door", "hyperdrive"] },
+  { name: "Droids", url: "https://www.realmofdarkness.net/sb/category/sw/droids", cues: ["comms", "alarm"] },
+  { name: "Creatures", url: "https://www.realmofdarkness.net/sb/category/sw/creatures", cues: ["storm", "cantina"] },
+  { name: "Podracers", url: "https://www.realmofdarkness.net/sb/category/sw/podracers", cues: ["hyperdrive", "chase"] },
+  { name: "Jedi & Rebellion", url: "https://www.realmofdarkness.net/sb/category/sw/jedi-rebellion", cues: ["saber", "blaster", "comms"] },
+  { name: "Empire & Villains", url: "https://www.realmofdarkness.net/sb/category/sw/empire-villains", cues: ["alarm", "blaster", "comms"] },
+  { name: "Darth Vader", url: "https://www.realmofdarkness.net/sb/sw-vader/", cues: ["saber", "alarm"] },
 ];
 const ambiancePresets = [
   {
@@ -4818,10 +4821,19 @@ async function resolveYoutubeTitle(url) {
 }
 
 function renderSoundAmbiance() {
-  document.querySelector("#realm-sound-links").innerHTML = realmSoundBoards.map((board) => `
-    <a href="${escapeHtml(board.url)}" target="_blank" rel="noopener">
-      <strong>${escapeHtml(board.name)}</strong><span>Open source board</span>
-    </a>`).join("");
+  const cueSet = new Set(activeRealmCues);
+  const realmBoards = activeRealmCues.length
+    ? realmSoundBoards.filter((board) => board.cues.some((cue) => cueSet.has(cue)))
+    : realmSoundBoards;
+  document.querySelector("#realm-sound-links").innerHTML = `
+    <div class="realm-sound-heading">
+      <strong>${activeRealmCues.length ? "Recommended Realm boards" : "Realm of Darkness boards"}</strong>
+      <span>${activeRealmCues.length ? activeRealmCues.join(" / ") : "All Star Wars categories"}</span>
+    </div>
+    ${realmBoards.map((board) => `
+      <a href="${escapeHtml(board.url)}" target="_blank" rel="noopener">
+        <strong>${escapeHtml(board.name)}</strong><span>${escapeHtml(board.cues.join(" / "))}</span>
+      </a>`).join("")}`;
   document.querySelector("#sound-scene-kits").innerHTML = soundSceneKits.map((kit) => `
     <article class="sound-scene-kit">
       <button type="button" data-apply-sound-kit="${escapeHtml(kit.id)}" class="${kit.scene === activeSoundSceneId ? "active" : ""}">
@@ -4882,7 +4894,9 @@ function addAmbiancePreset(presetId) {
 function applySoundSceneKit(kitId) {
   const kit = soundSceneKits.find((item) => item.id === kitId);
   if (!kit) return;
+  activeRealmCues = [...kit.cues];
   playSoundScene(kit.scene);
+  activeSoundKitId = kit.id;
   addAmbiancePreset(kit.ambiance);
   const sceneSelect = document.querySelector("#flavor-scene");
   const toneSelect = document.querySelector("#flavor-tone");
@@ -4916,7 +4930,11 @@ document.querySelector("#sound-scene-kits").addEventListener("click", (event) =>
   const kit = event.target.closest("[data-apply-sound-kit]");
   const cue = event.target.closest("[data-sound]");
   if (kit) applySoundSceneKit(kit.dataset.applySoundKit);
-  else if (cue) playSoundEffect(cue.dataset.sound);
+  else if (cue) {
+    activeRealmCues = [cue.dataset.sound];
+    playSoundEffect(cue.dataset.sound);
+    renderSoundAmbiance();
+  }
 });
 document.querySelector("#youtube-playlist").addEventListener("click", (event) => {
   const play = event.target.closest("[data-play-track]");
