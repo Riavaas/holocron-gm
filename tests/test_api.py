@@ -219,6 +219,7 @@ def test_item_catalog_generates_repeatable_loot(monkeypatch):
     assert first.status_code == 200
     assert first.json() == second.json()
     assert len(first.json()["items"]) == 4
+    assert first.json()["supplies"] == []
     assert first.json()["summary"]["count"] == 4
     assert first.json()["summary"]["categories"] == [["Gear", 4]]
 
@@ -282,6 +283,29 @@ def test_item_catalog_accepts_multiple_bonus_loot_pulls(monkeypatch):
     assert "Hold-out Blaster" in names
     assert "Mesh Armor" in names
     assert "Mythic Plate" not in names
+
+
+def test_item_catalog_adds_real_field_supplies(monkeypatch):
+    from holocron.api.routes import catalog
+
+    monkeypatch.setattr(
+        catalog,
+        "load_item_catalog",
+        lambda: (
+            {"id": "weapon", "name": "Hold-out Blaster", "category": "Weapon", "kind": "equipment", "cost": 100},
+            {"id": "medpac", "name": "Premium Medpac", "category": "Medical", "kind": "equipment", "cost": 50},
+            {"id": "ration", "name": "Field Ration Kit", "category": "AdventuringGear", "kind": "equipment", "cost": 10},
+        ),
+    )
+    client = TestClient(app)
+
+    response = client.get("/api/catalog/items/loot", params={"cr": 7, "count": 1, "seed": 9})
+
+    assert response.status_code == 200
+    supplies = response.json()["supplies"]
+    assert {item["name"] for item in supplies} <= {"Premium Medpac", "Field Ration Kit"}
+    assert len(supplies) == 2
+    assert response.json()["summary"]["count"] == 3
 
 
 def test_shopkeeper_adds_identity_departments_and_prices(monkeypatch):

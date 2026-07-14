@@ -4146,7 +4146,7 @@ async function generateLoot() {
     if (!response.ok) throw new Error("Loot catalog unavailable");
     const payload = await response.json();
     lastLootPayload = payload;
-    generatedLootItems = payload.items || [];
+    generatedLootItems = [...(payload.items || []), ...(payload.supplies || [])];
     document.querySelector("#save-loot-note").disabled = generatedLootItems.length === 0;
     const summaryChips = [
       ...(payload.summary?.rarities || []).map(([name, count]) => `${name} ${count}`),
@@ -4167,7 +4167,6 @@ async function generateLoot() {
       <div class="loot-line"><span>Credits</span><strong>${payload.credits.toLocaleString()} cr</strong></div>
       ${summaryChips ? `<div class="loot-summary">${summaryChips}</div>` : ""}
       ${items}
-      <div class="loot-line"><span>Field supplies</span><strong>${1 + Math.floor(cr / 4)}× ${escapeHtml(randomItem(consumables))}</strong></div>
       <div class="loot-line"><span>Salvage lead</span><strong>${escapeHtml(randomItem(lootMods))}</strong></div>`;
   } catch {
     lastLootPayload = null;

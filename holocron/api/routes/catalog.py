@@ -51,6 +51,15 @@ def _loot_summary(items: list[dict[str, object]]) -> dict[str, object]:
     }
 
 
+def _supply_candidates(catalog: list[dict[str, object]]) -> list[dict[str, object]]:
+    terms = ("medpac", "stim", "ration", "kit", "grenade", "repair", "antitoxin", "power cell", "battery")
+    return [
+        item for item in catalog
+        if item.get("kind") == "equipment"
+        and any(term in f"{item.get('name')} {item.get('category')} {item.get('description')}".lower() for term in terms)
+    ]
+
+
 @router.get("/items/loot")
 def loot_items(
     cr: int = Query(1, ge=0, le=30),
@@ -85,7 +94,16 @@ def loot_items(
         if extra_pool:
             selected.append(rng.choice(extra_pool))
     credits = rng.randrange(max(50, 100 + cr * 100), max(100, 400 + cr * 400), 10)
-    return {"items": selected, "credits": credits, "budget": budget, "summary": _loot_summary(selected)}
+    supply_pool = _supply_candidates(catalog)
+    supply_count = max(1, min(4, 1 + cr // 6))
+    supplies = rng.sample(supply_pool, min(supply_count, len(supply_pool))) if supply_pool else []
+    return {
+        "items": selected,
+        "supplies": supplies,
+        "credits": credits,
+        "budget": budget,
+        "summary": _loot_summary([*selected, *supplies]),
+    }
 
 
 @router.get("/items/shopkeeper")
